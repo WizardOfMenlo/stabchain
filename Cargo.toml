@@ -14,7 +14,6 @@ rand = "0.7"
 criterion = "0.3"
 
 
-
 [[bench]]
 name = "permutation"
 harness = false
