@@ -13,6 +13,9 @@ rand = "0.7"
 [dev-dependencies]
 criterion = "0.3"
 
+# Needed as otherwise cargo tries to run benchmarks as tests and messes cmdline args
+[lib]
+bench = false
 
 [[bench]]
 name = "permutation"
