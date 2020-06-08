@@ -17,7 +17,8 @@ jobs:
       # Run benchmark, storing in output.txt
       - name: Run benchmark
         run: cargo bench -- --output-format bencher | tee output.txt
-
+      - name: List Everything
+        run: ls
       # Get old benches (if any)
       - name: Download previous benchmark data
         uses: actions/cache@v1
