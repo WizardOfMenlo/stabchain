@@ -7,16 +7,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      # Install Rust (nightly)
+      # Install Rust (stable)
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: stable
           override: true
 
       # Run benchmark, storing in output.txt
       - name: Run benchmark
-        run: cargo +nightly bench -- --output-format bencher | tee output.txt
+        run: cargo bench -- --output-format bencher | tee output.txt
 
       # Get old benches (if any)
       - name: Download previous benchmark data

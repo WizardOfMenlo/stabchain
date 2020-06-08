@@ -78,18 +78,26 @@ impl Permutation {
     /// use stabchain::perm::Permutation;
     /// let a = Permutation::from_vec(vec![1, 0]);
     /// ```
-    pub fn from_vec(mut vals: Vec<usize>) -> Self {
-        while !vals.is_empty() && vals[vals.len() - 1] == vals.len() - 1 {
-            vals.pop();
-        }
-        //println!("{:?}", vals);
-        if cfg!(debug_assertions) {
-            let mut val_cpy = vals.clone();
-            val_cpy.sort();
-            for i in val_cpy.into_iter().enumerate() {
-                assert_eq!(i.0, i.1)
+    pub fn from_vec(vals: Vec<usize>) -> Self {
+        let mut copy = vals.clone();
+        let perm = Permutation::from_vec_unchecked(vals);
+
+        copy.sort();
+        for i in copy.into_iter().enumerate() {
+            if i.0 != i.1 {
+                panic!("Invalid Representation");
             }
         }
+
+        perm
+    }
+
+    fn from_vec_unchecked(mut vals: Vec<usize>) -> Self {
+        while !vals.is_empty() && vals[vals.len() - 1] == vals.len() - 1 {
+            vals.pop();
+            vals.pop();
+        }
+
         Self {
             vals: Rc::new(vals),
             invvals: RefCell::new(None),
@@ -137,14 +145,14 @@ impl Permutation {
                 return self.clone();
             }
             let size = other.lmp().unwrap();
-            Permutation::from_vec((0..=size).map(|x| other.apply(x)).collect())
+            Permutation::from_vec_unchecked((0..=size).map(|x| other.apply(x)).collect())
         } else if other.is_id() {
             self.clone()
         } else {
             let size = max(self.lmp().unwrap_or(0), other.lmp().unwrap_or(0));
             debug_assert!(size > 0);
             let v = (0..=size).map(|x| self.apply(other.apply(x))).collect();
-            Permutation::from_vec(v)
+            Permutation::from_vec_unchecked(v)
         }
     }
 
@@ -213,6 +221,19 @@ impl From<Vec<usize>> for Permutation {
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    #[should_panic]
+    fn invalid_missing_0() {
+        Permutation::from_vec(vec![1, 2, 3]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_double_value() {
+        Permutation::from_vec(vec![0, 1, 2, 2]);
+    }
+
     use super::Permutation;
     #[test]
     fn id_perm() {
