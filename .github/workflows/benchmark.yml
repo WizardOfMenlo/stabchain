@@ -19,6 +19,8 @@ jobs:
         run: cargo bench -- --output-format bencher | tee output.txt
       - name: List Everything
         run: ls
+      - name: Output
+        run: cat output.txt
       # Get old benches (if any)
       - name: Download previous benchmark data
         uses: actions/cache@v1
