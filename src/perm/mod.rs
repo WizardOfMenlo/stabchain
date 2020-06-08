@@ -95,7 +95,6 @@ impl Permutation {
     fn from_vec_unchecked(mut vals: Vec<usize>) -> Self {
         while !vals.is_empty() && vals[vals.len() - 1] == vals.len() - 1 {
             vals.pop();
-            vals.pop();
         }
 
         Self {
@@ -302,6 +301,14 @@ mod tests {
         assert_eq!(cycle.pow(3), *id);
         assert_eq!(cycle.pow(10), *cycle);
     }
+
+    #[test]
+    fn trailing_end_edge() {
+        let a = Permutation::from_vec(vec![1, 3, 2, 0]);
+        let b = Permutation::from_vec(vec![3, 2, 0, 1]);
+        a.multiply(&b).inv();
+    }
+
     #[test]
     fn div_perm() {
         let id = Permutation::id();

@@ -3,16 +3,15 @@ use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criteri
 use stabchain::perm::utils::random_permutation;
 
 pub fn inverse_of_product(c: &mut Criterion) {
-    let mut group = c.benchmark_group("InverseProduct");
+    let mut group = c.benchmark_group("inv_prod");
     for i in [8, 16, 32, 64, 128, 256, 512].iter() {
-        // TODO: This should probably be some random permutation
-        group.bench_with_input(BenchmarkId::new("(a*b)^-1", i), i, |b, i| {
+        group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
             let first = random_permutation(*i);
             let second = random_permutation(*i);
             b.iter(|| black_box(first.multiply(&second).inv()))
         });
         // Note this benchmark is actually unfair, as first and second are cached
-        group.bench_with_input(BenchmarkId::new("b^-1*a^-1", i), i, |b, i| {
+        group.bench_with_input(BenchmarkId::new("prod_of_inv", i), i, |b, i| {
             let first = random_permutation(*i);
             let second = random_permutation(*i);
             b.iter(|| black_box(second.inv().multiply(&first.inv())))

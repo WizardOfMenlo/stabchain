@@ -11,3 +11,21 @@ pub fn random_permutation(n: usize) -> Permutation {
     vec.shuffle(&mut rng);
     Permutation::from_vec(vec)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn create_random() {
+        random_permutation(10);
+    }
+
+    #[test]
+    fn multiplication() {
+        let a = random_permutation(10);
+        let b = random_permutation(10);
+
+        dbg!(a.multiply(&b).inv());
+    }
+}
