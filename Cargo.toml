@@ -1,0 +1,20 @@
+[package]
+name = "stabchain"
+version = "0.1.0"
+authors = ["Giacomo Fenzi <giacomofenzi@outlook.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0", features= ["derive", "rc"] }
+rand = "0.7"
+
+[dev-dependencies]
+criterion = "0.3"
+
+
+
+[[bench]]
+name = "permutation"
+harness = false
