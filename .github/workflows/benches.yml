@@ -33,6 +33,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Enable alert commit comment
           comment-on-alert: true
-          # Mention me in the commit comment (REMOVE COMMENT)
-          #alert-comment-cc-users: '@WizardOfMenlo'
+          # Mention me in the commit comment
+          alert-comment-cc-users: '@WizardOfMenlo'
           # Upload the updated cache file for the next job by actions/cache
