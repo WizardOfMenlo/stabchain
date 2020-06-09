@@ -25,6 +25,7 @@ impl From<ClassicalPermutation> for CyclePermutation {
         use std::collections::HashSet;
 
         let n = perm.lmp();
+        // This path means that the permutation is the identity
         if n.is_none() {
             return CyclePermutation::from_vec_unchecked(Vec::new());
         }
