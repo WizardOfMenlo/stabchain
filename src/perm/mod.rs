@@ -4,6 +4,7 @@
 
 // mod randomreplacement;
 mod builder;
+pub mod export;
 pub mod utils;
 
 use builder::PermBuilder;
@@ -18,7 +19,7 @@ use std::rc::Rc;
 /// The inverse is also stored in an option, so it can be cached.
 /// The RefCell is needed to ensure interior mutability and compliance
 /// with the Permutation API
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug)]
 pub struct Permutation {
     vals: Rc<Vec<usize>>,
     invvals: RefCell<Option<Rc<Vec<usize>>>>,
