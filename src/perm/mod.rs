@@ -151,7 +151,7 @@ impl Permutation {
         } else {
             let size = max(self.lmp().unwrap_or(0), other.lmp().unwrap_or(0));
             debug_assert!(size > 0);
-            let v = (0..=size).map(|x| self.apply(other.apply(x))).collect();
+            let v = (0..=size).map(|x| other.apply(self.apply(x))).collect();
             Permutation::from_vec_unchecked(v)
         }
     }
