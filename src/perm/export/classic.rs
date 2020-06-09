@@ -50,6 +50,6 @@ impl From<Permutation> for ClassicalPermutation {
 
 impl From<ClassicalPermutation> for Permutation {
     fn from(perm: ClassicalPermutation) -> Self {
-        perm.0.clone()
+        perm.0
     }
 }
