@@ -302,6 +302,28 @@ mod tests {
         assert_eq!(cycle.pow(10), *cycle);
     }
 
+    /// Check that multiplication is correct for non-commuting elements.
+    #[test]
+    fn mult_perm_non_commutative() {
+        let perm1 = Permutation::from(vec![1, 0]);
+        let perm2 = Permutation::from(vec![0, 2, 1]);
+        let expected_perm = Permutation::from(vec![2, 0, 1]);
+        assert_eq!(perm1.multiply(&perm2), expected_perm);
+        let perm1 = Permutation::from(vec![1, 2, 3, 0]);
+        let perm2 = Permutation::from(vec![0, 2, 1]);
+        let expected_perm = Permutation::from(vec![2, 1, 3, 0]);
+        assert_eq!(perm1.multiply(&perm2), expected_perm)
+    }
+
+    /// Test that multiplication for the lazy or eager implementaions are identical
+    #[test]
+    fn mult_perm_lazy_eager(){
+        let perm1 = Permutation::from(vec![2, 3, 0, 1]);
+        let perm2 = Permutation::from(vec![2, 1, 0]);
+        use crate::perm::builder::PermBuilder;
+        assert_eq!(perm1.multiply(&perm2), perm1.build_multiply(&perm2).collapse())
+    }
+
     #[test]
     fn trailing_end_edge() {
         let a = Permutation::from_vec(vec![1, 3, 2, 0]);
