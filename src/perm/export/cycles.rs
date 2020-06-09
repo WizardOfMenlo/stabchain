@@ -1,4 +1,5 @@
 use super::ClassicalPermutation;
+use crate::perm::Permutation;
 use serde::{Deserialize, Serialize};
 
 /// A permutation in disjoint cycle notation
@@ -10,6 +11,12 @@ pub struct CyclePermutation {
 impl CyclePermutation {
     fn from_vec_unchecked(v: Vec<Vec<usize>>) -> Self {
         CyclePermutation { cycles: v }
+    }
+}
+
+impl From<Permutation> for CyclePermutation {
+    fn from(perm: Permutation) -> Self {
+        CyclePermutation::from(ClassicalPermutation::from(perm))
     }
 }
 
