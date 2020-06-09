@@ -47,3 +47,14 @@ impl From<ClassicalPermutation> for CyclePermutation {
         CyclePermutation::from_vec_unchecked(cycles)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn id_cycle() {
+        let id: CyclePermutation = ClassicalPermutation::id().into();
+        assert_eq!(id.cycles.len(), 0);
+    }
+}

@@ -53,3 +53,68 @@ impl From<ClassicalPermutation> for Permutation {
         perm.0
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::ClassicalPermutation;
+
+    #[test]
+    fn id_creation() {
+        let id = ClassicalPermutation::id();
+        assert!(id.is_id());
+        assert!(id.images().is_empty());
+    }
+
+    #[test]
+    fn non_conventional_id() {
+        let id = ClassicalPermutation::from_slice(&vec![1, 2, 3, 4, 5, 6]);
+        assert!(id.is_id());
+        assert!(id.images().is_empty());
+    }
+
+    #[test]
+    fn from_vector() {
+        let perm = ClassicalPermutation::from_slice(&vec![1, 3, 4, 2, 5, 6]);
+        assert!(!perm.is_id());
+        assert_eq!(perm.images(), vec![1, 3, 4, 2]);
+    }
+
+    #[test]
+    #[should_panic]
+    fn from_invalid_vector() {
+        let _perm = ClassicalPermutation::from_slice(&vec![1, 3, 4, 2, 0]);
+    }
+
+    #[test]
+    fn application() {
+        let perm = ClassicalPermutation::from_slice(&vec![1, 3, 4, 2]);
+        assert_eq!(perm.apply(1), 1);
+        assert_eq!(perm.apply(2), 3);
+        assert_eq!(perm.apply(3), 4);
+        assert_eq!(perm.apply(4), 2);
+        assert_eq!(perm.apply(5), 5);
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_application() {
+        let perm = ClassicalPermutation::from_slice(&vec![1, 3, 4, 2]);
+        perm.apply(0);
+    }
+
+    use crate::perm::Permutation;
+
+    #[test]
+    fn from_permutation() {
+        let basic = Permutation::from_vec(vec![0, 2, 1]);
+        let classic: ClassicalPermutation = basic.into();
+        assert_eq!(classic.images(), vec![1, 3, 2]);
+    }
+
+    #[test]
+    fn to_permutation() {
+        let classic = ClassicalPermutation::from_slice(&vec![1, 3, 2]);
+        let basic: Permutation = classic.into();
+        assert_eq!(basic.as_vec(), &vec![0, 2, 1][..]);
+    }
+}
