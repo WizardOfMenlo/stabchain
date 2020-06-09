@@ -137,6 +137,7 @@ impl Permutation {
     /// let a = Permutation::from_vec(vec![0, 2, 1]);
     /// let b = a.inv();
     /// assert_eq!(a.multiply(&b), Permutation::id());
+    /// assert_eq!(b.multiply(&a), Permutation::id());
     /// ```
     pub fn multiply(&self, other: &Permutation) -> Self {
         if self.is_id() {
