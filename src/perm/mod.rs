@@ -137,6 +137,7 @@ impl Permutation {
     /// let a = Permutation::from_vec(vec![0, 2, 1]);
     /// let b = a.inv();
     /// assert_eq!(a.multiply(&b), Permutation::id());
+    /// assert_eq!(b.multiply(&a), Permutation::id());
     /// ```
     pub fn multiply(&self, other: &Permutation) -> Self {
         if self.is_id() {
@@ -150,7 +151,7 @@ impl Permutation {
         } else {
             let size = max(self.lmp().unwrap_or(0), other.lmp().unwrap_or(0));
             debug_assert!(size > 0);
-            let v = (0..=size).map(|x| self.apply(other.apply(x))).collect();
+            let v = (0..=size).map(|x| other.apply(self.apply(x))).collect();
             Permutation::from_vec_unchecked(v)
         }
     }
@@ -300,6 +301,31 @@ mod tests {
         assert_eq!(cycle.pow(-2), *cycle);
         assert_eq!(cycle.pow(3), *id);
         assert_eq!(cycle.pow(10), *cycle);
+    }
+
+    /// Check that multiplication is correct for non-commuting elements.
+    #[test]
+    fn mult_perm_non_commutative() {
+        let perm1 = Permutation::from(vec![1, 0]);
+        let perm2 = Permutation::from(vec![0, 2, 1]);
+        let expected_perm = Permutation::from(vec![2, 0, 1]);
+        assert_eq!(perm1.multiply(&perm2), expected_perm);
+        let perm1 = Permutation::from(vec![1, 2, 3, 0]);
+        let perm2 = Permutation::from(vec![0, 2, 1]);
+        let expected_perm = Permutation::from(vec![2, 1, 3, 0]);
+        assert_eq!(perm1.multiply(&perm2), expected_perm)
+    }
+
+    /// Test that multiplication for the lazy or eager implementaions are identical
+    #[test]
+    fn mult_perm_lazy_eager() {
+        use crate::perm::builder::PermBuilder;
+        let perm1 = Permutation::from(vec![2, 3, 0, 1]);
+        let perm2 = Permutation::from(vec![2, 1, 0]);
+        assert_eq!(
+            perm1.multiply(&perm2),
+            perm1.build_multiply(&perm2).collapse()
+        )
     }
 
     #[test]
