@@ -1,6 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 
 use stabchain::perm::utils::random_permutation;
+use stabchain::perm::Permutation;
 
 pub fn inverse_of_product(c: &mut Criterion) {
     let mut group = c.benchmark_group("inv_prod");
@@ -18,6 +19,11 @@ pub fn inverse_of_product(c: &mut Criterion) {
         });
     }
     group.finish();
+}
+
+pub fn identity_check(c: &mut Criterion) {
+    let id = Permutation::id();
+    c.bench_function("is_id", |b| b.iter(|| id.is_id()));
 }
 
 criterion_group!(benches, inverse_of_product);
