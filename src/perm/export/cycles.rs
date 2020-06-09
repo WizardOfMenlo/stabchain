@@ -22,23 +22,33 @@ impl From<Permutation> for CyclePermutation {
 
 impl From<ClassicalPermutation> for CyclePermutation {
     fn from(perm: ClassicalPermutation) -> Self {
+        use std::collections::HashSet;
+
         let n = perm.lmp();
         if n.is_none() {
             return CyclePermutation::from_vec_unchecked(Vec::new());
         }
 
         let n = n.unwrap();
-        let mut candidates: Vec<_> = (1..=n).collect();
+        let mut accounted = HashSet::new();
 
         let mut cycles = Vec::new();
-        while !candidates.is_empty() {
-            let mut current = candidates.pop().unwrap();
+        for i in 1..=n {
+            if accounted.contains(&i) {
+                continue;
+            }
+
+            accounted.insert(i);
+
+            let mut current = i;
             let mut cycle = vec![current];
             loop {
                 current = perm.apply(current);
                 if cycle.contains(&current) {
                     break;
                 }
+
+                accounted.insert(current);
                 cycle.push(current);
             }
             cycles.push(cycle);
@@ -56,5 +66,20 @@ mod tests {
     fn id_cycle() {
         let id: CyclePermutation = ClassicalPermutation::id().into();
         assert_eq!(id.cycles.len(), 0);
+    }
+
+    #[test]
+    fn two_cycle() {
+        let perm: CyclePermutation = ClassicalPermutation::from_slice(&vec![2, 5, 4, 3, 1]).into();
+        assert_eq!(perm.cycles.len(), 2);
+        assert_eq!(perm.cycles, vec![vec![1, 2, 5], vec![3, 4]])
+    }
+
+    #[test]
+    fn cyclic_perm() {
+        let perm: CyclePermutation =
+            ClassicalPermutation::from_slice(&vec![4, 5, 7, 6, 8, 2, 1, 3]).into();
+        assert_eq!(perm.cycles.len(), 1);
+        assert_eq!(perm.cycles, vec![vec![1, 4, 6, 2, 5, 8, 3, 7]])
     }
 }
