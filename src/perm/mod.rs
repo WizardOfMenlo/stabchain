@@ -318,11 +318,14 @@ mod tests {
 
     /// Test that multiplication for the lazy or eager implementaions are identical
     #[test]
-    fn mult_perm_lazy_eager(){
+    fn mult_perm_lazy_eager() {
         use crate::perm::builder::PermBuilder;
         let perm1 = Permutation::from(vec![2, 3, 0, 1]);
         let perm2 = Permutation::from(vec![2, 1, 0]);
-        assert_eq!(perm1.multiply(&perm2), perm1.build_multiply(&perm2).collapse())
+        assert_eq!(
+            perm1.multiply(&perm2),
+            perm1.build_multiply(&perm2).collapse()
+        )
     }
 
     #[test]
