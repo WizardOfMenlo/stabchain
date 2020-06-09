@@ -9,7 +9,6 @@ pub mod utils;
 
 use builder::PermBuilder;
 
-use serde::{Deserialize, Serialize};
 use std::cell::RefCell;
 use std::cmp::max;
 use std::rc::Rc;

@@ -1,4 +1,5 @@
 mod classic;
+mod cycles;
 
 use super::Permutation;
 use serde::{Deserialize, Serialize};

@@ -36,6 +36,10 @@ impl ClassicalPermutation {
     pub(crate) fn images(&self) -> Vec<usize> {
         self.0.vals.iter().map(|i| i + 1).collect()
     }
+
+    pub fn lmp(&self) -> Option<usize> {
+        self.0.lmp().map(|i| i + 1)
+    }
 }
 
 impl From<Permutation> for ClassicalPermutation {
