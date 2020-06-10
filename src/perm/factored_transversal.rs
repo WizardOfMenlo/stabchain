@@ -10,7 +10,7 @@ pub struct FactoredTransversal {
 }
 
 impl FactoredTransversal {
-    pub fn from_generators(base: usize, gens: Vec<&Permutation>) -> Self {
+    pub fn from_generators(base: usize, gens: Vec<Permutation>) -> Self {
         let mut transversal = HashMap::new();
         let id = Permutation::id();
         let id_ref = Rc::new(id);
