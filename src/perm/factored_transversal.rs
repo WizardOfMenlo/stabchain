@@ -57,6 +57,12 @@ impl FactoredTransversal {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::FactoredTransversal;
+    use crate::perm::Permutation;
+}
+
 pub fn orbit_stabilizer(
     gen_set: Vec<&Permutation>,
     omega: usize,
