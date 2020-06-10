@@ -25,7 +25,7 @@ impl FactoredTraversal {
                 let gamma = g.apply(delta);
                 // If the orbit doensn't contain this value, then add it to the factored traversal.
                 if let Entry::Vacant(v) = traversal.entry(gamma) {
-                    //Insert the inverse, to make calculating representatives
+                    //Insert the inverse, to make calculating representatives easier
                     v.insert(Rc::new(g.inv()));
                     to_traverse.push(gamma);
                 } else {
@@ -34,6 +34,18 @@ impl FactoredTraversal {
             }
         }
         FactoredTraversal { base, traversal }
+    }
+
+    /// Calculate a representative of the given element.
+    pub fn representative(&self, delta: usize) -> Permutation {
+        let mut gamma = delta;
+        let rep = Permutation::id();
+        while gamma != self.base {
+            let g_inv = self.traversal.get(&delta).unwrap();
+            rep.multiply(g_inv).inv();
+            gamma = g_inv.apply(gamma);
+        }
+        rep
     }
 }
 
