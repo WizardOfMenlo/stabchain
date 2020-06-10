@@ -1,6 +1,7 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 
 use stabchain::perm::utils::random_permutation;
+use stabchain::perm::Permutation;
 
 pub fn inverse_of_product(c: &mut Criterion) {
     let mut group = c.benchmark_group("inv_prod");
@@ -20,5 +21,23 @@ pub fn inverse_of_product(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, inverse_of_product);
+/// Benchmark the check of an identity, although this should be constant due to it being an empty check.
+pub fn identity_check(c: &mut Criterion) {
+    let id = Permutation::id();
+    c.bench_function("is_id", |b| b.iter(|| id.is_id()));
+}
+
+/// Benchmarking for inverting of elements.
+pub fn inverse(c: &mut Criterion) {
+    let mut group = c.benchmark_group("inverse");
+    for i in [8, 16, 32, 64, 128, 256, 512].iter() {
+        group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
+            let perm = random_permutation(*i);
+            b.iter(|| black_box(perm.inv()))
+        });
+    }
+    group.finish();
+}
+
+criterion_group!(benches, inverse_of_product, identity_check, inverse);
 criterion_main!(benches);
