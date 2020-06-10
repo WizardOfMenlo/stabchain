@@ -3,6 +3,7 @@
 //! This crate implements permutations on integers
 
 // mod randomreplacement;
+pub mod algos;
 mod builder;
 pub mod export;
 pub mod utils;
@@ -119,10 +120,7 @@ impl Permutation {
             );
         }
 
-        let mut v = vec![0; self.vals.len()];
-        for i in 0..self.vals.len() {
-            v[self.vals[i]] = i;
-        }
+        let v = algos::inv_unchecked(&self.vals[..]);
 
         let ptr = Rc::new(v);
 
