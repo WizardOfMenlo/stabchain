@@ -61,6 +61,26 @@ impl FactoredTransversal {
 mod tests {
     use super::FactoredTransversal;
     use crate::perm::Permutation;
+
+    #[test]
+    fn id_transveral() {
+        let fc = FactoredTransversal::from_generators(3, vec![]);
+        assert_eq!(fc.base, 3);
+        assert!(fc.in_orbit(3));
+        assert!(!fc.in_orbit(2));
+        assert!(!fc.in_orbit(1));
+    }
+
+    #[test]
+    fn small_fc() {
+        let perm = Permutation::from_vec(vec![0, 3, 2, 1]);
+        let fc = FactoredTransversal::from_generators(1, vec![perm]);
+        assert_eq!(fc.base(), 1);
+        assert!(fc.in_orbit(1));
+        assert!(fc.in_orbit(3));
+        assert!(!fc.in_orbit(0));
+        assert!(!fc.in_orbit(2));
+    }
 }
 
 pub fn orbit_stabilizer(
