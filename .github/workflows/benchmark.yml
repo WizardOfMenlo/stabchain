@@ -18,17 +18,11 @@ jobs:
       - name: Run benchmark
         run: cargo bench -- --output-format bencher | tee output.txt
       # Get old benches (if any)
-      - name: Download previous benchmark data
-        uses: actions/cache@v1
-        with:
-          path: ./cache
-          key: ${{ runner.os }}-benchmark
       - name: Store benchmark result
         uses: rhysd/github-action-benchmark@v1.8.1
         with:
           tool: "cargo"
           output-file-path: output.txt
-          external-data-json-path: ./cache/benchmark-data.json
           fail-on-alert: true
           # GitHub API token to make a commit comment
           github-token: ${{ secrets.GITHUB_TOKEN }}
