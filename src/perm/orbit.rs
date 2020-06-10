@@ -1,6 +1,41 @@
 use super::Permutation;
-use std::collections::HashSet;
+use std::collections::hash_map::Entry;
+use std::collections::{HashMap, HashSet};
+
 use std::rc::Rc;
+
+pub struct FactoredTraversal {
+    base: usize,
+    traversal: HashMap<usize, Rc<Permutation>>,
+}
+
+impl FactoredTraversal {
+    pub fn from_generators(base: usize, gens: Vec<&Permutation>) -> Self {
+        let mut traversal = HashMap::new();
+        let id = Permutation::id();
+        let id_ref = Rc::new(id);
+        traversal.insert(base, id_ref);
+        // Orbit elements that have not been used yet.
+        let mut to_traverse = vec![base];
+        // While there are still elements of the orbit unused.
+        while !to_traverse.is_empty() {
+            //Take an unused element.
+            let delta = to_traverse.pop().unwrap();
+            for g in &gens {
+                let gamma = g.apply(delta);
+                // If the orbit doensn't contain this value, then add it to the factored traversal.
+                if let Entry::Vacant(v) = traversal.entry(gamma) {
+                    //Insert the inverse, to make calculating representatives
+                    v.insert(Rc::new(g.inv()));
+                    to_traverse.push(gamma);
+                } else {
+                    //TODO stabiliser
+                }
+            }
+        }
+        FactoredTraversal { base, traversal }
+    }
+}
 
 pub fn orbit_stabilizer(
     gen_set: Vec<&Permutation>,
