@@ -4,17 +4,17 @@ use std::collections::{HashMap, HashSet};
 
 use std::rc::Rc;
 
-pub struct FactoredTraversal {
+pub struct FactoredTransversal {
     base: usize,
-    traversal: HashMap<usize, Rc<Permutation>>,
+    transversal: HashMap<usize, Rc<Permutation>>,
 }
 
-impl FactoredTraversal {
+impl FactoredTransversal {
     pub fn from_generators(base: usize, gens: Vec<&Permutation>) -> Self {
-        let mut traversal = HashMap::new();
+        let mut transversal = HashMap::new();
         let id = Permutation::id();
         let id_ref = Rc::new(id);
-        traversal.insert(base, id_ref);
+        transversal.insert(base, id_ref);
         // Orbit elements that have not been used yet.
         let mut to_traverse = vec![base];
         // While there are still elements of the orbit unused.
@@ -23,8 +23,8 @@ impl FactoredTraversal {
             let delta = to_traverse.pop().unwrap();
             for g in &gens {
                 let gamma = g.apply(delta);
-                // If the orbit doensn't contain this value, then add it to the factored traversal.
-                if let Entry::Vacant(v) = traversal.entry(gamma) {
+                // If the orbit doensn't contain this value, then add it to the factored transversal.
+                if let Entry::Vacant(v) = transversal.entry(gamma) {
                     //Insert the inverse, to make calculating representatives easier
                     v.insert(Rc::new(g.inv()));
                     to_traverse.push(gamma);
@@ -33,7 +33,7 @@ impl FactoredTraversal {
                 }
             }
         }
-        FactoredTraversal { base, traversal }
+        FactoredTransversal { base, transversal }
     }
 
     /// Calculate a representative of the given element.
@@ -41,11 +41,19 @@ impl FactoredTraversal {
         let mut gamma = delta;
         let rep = Permutation::id();
         while gamma != self.base {
-            let g_inv = self.traversal.get(&delta).unwrap();
+            let g_inv = self.transversal.get(&delta).unwrap();
             rep.multiply(g_inv).inv();
             gamma = g_inv.apply(gamma);
         }
         rep
+    }
+
+    pub fn base(&self) -> usize {
+        self.base
+    }
+
+    pub fn in_orbit(&self, pos: usize) -> bool {
+        self.transversal.contains_key(&pos)
     }
 }
 
@@ -60,8 +68,8 @@ pub fn orbit_stabilizer(
     let mut to_traverse = vec![omega];
     let id = Permutation::id();
     let id_ref = Rc::new(id);
-    // the traversal of the orbit.
-    let mut traversal: Vec<Rc<Permutation>> = vec![id_ref.clone()];
+    // the transversal of the orbit.
+    let mut transversal: Vec<Rc<Permutation>> = vec![id_ref.clone()];
     // The stablizer.
     let mut stablizer: Vec<Rc<Permutation>> = vec![id_ref.clone()];
     // While there are still elements of the orbit unused.
@@ -74,17 +82,17 @@ pub fn orbit_stabilizer(
             if !orbit_set.contains(&gamma) {
                 orbit_set.insert(gamma);
                 to_traverse.push(gamma);
-                //element to add to the traversal.
-                let new_traversal_element = traversal[delta].multiply(gen_set[i]);
-                traversal.push(Rc::new(new_traversal_element));
+                //element to add to the transversal.
+                let new_traversal_element = transversal[delta].multiply(gen_set[i]);
+                transversal.push(Rc::new(new_traversal_element));
             } else {
                 // Otherwise update the stabilizer
-                let new_stab_elem = traversal[delta]
+                let new_stab_elem = transversal[delta]
                     .multiply(gen_set[i])
-                    .multiply(&traversal[gamma].inv());
+                    .multiply(&transversal[gamma].inv());
                 stablizer.push(Rc::new(new_stab_elem));
             }
         }
     }
-    (orbit_set, traversal, stablizer)
+    (orbit_set, transversal, stablizer)
 }
