@@ -24,7 +24,7 @@ jobs:
           path: ./cache
           key: ${{ runner.os }}-benchmark
       - name: Store benchmark result
-        uses: rhysd/github-action-benchmark@b2ee598f83705ff7093e1eea5d494ada99851bd9
+        uses: rhysd/github-action-benchmark@e47c97d3e7
         with:
           tool: "cargo"
           output-file-path: output.txt
