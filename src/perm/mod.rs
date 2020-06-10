@@ -200,6 +200,8 @@ impl PartialEq for Permutation {
     }
 }
 
+impl Eq for Permutation {}
+
 impl PartialOrd for Permutation {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.vals.cmp(&other.vals))
