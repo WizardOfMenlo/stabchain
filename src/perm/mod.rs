@@ -6,7 +6,7 @@
 pub mod algos;
 mod builder;
 pub mod export;
-pub mod orbit;
+pub mod factored_traversal;
 pub mod utils;
 
 use builder::PermBuilder;
