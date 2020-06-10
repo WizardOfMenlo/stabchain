@@ -6,3 +6,5 @@
 An implementation of fundamental group theory algorithms in Rust
 
 This repository aims to implement highly efficient backtrack search algorithms in permutation groups
+
+Benchmarks [here](https://wizardofmenlo.github.io/stabchain/dev/bench/)
