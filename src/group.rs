@@ -68,7 +68,7 @@ mod tests {
 
     #[test]
     fn trivial_creation() {
-        let g = Group::trivial();
+        let _g = Group::trivial();
     }
 
     #[test]
