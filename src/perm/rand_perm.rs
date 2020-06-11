@@ -10,7 +10,7 @@ pub struct rand_perm {
 }
 
 impl rand_perm {
-    pub fn from_generators(size: usize, generators: Vec<Permutation>) -> Self {
+    pub fn from_generators(size: usize, generators: Vec<Permutation>, initial_runs: usize) -> Self {
         let mut rng = rand::thread_rng();
         let mut gen_elements: Vec<Permutation> = generators.clone();
         let k = gen_elements.len();
@@ -24,7 +24,7 @@ impl rand_perm {
             gen_elements,
             a,
         };
-        for _ in 0..50 {
+        for _ in 0..initial_runs {
             rand.random_permutation();
         }
         rand
