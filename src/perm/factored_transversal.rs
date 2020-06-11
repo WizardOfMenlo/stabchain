@@ -1,6 +1,6 @@
 use super::Permutation;
 use std::collections::hash_map::Entry;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use std::rc::Rc;
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
