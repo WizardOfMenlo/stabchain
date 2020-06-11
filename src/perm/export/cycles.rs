@@ -48,6 +48,13 @@ impl From<Permutation> for CyclePermutation {
     }
 }
 
+impl From<CyclePermutation> for Permutation {
+    fn from(perm: CyclePermutation) -> Self {
+        let int: ClassicalPermutation = perm.into();
+        int.into()
+    }
+}
+
 impl From<ClassicalPermutation> for CyclePermutation {
     fn from(perm: ClassicalPermutation) -> Self {
         use std::collections::HashSet;

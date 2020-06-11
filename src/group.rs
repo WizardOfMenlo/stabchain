@@ -1,3 +1,4 @@
+use crate::perm::export::CyclePermutation;
 use crate::perm::Permutation;
 
 #[derive(Debug, Clone)]
@@ -12,31 +13,77 @@ impl Group {
         }
     }
 
+    pub fn generators(&self) -> &[Permutation] {
+        &self.generators[..]
+    }
+
     fn order_n_permutation(n: usize) -> Permutation {
-        Permutation::from_vec((0..n).map(|i| (i + 1) % n).collect())
+        assert!(n > 0);
+        CyclePermutation::from_vec(vec![(1..=n).collect()]).into()
     }
 
     pub fn trivial() -> Self {
-        Group::new(&[Permutation::id()])
+        // TODO: Should we include the identity here?
+        Group::new(&[])
     }
 
-    pub fn dihedral(n: usize) -> Self {
-        assert!(n >= 2);
-        // TODO: Verify this actually generates D_n
+    /// This generates the dihedral group D_2n.
+    pub fn dihedral_2n(n: usize) -> Self {
+        assert!(n > 0);
+
         Group::new(&[
-            Permutation::from_vec(vec![0, n - 2]),
-            Self::order_n_permutation(n),
+            dbg!(CyclePermutation::from_vec(
+                (1..=n).map(|i| vec![i, 2 * n - i + 1]).collect()
+            ))
+            .into(),
+            Self::order_n_permutation(2 * n),
         ])
     }
 
     pub fn cyclic(n: usize) -> Self {
+        assert!(n > 0);
+
         Group::new(&[Self::order_n_permutation(n)])
     }
 
     pub fn symmetric(n: usize) -> Self {
+        assert!(n > 0);
+
+        if n == 1 {
+            return Self::trivial();
+        }
+
         Group::new(&[
-            Permutation::from_vec(vec![0, 1]),
+            CyclePermutation::from_vec(vec![vec![1, 2]]).into(),
             Self::order_n_permutation(n),
         ])
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Group;
+
+    #[test]
+    fn trivial_creation() {
+        let g = Group::trivial();
+    }
+
+    #[test]
+    fn cyclic() {
+        let g = Group::cyclic(5);
+        assert_eq!(g.generators().len(), 1);
+    }
+
+    #[test]
+    fn dihedral_creation() {
+        let g = Group::dihedral_2n(4);
+        assert_eq!(g.generators().len(), 2);
+    }
+
+    #[test]
+    fn symmetric_creation() {
+        let g = Group::symmetric(5);
+        assert_eq!(g.generators().len(), 2);
     }
 }

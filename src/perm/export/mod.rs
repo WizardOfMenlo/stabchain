@@ -5,6 +5,7 @@ use super::Permutation;
 use serde::{Deserialize, Serialize};
 
 pub use classic::ClassicalPermutation;
+pub use cycles::CyclePermutation;
 
 /// A permutation that is easy to export
 #[derive(Debug, Serialize, Deserialize)]
