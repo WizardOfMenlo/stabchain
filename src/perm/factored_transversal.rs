@@ -80,6 +80,17 @@ impl FactoredTransversal {
         self.base
     }
 
+    /// Get the orbit size.
+    ///```
+    /// use stabchain::perm::factored_transversal::FactoredTransversal;
+    /// use stabchain::perm::Permutation;
+    /// let fc = FactoredTransversal::from_generators(0, vec![Permutation::from(vec![1, 0])]);
+    /// assert_eq!(2, fc.size());
+    ///```
+    pub fn size(&self) -> usize {
+        self.transversal.len()
+    }
+
     /// Test if an element is in the orbit.
     ///```
     /// use stabchain::perm::factored_transversal::FactoredTransversal;
@@ -105,6 +116,8 @@ mod tests {
         assert!(fc.in_orbit(3));
         assert!(!fc.in_orbit(2));
         assert!(!fc.in_orbit(1));
+        //check orbit size
+        assert_eq!(1, fc.size());
     }
 
     #[test]
@@ -127,6 +140,8 @@ mod tests {
         assert!(fc.in_orbit(3));
         assert!(!fc.in_orbit(0));
         assert!(!fc.in_orbit(2));
+        //check orbit size
+        assert_eq!(2, fc.size());
     }
 
     #[test]
@@ -139,5 +154,7 @@ mod tests {
             assert!(fc.in_orbit(i));
             assert_eq!(i, fc.representative(i).unwrap().apply(3));
         }
+        //check orbit size
+        assert_eq!(4, fc.size());
     }
 }
