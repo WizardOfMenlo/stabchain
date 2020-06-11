@@ -35,10 +35,7 @@ impl Group {
         assert!(n > 0);
 
         Group::new(&[
-            dbg!(CyclePermutation::from_vec(
-                (1..=n).map(|i| vec![i, 2 * n - i + 1]).collect()
-            ))
-            .into(),
+            CyclePermutation::from_vec((1..=n).map(|i| vec![i, 2 * n - i + 1]).collect()).into(),
             Self::order_n_permutation(2 * n),
         ])
     }
