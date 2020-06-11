@@ -110,19 +110,35 @@ mod tests {
     #[test]
     fn id_representatives() {
         let fc = FactoredTransversal::from_generators(3, vec![]);
+        // The orbit for the base point should be 1.
         assert_eq!(Permutation::id(), fc.representative(3).unwrap());
+        // The orbit will only contain the base element, as the group generated is the identity
         assert_eq!(None, fc.representative(2))
     }
 
     #[test]
     fn small_fc() {
+        // This permutation is equivalant to (1, 3)
         let perm = Permutation::from_vec(vec![0, 3, 2, 1]);
         let fc = FactoredTransversal::from_generators(1, vec![perm]);
         assert_eq!(fc.base(), 1);
+        // As the permutation is (1, 3), only 1 and 3 should be in the orbit of 1.
         assert!(fc.in_orbit(1));
         assert!(fc.in_orbit(3));
         assert!(!fc.in_orbit(0));
         assert!(!fc.in_orbit(2));
+    }
+
+    #[test]
+    fn full_cycle() {
+        // This permutation is equivalane to (1, 2, 3, 4)
+        let perm = Permutation::from_vec(vec![1, 2, 3, 0]);
+        let fc = FactoredTransversal::from_generators(3, vec![perm]);
+        // Every element should be in the orbit
+        for i in 0_usize..3 {
+            assert!(fc.in_orbit(i));
+        }
+        
     }
 }
 
