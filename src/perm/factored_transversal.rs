@@ -60,11 +60,14 @@ impl FactoredTransversal {
         } else {
             let mut gamma = delta;
             let mut rep = Permutation::id();
+            // Move along the orbit till we reach a representative that the base moves to the point.
             while gamma != self.base {
                 let g_inv = self.transversal.get(&delta).unwrap();
                 rep = rep.multiply(g_inv);
                 gamma = g_inv.apply(gamma);
             }
+            // Invert at the end, as the inverses are used.
+            // If we want fgh, then we can instead do (h^-1, g^-1, f^-1)^-1.
             Some(rep.inv())
         }
     }
