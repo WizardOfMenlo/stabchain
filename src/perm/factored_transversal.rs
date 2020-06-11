@@ -62,10 +62,10 @@ impl FactoredTransversal {
             let mut rep = Permutation::id();
             while gamma != self.base {
                 let g_inv = self.transversal.get(&delta).unwrap();
-                rep = rep.multiply(g_inv).inv();
+                rep = rep.multiply(g_inv);
                 gamma = g_inv.apply(gamma);
             }
-            Some(rep)
+            Some(rep.inv())
         }
     }
 
@@ -135,8 +135,9 @@ mod tests {
         let perm = Permutation::from_vec(vec![1, 2, 3, 0]);
         let fc = FactoredTransversal::from_generators(3, vec![perm]);
         // Every element should be in the orbit
-        for i in 0_usize..3 {
+        for i in 0_usize..=3 {
             assert!(fc.in_orbit(i));
+            assert_eq!(i, fc.representative(i).unwrap().apply(3));
         }
     }
 }
