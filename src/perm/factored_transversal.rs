@@ -36,16 +36,21 @@ impl FactoredTransversal {
         FactoredTransversal { base, transversal }
     }
 
-    /// Calculate a representative of the given element.
-    pub fn representative(&self, delta: usize) -> Permutation {
-        let mut gamma = delta;
-        let rep = Permutation::id();
-        while gamma != self.base {
-            let g_inv = self.transversal.get(&delta).unwrap();
-            rep.multiply(g_inv).inv();
-            gamma = g_inv.apply(gamma);
+    /// Calculate a representative of the given element in the orbit, or None if this element isn't in the orbit.
+    pub fn representative(&self, delta: usize) -> Option<Permutation> {
+        // Check if the element is in the orbit.
+        if !self.in_orbit(delta) {
+            None
+        } else {
+            let mut gamma = delta;
+            let rep = Permutation::id();
+            while gamma != self.base {
+                let g_inv = self.transversal.get(&delta).unwrap();
+                rep.multiply(g_inv).inv();
+                gamma = g_inv.apply(gamma);
+            }
+            Some(rep)
         }
-        rep
     }
 
     pub fn base(&self) -> usize {
@@ -69,6 +74,13 @@ mod tests {
         assert!(fc.in_orbit(3));
         assert!(!fc.in_orbit(2));
         assert!(!fc.in_orbit(1));
+    }
+
+    #[test]
+    fn id_representatives() {
+        let fc = FactoredTransversal::from_generators(3, vec![]);
+        assert_eq!(Permutation::id(), fc.representative(3));
+        assert_eq!(Permutation::id(), fc.representative(2))
     }
 
     #[test]
