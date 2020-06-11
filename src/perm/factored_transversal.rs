@@ -124,7 +124,7 @@ mod tests {
 
     #[test]
     /// Test the representatives for the elements in the orbit of the empty set of generators.
-    /// The only representative should be t
+    /// The only representative should be the identity permutation, as the orbit only has a single element.
     fn id_representatives() {
         let fc = FactoredTransversal::from_generators(3, vec![]);
         // The orbit for the base point should be 1.
@@ -134,6 +134,7 @@ mod tests {
     }
 
     #[test]
+    /// Test with a small permutation as the only generator.
     fn small_fc() {
         // This permutation is equivalent to (1, 3)
         let perm = Permutation::from_vec(vec![0, 3, 2, 1]);
@@ -149,11 +150,12 @@ mod tests {
     }
 
     #[test]
+    /// Test with a permutation of 4 points that is a 4-cycle.
     fn full_cycle() {
         // This permutation is equivalent to (1, 2, 3, 4)
         let perm = Permutation::from_vec(vec![1, 2, 3, 0]);
         let fc = FactoredTransversal::from_generators(3, vec![perm]);
-        // Every element should be in the orbit
+        // Every element should be in the orbit, and it's representative should move the base to that point.
         for i in 0_usize..=3 {
             assert!(fc.in_orbit(i));
             assert_eq!(i, fc.representative(i).unwrap().apply(3));
