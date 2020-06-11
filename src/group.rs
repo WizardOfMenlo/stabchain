@@ -7,12 +7,14 @@ pub struct Group {
 }
 
 impl Group {
+    /// Instantiate the group from some generators
     pub fn new(generators: &[Permutation]) -> Self {
         Group {
             generators: generators.into(),
         }
     }
 
+    /// Get a reference to the generators of the group
     pub fn generators(&self) -> &[Permutation] {
         &self.generators[..]
     }
@@ -22,6 +24,7 @@ impl Group {
         CyclePermutation::from_vec(vec![(1..=n).collect()]).into()
     }
 
+    /// Generates the trivial group, which only contains the identity
     pub fn trivial() -> Self {
         // TODO: Should we include the identity here?
         Group::new(&[])
@@ -40,12 +43,14 @@ impl Group {
         ])
     }
 
+    /// Generate the cyclical group on n elements
     pub fn cyclic(n: usize) -> Self {
         assert!(n > 0);
 
         Group::new(&[Self::order_n_permutation(n)])
     }
 
+    /// Generate the symmetric group on n points
     pub fn symmetric(n: usize) -> Self {
         assert!(n > 0);
 
