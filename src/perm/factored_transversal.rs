@@ -1,6 +1,7 @@
 use super::Permutation;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::VecDeque;
 
 use std::rc::Rc;
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
@@ -26,18 +27,19 @@ impl FactoredTransversal {
         let id_ref = Rc::new(id);
         transversal.insert(base, id_ref);
         // Orbit elements that have not been used yet.
-        let mut to_traverse = vec![base];
+        let mut to_traverse = VecDeque::new();
+        to_traverse.push_back(base);
         // While there are still elements of the orbit unused.
         while !to_traverse.is_empty() {
             //Take an unused element.
-            let delta = to_traverse.pop().unwrap();
+            let delta = to_traverse.pop_front().unwrap();
             for g in &gens {
                 let gamma = g.apply(delta);
                 // If the orbit doensn't contain this value, then add it to the factored transversal.
                 if let Entry::Vacant(v) = transversal.entry(gamma) {
                     //Insert the inverse, to make calculating representatives easier
                     v.insert(Rc::new(g.inv()));
-                    to_traverse.push(gamma);
+                    to_traverse.push_back(gamma);
                 } else {
                     //TODO stabiliser
                 }
