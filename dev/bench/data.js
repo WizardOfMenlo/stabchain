@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1591879584997,
+  "lastUpdate": 1591882437675,
   "repoUrl": "https://github.com/WizardOfMenlo/stabchain",
   "entries": {
     "Benchmark": [
@@ -985,6 +985,204 @@ window.BENCHMARK_DATA = {
             "name": "inverse/default/512",
             "value": 463,
             "range": "± 31",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "eg207@st-andrews.ac.uk",
+            "name": "Ewan Gilligan",
+            "username": "EwanGilligan"
+          },
+          "committer": {
+            "email": "eg207@st-andrews.ac.uk",
+            "name": "Ewan Gilligan",
+            "username": "EwanGilligan"
+          },
+          "distinct": true,
+          "id": "359b284e431bbc63f55e02d2d3dbcf9e5e517e4c",
+          "message": "derive eq instead",
+          "timestamp": "2020-06-11T14:13:25+01:00",
+          "tree_id": "79f93f809aadbb8c25d3f1dd84de217cb12cbaf7",
+          "url": "https://github.com/WizardOfMenlo/stabchain/commit/359b284e431bbc63f55e02d2d3dbcf9e5e517e4c"
+        },
+        "date": 1591882435750,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "random_creation/default/8",
+            "value": 315,
+            "range": "± 33",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "random_creation/default/16",
+            "value": 592,
+            "range": "± 39",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "random_creation/default/32",
+            "value": 1667,
+            "range": "± 100",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "random_creation/default/64",
+            "value": 3334,
+            "range": "± 213",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "random_creation/default/128",
+            "value": 7252,
+            "range": "± 224",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "random_creation/default/256",
+            "value": 15742,
+            "range": "± 869",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "random_creation/default/512",
+            "value": 32756,
+            "range": "± 1305",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/default/8",
+            "value": 153,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/prod_of_inv/8",
+            "value": 229,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/default/16",
+            "value": 189,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/prod_of_inv/16",
+            "value": 288,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/default/32",
+            "value": 254,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/prod_of_inv/32",
+            "value": 362,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/default/64",
+            "value": 390,
+            "range": "± 36",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/prod_of_inv/64",
+            "value": 542,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/default/128",
+            "value": 610,
+            "range": "± 20",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/prod_of_inv/128",
+            "value": 879,
+            "range": "± 45",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/default/256",
+            "value": 1178,
+            "range": "± 72",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/prod_of_inv/256",
+            "value": 1528,
+            "range": "± 73",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/default/512",
+            "value": 2079,
+            "range": "± 122",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inv_prod/prod_of_inv/512",
+            "value": 2966,
+            "range": "± 381",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "is_id",
+            "value": 1,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inverse/default/8",
+            "value": 80,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inverse/default/16",
+            "value": 94,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inverse/default/32",
+            "value": 120,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inverse/default/64",
+            "value": 139,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inverse/default/128",
+            "value": 201,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inverse/default/256",
+            "value": 307,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "inverse/default/512",
+            "value": 443,
+            "range": "± 29",
             "unit": "ns/iter"
           }
         ]
