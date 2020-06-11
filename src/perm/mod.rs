@@ -20,7 +20,7 @@ use std::rc::Rc;
 /// The inverse is also stored in an option, so it can be cached.
 /// The RefCell is needed to ensure interior mutability and compliance
 /// with the Permutation API
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq)]
 pub struct Permutation {
     vals: Rc<Vec<usize>>,
     invvals: RefCell<Option<Rc<Vec<usize>>>>,
@@ -199,8 +199,6 @@ impl PartialEq for Permutation {
         self.vals == other.vals
     }
 }
-
-impl Eq for Permutation {}
 
 impl PartialOrd for Permutation {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
