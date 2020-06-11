@@ -110,6 +110,8 @@ mod tests {
     use crate::perm::Permutation;
 
     #[test]
+    /// Test the Factored Traversal of an empty set of generators.
+    /// Each orbit should be a singleton, as the generators don't move any points.
     fn id_transveral() {
         let fc = FactoredTransversal::from_generators(3, vec![]);
         assert_eq!(fc.base, 3);
@@ -121,6 +123,8 @@ mod tests {
     }
 
     #[test]
+    /// Test the representatives for the elements in the orbit of the empty set of generators.
+    /// The only representative should be t
     fn id_representatives() {
         let fc = FactoredTransversal::from_generators(3, vec![]);
         // The orbit for the base point should be 1.
@@ -131,7 +135,7 @@ mod tests {
 
     #[test]
     fn small_fc() {
-        // This permutation is equivalant to (1, 3)
+        // This permutation is equivalent to (1, 3)
         let perm = Permutation::from_vec(vec![0, 3, 2, 1]);
         let fc = FactoredTransversal::from_generators(1, vec![perm]);
         assert_eq!(fc.base(), 1);
@@ -146,7 +150,7 @@ mod tests {
 
     #[test]
     fn full_cycle() {
-        // This permutation is equivalane to (1, 2, 3, 4)
+        // This permutation is equivalent to (1, 2, 3, 4)
         let perm = Permutation::from_vec(vec![1, 2, 3, 0]);
         let fc = FactoredTransversal::from_generators(3, vec![perm]);
         // Every element should be in the orbit
