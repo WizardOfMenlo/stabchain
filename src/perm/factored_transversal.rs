@@ -79,8 +79,8 @@ mod tests {
     #[test]
     fn id_representatives() {
         let fc = FactoredTransversal::from_generators(3, vec![]);
-        assert_eq!(Permutation::id(), fc.representative(3));
-        assert_eq!(Permutation::id(), fc.representative(2))
+        assert_eq!(Permutation::id(), fc.representative(3).unwrap());
+        assert_eq!(None, fc.representative(2))
     }
 
     #[test]
