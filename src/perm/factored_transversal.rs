@@ -1,5 +1,4 @@
 use super::Permutation;
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
@@ -36,13 +35,10 @@ impl FactoredTransversal {
             for g in &gens {
                 let gamma = g.apply(delta);
                 // If the orbit doensn't contain this value, then add it to the factored transversal.
-                if let Entry::Vacant(v) = transversal.entry(gamma) {
-                    //Insert the inverse, to make calculating representatives easier
-                    v.insert(Rc::new(g.inv()));
+                transversal.entry(gamma).or_insert_with(|| {
                     to_traverse.push_back(gamma);
-                } else {
-                    //TODO stabiliser
-                }
+                    Rc::new(g.inv())
+                });
             }
         }
         FactoredTransversal { base, transversal }
