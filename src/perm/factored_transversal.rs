@@ -138,10 +138,10 @@ mod tests {
         for i in 0_usize..3 {
             assert!(fc.in_orbit(i));
         }
-        
     }
 }
 
+#[allow(dead_code)]
 pub fn orbit_stabilizer(
     gen_set: Vec<&Permutation>,
     omega: usize,
