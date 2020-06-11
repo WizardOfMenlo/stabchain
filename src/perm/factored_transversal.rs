@@ -3,13 +3,20 @@ use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 
 use std::rc::Rc;
-
+///Represents a Factored Traversal/Schrier Vector of an elements orbit.
+/// Contains the base of this traversal, and a factored traversal of the orbit.
 pub struct FactoredTransversal {
     base: usize,
     transversal: HashMap<usize, Rc<Permutation>>,
 }
 
 impl FactoredTransversal {
+    /// Given a set of generating elements and element, construct the factored traversal.
+    ///```
+    /// use stabchain::perm::factored_transversal::FactoredTransversal;
+    /// use stabchain::perm::Permutation;
+    /// let fc = FactoredTransversal::from_generators(1, vec![Permutation::from(vec![1, 0])]);
+    ///```
     pub fn from_generators(base: usize, gens: Vec<Permutation>) -> Self {
         let mut transversal = HashMap::new();
         let id = Permutation::id();
@@ -37,6 +44,13 @@ impl FactoredTransversal {
     }
 
     /// Calculate a representative of the given element in the orbit, or None if this element isn't in the orbit.
+    ///```
+    /// use stabchain::perm::factored_transversal::FactoredTransversal;
+    /// use stabchain::perm::Permutation;
+    /// let fc = FactoredTransversal::from_generators(0, vec![Permutation::from(vec![1, 0])]);
+    /// let rep = Permutation::from(vec![1, 0]);
+    /// assert_eq!(rep, fc.representative(1).unwrap());
+    ///```
     pub fn representative(&self, delta: usize) -> Option<Permutation> {
         // Check if the element is in the orbit.
         if !self.in_orbit(delta) {
@@ -53,10 +67,25 @@ impl FactoredTransversal {
         }
     }
 
+    /// Get the base element of the Factored Transversal.
+    ///```
+    /// use stabchain::perm::factored_transversal::FactoredTransversal;
+    /// use stabchain::perm::Permutation;
+    /// let fc = FactoredTransversal::from_generators(0, vec![Permutation::from(vec![1, 0])]);
+    /// assert_eq!(0, fc.base());
+    ///```
     pub fn base(&self) -> usize {
         self.base
     }
 
+    /// Test if an element is in the orbit.
+    ///```
+    /// use stabchain::perm::factored_transversal::FactoredTransversal;
+    /// use stabchain::perm::Permutation;
+    /// let fc = FactoredTransversal::from_generators(1, vec![Permutation::from(vec![1, 0])]);
+    /// assert_eq!(1, fc.base());
+    /// assert!(fc.in_orbit(1));
+    ///```
     pub fn in_orbit(&self, pos: usize) -> bool {
         self.transversal.contains_key(&pos)
     }
