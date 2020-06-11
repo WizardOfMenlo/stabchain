@@ -6,6 +6,7 @@
 pub mod algos;
 mod builder;
 pub mod export;
+pub mod rand_perm;
 pub mod utils;
 
 use builder::PermBuilder;
