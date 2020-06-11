@@ -7,7 +7,9 @@ use std::rc::Rc;
 /// Contains the base of this traversal, and a factored traversal of the orbit.
 #[derive(Debug)]
 pub struct FactoredTransversal {
+    // Base point of the orbit
     base: usize,
+    // The factored traversal/Schrier vector of the orbit.
     transversal: HashMap<usize, Rc<Permutation>>,
 }
 
