@@ -150,7 +150,7 @@ mod tests {
     }
 
     #[test]
-    fn cyclical_to_classical_derangement() {
+    fn cyclical_to_classical_transposition() {
         let cyclic: ClassicalPermutation = CyclePermutation::from_vec(vec![vec![1, 2]]).into();
         let classic = ClassicalPermutation::from_slice(&[2, 1]);
         assert_eq!(cyclic, classic);
