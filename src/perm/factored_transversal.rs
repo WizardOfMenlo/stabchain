@@ -5,6 +5,7 @@ use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
 /// Contains the base of this traversal, and a factored traversal of the orbit.
+#[derive(Debug)]
 pub struct FactoredTransversal {
     base: usize,
     transversal: HashMap<usize, Rc<Permutation>>,
@@ -57,10 +58,10 @@ impl FactoredTransversal {
             None
         } else {
             let mut gamma = delta;
-            let rep = Permutation::id();
+            let mut rep = Permutation::id();
             while gamma != self.base {
                 let g_inv = self.transversal.get(&delta).unwrap();
-                rep.multiply(g_inv).inv();
+                rep = rep.multiply(g_inv).inv();
                 gamma = g_inv.apply(gamma);
             }
             Some(rep)
