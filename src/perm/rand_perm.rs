@@ -23,11 +23,15 @@ impl RandPerm {
         initial_runs: usize,
     ) -> Self {
         let rng = rand::thread_rng();
-        let mut gen_elements: Vec<Permutation> = generators.clone();
+        let mut gen_elements: Vec<Permutation> = if generators.len() > 0 {
+            generators.clone()
+        } else {
+            vec![Permutation::id()]
+        };
         let k = gen_elements.len();
         //Repeat elements if there aren't enough generators.
         for i in k..min_size {
-            gen_elements.push(generators[(i - k) % k].clone());
+            gen_elements.push(gen_elements[(i - k) % k].clone());
         }
         let a = Permutation::id();
         let size = max(min_size, k);
@@ -63,5 +67,19 @@ impl RandPerm {
             self.a = self.gen_elements[s].multiply(&self.a);
         }
         self.a.clone()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn empty_generators() {
+        use super::Permutation;
+        use super::RandPerm;
+        let id = Permutation::id();
+        let mut rand_perm = RandPerm::from_generators(10, vec![], 50);
+        for _ in 0..50 {
+            assert_eq!(id, rand_perm.random_permutation());
+        }
     }
 }
