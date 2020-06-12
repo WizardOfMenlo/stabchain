@@ -1,3 +1,5 @@
+pub mod factored_transversal;
+
 use crate::perm::export::CyclePermutation;
 use crate::perm::Permutation;
 
@@ -17,6 +19,11 @@ impl Group {
     /// Get a reference to the generators of the group
     pub fn generators(&self) -> &[Permutation] {
         &self.generators[..]
+    }
+
+    /// Computes the factored transversal from the group generators
+    pub fn factored_transversal(&self, base: usize) -> factored_transversal::FactoredTransversal {
+        factored_transversal::FactoredTransversal::from_generators(base, &self.generators)
     }
 
     fn order_n_permutation(n: usize) -> Permutation {
