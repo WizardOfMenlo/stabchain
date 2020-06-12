@@ -1,4 +1,4 @@
-use super::Permutation;
+use crate::perm::Permutation;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
