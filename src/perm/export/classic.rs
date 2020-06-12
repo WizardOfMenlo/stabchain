@@ -1,8 +1,9 @@
+use super::cycles::CyclePermutation;
 use crate::perm::Permutation;
 
 /// A permutation, that is on the integral set [1, n].
 /// It is called classical as classically this is how permutations are stored
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct ClassicalPermutation(Permutation);
 
 impl ClassicalPermutation {
@@ -45,6 +46,35 @@ impl ClassicalPermutation {
 impl From<Permutation> for ClassicalPermutation {
     fn from(perm: Permutation) -> Self {
         ClassicalPermutation(perm)
+    }
+}
+
+impl From<CyclePermutation> for ClassicalPermutation {
+    fn from(perm: CyclePermutation) -> Self {
+        let cycles = perm.cycles();
+        let n = cycles.iter().flatten().max().cloned().unwrap_or(0);
+
+        if n == 0 {
+            return ClassicalPermutation::id();
+        }
+
+        let mut images = Vec::new();
+
+        for i in 1..=n {
+            let cycle = cycles.iter().find(|cycle| cycle.contains(&i));
+            // In this case the point is fixed
+            if cycle.is_none() {
+                images.push(i);
+                continue;
+            }
+
+            let cycle = cycle.unwrap();
+            // Since we already know it contains it, the unwrap is safe
+            let i_index = cycle.iter().position(|&j| i == j).unwrap();
+            images.push(cycle[(i_index + 1) % cycle.len()]);
+        }
+
+        ClassicalPermutation::from_slice(&images[..])
     }
 }
 
