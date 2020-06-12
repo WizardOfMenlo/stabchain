@@ -6,6 +6,7 @@
 pub mod algos;
 mod builder;
 pub mod export;
+pub mod factored_transversal;
 pub mod utils;
 
 use builder::PermBuilder;
@@ -19,7 +20,7 @@ use std::rc::Rc;
 /// The inverse is also stored in an option, so it can be cached.
 /// The RefCell is needed to ensure interior mutability and compliance
 /// with the Permutation API
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq)]
 pub struct Permutation {
     vals: Rc<Vec<usize>>,
     invvals: RefCell<Option<Rc<Vec<usize>>>>,
