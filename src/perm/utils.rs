@@ -26,6 +26,6 @@ mod tests {
         let a = random_permutation(10);
         let b = random_permutation(10);
 
-        dbg!(a.multiply(&b).inv());
+        a.multiply(&b).inv();
     }
 }
