@@ -22,8 +22,7 @@ impl FactoredTransversal {
     pub fn from_generators(base: usize, gens: Vec<Permutation>) -> Self {
         let mut transversal = HashMap::new();
         let id = Permutation::id();
-        let id_ref = id;
-        transversal.insert(base, id_ref);
+        transversal.insert(base, id);
         // Orbit elements that have not been used yet.
         let mut to_traverse = VecDeque::new();
         to_traverse.push_back(base);
