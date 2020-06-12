@@ -23,8 +23,8 @@ impl RandPerm {
         initial_runs: usize,
     ) -> Self {
         let rng = rand::thread_rng();
-        let mut gen_elements: Vec<Permutation> = if generators.len() > 0 {
-            generators.clone()
+        let mut gen_elements: Vec<Permutation> = if !generators.is_empty() {
+            generators
         } else {
             vec![Permutation::id()]
         };
