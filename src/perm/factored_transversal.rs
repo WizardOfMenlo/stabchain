@@ -2,7 +2,6 @@ use super::Permutation;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
-use std::rc::Rc;
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
 /// Contains the base of this traversal, and a factored traversal of the orbit.
 #[derive(Debug)]
@@ -10,7 +9,7 @@ pub struct FactoredTransversal {
     // Base point of the orbit
     base: usize,
     // The factored traversal/Schrier vector of the orbit.
-    transversal: HashMap<usize, Rc<Permutation>>,
+    transversal: HashMap<usize, Permutation>,
 }
 
 impl FactoredTransversal {
@@ -23,7 +22,7 @@ impl FactoredTransversal {
     pub fn from_generators(base: usize, gens: Vec<Permutation>) -> Self {
         let mut transversal = HashMap::new();
         let id = Permutation::id();
-        let id_ref = Rc::new(id);
+        let id_ref = id;
         transversal.insert(base, id_ref);
         // Orbit elements that have not been used yet.
         let mut to_traverse = VecDeque::new();
@@ -37,7 +36,7 @@ impl FactoredTransversal {
                 // If the orbit doensn't contain this value, then add it to the factored transversal.
                 transversal.entry(gamma).or_insert_with(|| {
                     to_traverse.push_back(gamma);
-                    Rc::new(g.inv())
+                    g.inv()
                 });
             }
         }
