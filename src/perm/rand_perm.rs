@@ -65,7 +65,8 @@ impl RandPerm {
         }
         // Either take product or quotient.
         let e = self.rng.gen_range(-1, 2);
-        //Randomly determine order of operation.
+        // Randomly determine order of operation.
+        // The operation works by replacing a list entry with a product, and then accumulating with the stored permutation.
         if self.rng.gen::<f64>() < 0.50 {
             self.gen_elements[s] = self.gen_elements[s].multiply(&self.gen_elements[t].pow(e));
             self.a = self.a.multiply(&self.gen_elements[s]);
