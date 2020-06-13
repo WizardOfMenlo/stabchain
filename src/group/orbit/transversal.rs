@@ -1,18 +1,19 @@
 use crate::group::Group;
-use std::collections::{HashSet, VecDeque};
+use crate::perm::Permutation;
+use std::collections::{HashMap, VecDeque};
 
 /// w^G = { w^g | g \in G }
-pub struct Orbit {
+pub struct Transversal {
     base: usize,
-    orbit: HashSet<usize>,
+    orbit: HashMap<usize, Permutation>,
 }
 
-impl Orbit {
+impl Transversal {
     /// Build an orbit from a group
     pub fn new(g: &Group, w: usize) -> Self {
-        Orbit {
+        Self {
             base: w,
-            orbit: naive_orbit(g, w),
+            orbit: transversal(g, w),
         }
     }
 
@@ -22,17 +23,17 @@ impl Orbit {
     }
 
     /// Get the computed orbit
-    pub fn orbit(&self) -> &HashSet<usize> {
+    pub fn orbit(&self) -> &HashMap<usize, Permutation> {
         &self.orbit
     }
 }
 
 /// Algorithm to compute orbit from a group
-pub fn naive_orbit(g: &Group, w: usize) -> HashSet<usize> {
+pub fn transversal(g: &Group, w: usize) -> HashMap<usize, Permutation> {
     let gens = g.generators();
 
     // Orbit are the ones that have been acted on by the generators
-    let mut orbit = HashSet::new();
+    let mut orbit: HashMap<usize, Permutation> = HashMap::new();
 
     // To traverse are those still to be expanded
     let mut to_traverse = VecDeque::new();
@@ -44,8 +45,10 @@ pub fn naive_orbit(g: &Group, w: usize) -> HashSet<usize> {
         for g in gens {
             // Apply generator and insert
             let gamma = g.apply(delta);
-            if orbit.insert(gamma) {
+            if !orbit.contains_key(&gamma) {
+                let t_delta = orbit.get(&delta).unwrap().clone();
                 to_traverse.push_back(gamma);
+                orbit.insert(gamma, t_delta.multiply(g));
             }
         }
     }

@@ -15,7 +15,7 @@ impl Orbit {
     pub fn new(g: &Group, w: usize) -> Self {
         Orbit {
             base: w,
-            orbit: naive_orbit(g, w),
+            orbit: orbit(g, w),
         }
     }
 
@@ -31,7 +31,7 @@ impl Orbit {
 }
 
 /// Algorithm to compute orbit from a group
-pub fn naive_orbit(g: &Group, w: usize) -> HashSet<usize> {
+pub fn orbit(g: &Group, w: usize) -> HashSet<usize> {
     let gens = g.generators();
 
     // Orbit are the ones that have been acted on by the generators
@@ -55,3 +55,6 @@ pub fn naive_orbit(g: &Group, w: usize) -> HashSet<usize> {
 
     orbit
 }
+
+#[cfg(test)]
+mod test {}

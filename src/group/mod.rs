@@ -21,6 +21,13 @@ impl Group {
         &self.generators[..]
     }
 
+    /// Computes the orbit of the generator.
+    /// Note that in most cases factored_transversal is a better choice
+    /// As it allows to compute representatives with only marginally more work
+    pub fn orbit(&self, base: usize) -> orbit::Orbit {
+        orbit::Orbit::new(self, base)
+    }
+
     /// Computes the factored transversal from the group generators
     pub fn factored_transversal(
         &self,
