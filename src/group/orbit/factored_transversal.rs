@@ -100,7 +100,7 @@ impl FactoredTransversal {
     /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
-    /// assert_eq!(2, fc.size());
+    /// assert_eq!(2, fc.len());
     ///```
     pub fn len(&self) -> usize {
         self.transversal.len()
