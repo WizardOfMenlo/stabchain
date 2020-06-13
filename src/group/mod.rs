@@ -44,7 +44,7 @@ impl Group {
     /// Generates the trivial group, which only contains the identity
     pub fn trivial() -> Self {
         // TODO: Should we include the identity here?
-        Group::new(&[])
+        Group::new(&[Permutation::id()])
     }
 
     /// This generates the dihedral group D_2n.
@@ -57,7 +57,7 @@ impl Group {
         ])
     }
 
-    /// Generate the cyclical group on n elements
+    /// Generate the cyclical group on n elements (more accurately, generates the cyclical group from a cycle on 1..=n)
     pub fn cyclic(n: usize) -> Self {
         assert!(n > 0);
 

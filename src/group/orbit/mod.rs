@@ -1,5 +1,4 @@
 pub mod factored_transversal;
-pub mod transversal;
 
 use crate::group::Group;
 use std::collections::{HashSet, VecDeque};
@@ -57,4 +56,43 @@ pub fn orbit(g: &Group, w: usize) -> HashSet<usize> {
 }
 
 #[cfg(test)]
-mod test {}
+mod test {
+    use super::*;
+    #[test]
+    fn orbit_of_identity() {
+        use std::iter::FromIterator;
+
+        let g = Group::trivial();
+        // No points is deranged
+        assert_eq!(orbit(&g, 1), HashSet::from_iter(vec![1]));
+        assert_eq!(orbit(&g, 2), HashSet::from_iter(vec![2]));
+        assert_eq!(orbit(&g, 3), HashSet::from_iter(vec![3]));
+    }
+
+    #[test]
+    fn orbit_of_cyclic() {
+        let g = Group::cyclic(8);
+        assert_eq!(orbit(&g, 1).len(), 8);
+    }
+
+    #[test]
+    fn orbit_of_dihedral() {
+        use std::iter::FromIterator;
+        let g = Group::dihedral_2n(5);
+        // All points are deranged
+
+        dbg!(orbit(&g, 1));
+
+        assert_eq!(orbit(&g, 1), HashSet::from_iter(0..10));
+    }
+
+    #[test]
+    fn orbit_of_symmetric() {
+        use std::iter::FromIterator;
+
+        let g = Group::symmetric(10);
+        // All points are deranged
+        assert_eq!(orbit(&g, 1), HashSet::from_iter(0..10));
+        assert_eq!(orbit(&g, 2), HashSet::from_iter(0..10));
+    }
+}

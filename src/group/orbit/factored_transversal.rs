@@ -15,7 +15,7 @@ pub struct FactoredTransversal {
 impl FactoredTransversal {
     /// Given a set of generating elements and element, construct the factored traversal.
     ///```
-    /// use stabchain::group::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
     ///```
@@ -44,7 +44,7 @@ impl FactoredTransversal {
 
     /// Calculate a representative of the given element in the orbit, or None if this element isn't in the orbit.
     ///```
-    /// use stabchain::group::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
     /// let rep = Permutation::from(vec![1, 0]);
@@ -72,7 +72,7 @@ impl FactoredTransversal {
 
     /// Get the base element of the Factored Transversal.
     ///```
-    /// use stabchain::group::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
     /// assert_eq!(0, fc.base());
@@ -83,7 +83,7 @@ impl FactoredTransversal {
 
     /// Get the orbit size.
     ///```
-    /// use stabchain::group::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
     /// assert_eq!(2, fc.size());
@@ -94,7 +94,7 @@ impl FactoredTransversal {
 
     /// Test if an element is in the orbit.
     ///```
-    /// use stabchain::group::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
     /// assert_eq!(1, fc.base());
@@ -102,6 +102,20 @@ impl FactoredTransversal {
     ///```
     pub fn in_orbit(&self, pos: usize) -> bool {
         self.transversal.contains_key(&pos)
+    }
+
+    /// Gets the orbits
+    ///```
+    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
+    /// use stabchain::perm::Permutation;
+    /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
+    /// assert_eq!(1, fc.base());
+    /// let orbit : Vec<_> = fc.orbit().collect();
+    /// assert!(orbit.contains(&0));
+    /// assert!(orbit.contains(&1));
+    /// ```
+    pub fn orbit<'a>(&'a self) -> impl Iterator<Item = usize> + 'a {
+        self.transversal.keys().cloned()
     }
 }
 
