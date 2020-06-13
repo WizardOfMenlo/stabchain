@@ -1,6 +1,3 @@
-pub mod factored_transversal;
-pub mod transversal;
-
 use crate::group::Group;
 use std::collections::{HashSet, VecDeque};
 
