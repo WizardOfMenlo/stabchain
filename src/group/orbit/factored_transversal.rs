@@ -14,6 +14,7 @@ pub struct FactoredTransversal {
     pub(super) transversal: HashMap<usize, Permutation>,
 }
 
+#[allow(clippy::len_without_is_empty)]
 impl FactoredTransversal {
     /// Given a group, construct the factored transversal
     ///```
@@ -101,7 +102,7 @@ impl FactoredTransversal {
     /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
     /// assert_eq!(2, fc.size());
     ///```
-    pub fn size(&self) -> usize {
+    pub fn len(&self) -> usize {
         self.transversal.len()
     }
 
@@ -146,7 +147,7 @@ mod tests {
         assert!(!fc.in_orbit(2));
         assert!(!fc.in_orbit(1));
         //check orbit size
-        assert_eq!(1, fc.size());
+        assert_eq!(1, fc.len());
     }
 
     #[test]
@@ -173,7 +174,7 @@ mod tests {
         assert!(!fc.in_orbit(0));
         assert!(!fc.in_orbit(2));
         //check orbit size
-        assert_eq!(2, fc.size());
+        assert_eq!(2, fc.len());
     }
 
     #[test]
@@ -188,6 +189,6 @@ mod tests {
             assert_eq!(i, fc.representative(i).unwrap().apply(3));
         }
         //check orbit size
-        assert_eq!(4, fc.size());
+        assert_eq!(4, fc.len());
     }
 }

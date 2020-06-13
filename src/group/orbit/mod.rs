@@ -10,6 +10,7 @@ pub struct Orbit {
     orbit: HashSet<usize>,
 }
 
+#[allow(clippy::len_without_is_empty)]
 impl Orbit {
     /// Build an orbit from a group
     pub fn new(g: &Group, w: usize) -> Self {
