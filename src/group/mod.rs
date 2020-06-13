@@ -33,7 +33,7 @@ impl Group {
         &self,
         base: usize,
     ) -> orbit::factored_transversal::FactoredTransversal {
-        orbit::factored_transversal::FactoredTransversal::from_generators(base, &self.generators)
+        orbit::factored_transversal::FactoredTransversal::new(self, base)
     }
 
     fn order_n_permutation(n: usize) -> Permutation {
@@ -104,5 +104,11 @@ mod tests {
     fn symmetric_creation() {
         let g = Group::symmetric(5);
         assert_eq!(g.generators().len(), 2);
+    }
+
+    #[test]
+    fn orbit_vs_factored_orbit() {
+        let g = Group::symmetric(10);
+        assert_eq!(g.orbit(0), g.factored_transversal(0).orbit())
     }
 }

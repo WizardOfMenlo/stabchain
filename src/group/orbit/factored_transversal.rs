@@ -1,4 +1,6 @@
+use super::Group;
 use crate::perm::Permutation;
+
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
@@ -9,11 +11,22 @@ pub struct FactoredTransversal {
     // Base point of the orbit
     base: usize,
     // The factored traversal/Schrier vector of the orbit.
-    transversal: HashMap<usize, Permutation>,
+    pub(super) transversal: HashMap<usize, Permutation>,
 }
 
 impl FactoredTransversal {
-    /// Given a set of generating elements and element, construct the factored traversal.
+    /// Given a group, construct the factored transversal
+    ///```
+    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::Group;
+    /// let fc = FactoredTransversal::new(&Group::symmetric(10), 1);
+    ///```
+    pub fn new(g: &Group, base: usize) -> Self {
+        let gens = &g.generators[..];
+        Self::from_generators(base, gens)
+    }
+
+    /// Given a set of generating elements and element, construct the factored transversal.
     ///```
     /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
@@ -110,12 +123,11 @@ impl FactoredTransversal {
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
     /// assert_eq!(1, fc.base());
-    /// let orbit : Vec<_> = fc.orbit().collect();
-    /// assert!(orbit.contains(&0));
-    /// assert!(orbit.contains(&1));
+    /// let orbit = fc.orbit();
+    /// assert_eq!(orbit.len(), 2);
     /// ```
-    pub fn orbit<'a>(&'a self) -> impl Iterator<Item = usize> + 'a {
-        self.transversal.keys().cloned()
+    pub fn orbit(&self) -> super::Orbit {
+        self.into()
     }
 }
 

@@ -4,6 +4,7 @@ use crate::group::Group;
 use std::collections::{HashSet, VecDeque};
 
 /// w^G = { w^g | g \in G }
+#[derive(Debug, PartialEq)]
 pub struct Orbit {
     base: usize,
     orbit: HashSet<usize>,
@@ -26,6 +27,20 @@ impl Orbit {
     /// Get the computed orbit
     pub fn orbit(&self) -> &HashSet<usize> {
         &self.orbit
+    }
+
+    /// Computes the number of elements in the orbit
+    pub fn len(&self) -> usize {
+        self.orbit.len()
+    }
+}
+
+impl From<&factored_transversal::FactoredTransversal> for Orbit {
+    fn from(t: &factored_transversal::FactoredTransversal) -> Self {
+        Orbit {
+            base: t.base(),
+            orbit: t.transversal.keys().copied().collect(),
+        }
     }
 }
 
