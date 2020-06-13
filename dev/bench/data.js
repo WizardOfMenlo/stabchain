@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1592087420331,
+  "lastUpdate": 1592087658355,
   "repoUrl": "https://github.com/WizardOfMenlo/stabchain",
   "entries": {
     "Benchmark": [
@@ -2021,6 +2021,288 @@ window.BENCHMARK_DATA = {
             "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/512",
             "value": 63299,
             "range": "± 5415",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "giacomofenzi@outlook.com",
+            "name": "Giacomo Fenzi",
+            "username": "WizardOfMenlo"
+          },
+          "committer": {
+            "email": "giacomofenzi@outlook.com",
+            "name": "Giacomo Fenzi",
+            "username": "WizardOfMenlo"
+          },
+          "distinct": true,
+          "id": "54bc16804cc84748fae6ef65b641d390d0be893d",
+          "message": "Forgot to update doc tests",
+          "timestamp": "2020-06-14T00:21:31+02:00",
+          "tree_id": "7abbabebadcd41880377ae1e909c59530b5fba4a",
+          "url": "https://github.com/WizardOfMenlo/stabchain/commit/54bc16804cc84748fae6ef65b641d390d0be893d"
+        },
+        "date": 1592087657871,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "permutation__random_creation/default/8",
+            "value": 322,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/16",
+            "value": 609,
+            "range": "± 28",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/32",
+            "value": 1664,
+            "range": "± 56",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/64",
+            "value": 3207,
+            "range": "± 165",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/128",
+            "value": 6782,
+            "range": "± 338",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/256",
+            "value": 15730,
+            "range": "± 709",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/512",
+            "value": 33256,
+            "range": "± 947",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/8",
+            "value": 175,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/permutation__prod_of_inv/8",
+            "value": 216,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/16",
+            "value": 205,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/permutation__prod_of_inv/16",
+            "value": 314,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/32",
+            "value": 289,
+            "range": "± 15",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/permutation__prod_of_inv/32",
+            "value": 375,
+            "range": "± 23",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/64",
+            "value": 403,
+            "range": "± 22",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/permutation__prod_of_inv/64",
+            "value": 569,
+            "range": "± 29",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/128",
+            "value": 669,
+            "range": "± 23",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/permutation__prod_of_inv/128",
+            "value": 859,
+            "range": "± 69",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/256",
+            "value": 1299,
+            "range": "± 111",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/permutation__prod_of_inv/256",
+            "value": 1724,
+            "range": "± 123",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/512",
+            "value": 2330,
+            "range": "± 86",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/permutation__prod_of_inv/512",
+            "value": 3191,
+            "range": "± 176",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__is_id",
+            "value": 1,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/8",
+            "value": 80,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/16",
+            "value": 123,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/32",
+            "value": 112,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/64",
+            "value": 162,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/128",
+            "value": 190,
+            "range": "± 9",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/256",
+            "value": 366,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/512",
+            "value": 495,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/orbit/8",
+            "value": 1022,
+            "range": "± 37",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/8",
+            "value": 1477,
+            "range": "± 43",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/orbit/16",
+            "value": 1849,
+            "range": "± 89",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/16",
+            "value": 2800,
+            "range": "± 96",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/orbit/32",
+            "value": 3607,
+            "range": "± 158",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/32",
+            "value": 5469,
+            "range": "± 571",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/orbit/64",
+            "value": 6841,
+            "range": "± 306",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/64",
+            "value": 10196,
+            "range": "± 530",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/orbit/128",
+            "value": 13687,
+            "range": "± 613",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/128",
+            "value": 20904,
+            "range": "± 1144",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/orbit/256",
+            "value": 27453,
+            "range": "± 1473",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/256",
+            "value": 39692,
+            "range": "± 1321",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/orbit/512",
+            "value": 52398,
+            "range": "± 2093",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/512",
+            "value": 81222,
+            "range": "± 3894",
             "unit": "ns/iter"
           }
         ]
