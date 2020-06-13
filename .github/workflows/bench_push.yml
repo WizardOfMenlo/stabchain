@@ -1,5 +1,5 @@
 name: Benchmark
-on: ["push", "pull_request"]
+on: ["push"]
 
 jobs:
   benchmark:
@@ -27,5 +27,5 @@ jobs:
           # GitHub API token to make a commit comment
           github-token: ${{ secrets.GITHUB_TOKEN }}
           # Enable alert commit comment
-          comment-on-alert: true
+          comment-always: true
           auto-push: true
