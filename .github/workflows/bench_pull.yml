@@ -1,5 +1,9 @@
 name: Benchmark
-on: ["pull_request"]
+on:
+  push:
+    branches-ignore: master
+  pull_request:
+  
 
 jobs:
   benchmark:
