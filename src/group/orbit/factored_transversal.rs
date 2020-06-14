@@ -28,6 +28,7 @@ impl FactoredTransversal {
     }
 
     /// Given a set of generating elements and element, construct the factored transversal.
+    /// Note, this algorithm does not use methods to optimize depth of three, see Seress2003 Section 4.4.
     ///```
     /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
