@@ -28,6 +28,11 @@ impl Group {
         orbit::Orbit::new(self, base)
     }
 
+    /// Computes the transversal from the group generators (use factored transversal instead for memory efficience)
+    pub fn transversal(&self, base: usize) -> orbit::transversal::Transversal {
+        orbit::transversal::Transversal::new(self, base)
+    }
+
     /// Computes the factored transversal from the group generators
     pub fn factored_transversal(
         &self,

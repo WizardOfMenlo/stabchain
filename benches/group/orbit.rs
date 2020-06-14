@@ -16,6 +16,10 @@ fn orbit_vs_factored_symmetric(c: &mut Criterion) {
             let g = Group::symmetric(*i);
             b.iter(|| g.factored_transversal(0).orbit());
         });
+        group.bench_with_input(BenchmarkId::new("transversal", i), i, |b, i| {
+            let g = Group::symmetric(*i);
+            b.iter(|| g.transversal(0).orbit());
+        });
     }
     group.finish();
 }
