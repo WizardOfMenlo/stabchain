@@ -17,7 +17,7 @@ pub fn random_permutation(n: usize) -> Permutation {
 pub fn order_n_permutation(start: usize, n: usize) -> Permutation {
     assert!(n > 0);
     assert!(start > 0);
-    CyclePermutation::from_vec(vec![(start..=(start + n - 1)).collect()]).into()
+    CyclePermutation::from_vec(vec![(start..(start + n)).collect()]).into()
 }
 
 #[cfg(test)]
