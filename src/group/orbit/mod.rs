@@ -1,4 +1,5 @@
 pub mod factored_transversal;
+pub mod transversal;
 
 use crate::group::Group;
 use std::collections::{HashSet, VecDeque};
@@ -38,6 +39,15 @@ impl Orbit {
 
 impl From<&factored_transversal::FactoredTransversal> for Orbit {
     fn from(t: &factored_transversal::FactoredTransversal) -> Self {
+        Orbit {
+            base: t.base(),
+            orbit: t.transversal.keys().copied().collect(),
+        }
+    }
+}
+
+impl From<&transversal::Transversal> for Orbit {
+    fn from(t: &transversal::Transversal) -> Self {
         Orbit {
             base: t.base(),
             orbit: t.transversal.keys().copied().collect(),
