@@ -27,7 +27,7 @@ impl Orbit {
     }
 
     /// Get the computed orbit
-    pub fn orbit(&self) -> &HashSet<usize> {
+    pub fn to_set(&self) -> &HashSet<usize> {
         &self.orbit
     }
 
