@@ -1,6 +1,6 @@
 use super::Group;
 
-/// Creates a group genereated from n copies of the cyclic group
+/// Creates a group generated from n copies of the cyclic group
 pub fn copies_of_cyclic(specification: &[usize]) -> Group {
     use crate::perm::utils::order_n_permutation;
 
