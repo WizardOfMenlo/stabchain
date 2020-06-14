@@ -1,6 +1,8 @@
 pub mod orbit;
+pub mod utils;
 
 use crate::perm::export::CyclePermutation;
+use crate::perm::utils::order_n_permutation;
 use crate::perm::Permutation;
 
 #[derive(Debug, Clone)]
@@ -41,11 +43,6 @@ impl Group {
         orbit::factored_transversal::FactoredTransversal::new(self, base)
     }
 
-    fn order_n_permutation(n: usize) -> Permutation {
-        assert!(n > 0);
-        CyclePermutation::from_vec(vec![(1..=n).collect()]).into()
-    }
-
     /// Generates the trivial group, which only contains the identity
     pub fn trivial() -> Self {
         // TODO: Should we include the identity here?
@@ -58,7 +55,7 @@ impl Group {
 
         Group::new(&[
             CyclePermutation::from_vec((1..=n).map(|i| vec![i, 2 * n - i + 1]).collect()).into(),
-            Self::order_n_permutation(2 * n),
+            order_n_permutation(1, 2 * n),
         ])
     }
 
@@ -66,7 +63,7 @@ impl Group {
     pub fn cyclic(n: usize) -> Self {
         assert!(n > 0);
 
-        Group::new(&[Self::order_n_permutation(n)])
+        Group::new(&[order_n_permutation(1, n)])
     }
 
     /// Generate the symmetric group on n points
@@ -79,7 +76,7 @@ impl Group {
 
         Group::new(&[
             CyclePermutation::from_vec(vec![vec![1, 2]]).into(),
-            Self::order_n_permutation(n),
+            order_n_permutation(1, n),
         ])
     }
 }

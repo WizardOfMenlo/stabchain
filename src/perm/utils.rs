@@ -1,3 +1,4 @@
+use super::export::CyclePermutation;
 use super::Permutation;
 use rand::seq::SliceRandom;
 
@@ -12,6 +13,13 @@ pub fn random_permutation(n: usize) -> Permutation {
     Permutation::from_vec(vec)
 }
 
+/// Generates a permutation of order n, where the least permuted element is start
+pub fn order_n_permutation(start: usize, n: usize) -> Permutation {
+    assert!(n > 0);
+    assert!(start > 0);
+    CyclePermutation::from_vec(vec![(start..=(start + n - 1)).collect()]).into()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -22,10 +30,23 @@ mod tests {
     }
 
     #[test]
-    fn multiplication() {
-        let a = random_permutation(10);
-        let b = random_permutation(10);
+    fn order_n_start() {
+        let perm = order_n_permutation(10, 25);
+        for i in 0..9 {
+            assert_eq!(perm.apply(i), i)
+        }
 
-        a.multiply(&b).inv();
+        assert!(perm.apply(9) != 9);
+    }
+
+    #[test]
+    fn order_n_order() {
+        use crate::perm::PermBuilder;
+        let perm = order_n_permutation(10, 25);
+        for i in 1..25 {
+            assert!(!perm.build_pow(i).collapse().is_id());
+        }
+
+        assert!(perm.build_pow(25).collapse().is_id())
     }
 }
