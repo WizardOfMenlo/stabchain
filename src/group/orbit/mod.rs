@@ -61,6 +61,7 @@ pub fn orbit(g: &Group, w: usize) -> HashSet<usize> {
 
     // Orbit are the ones that have been acted on by the generators
     let mut orbit = HashSet::new();
+    orbit.insert(w);
 
     // To traverse are those still to be expanded
     let mut to_traverse = VecDeque::new();
