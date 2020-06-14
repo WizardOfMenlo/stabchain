@@ -51,21 +51,27 @@ impl Transversal {
 
 /// Computes the transversal of the base. It computes the orbit and the corresponding
 /// set of representatives
+
+// Needed since entry requires &mut
+#[allow(clippy::map_entry)]
 pub fn transversal(g: &Group, base: usize) -> HashMap<usize, Permutation> {
+    // Get the generatos
     let gens = &g.generators[..];
     let mut transversal = HashMap::new();
-    let id = Permutation::id();
-    transversal.insert(base, id);
-    // Orbit elements that have not been used yet.
+
+    // Init the transversal
+    transversal.insert(base, Permutation::id());
+
+    // We use this to store elements to expand
     let mut to_traverse = VecDeque::new();
     to_traverse.push_back(base);
-    // While there are still elements of the orbit unused.
+
+    // While we have stuff to do
     while !to_traverse.is_empty() {
-        //Take an unused element.
         let delta = to_traverse.pop_front().unwrap();
         for g in gens {
             let gamma = g.apply(delta);
-            // If the orbit doensn't contain this value, then add it to the factored transversal.
+
             if !transversal.contains_key(&gamma) {
                 to_traverse.push_back(gamma);
                 let delta_repr = transversal.get(&delta).cloned().unwrap();
