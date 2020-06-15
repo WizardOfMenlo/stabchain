@@ -1,5 +1,5 @@
 pub mod factored_transversal;
-
+pub mod random_perm;
 use crate::perm::export::CyclePermutation;
 use crate::perm::Permutation;
 
