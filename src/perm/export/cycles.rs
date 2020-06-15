@@ -66,10 +66,10 @@ impl fmt::Display for CyclePermutation {
 
         for cycle in &self.cycles {
             write!(f, "(")?;
-            for img in cycle {
+            for img in cycle[0..cycle.len() - 1].iter() {
                 write!(f, "{} ", img)?;
             }
-            write!(f, ")")?;
+            write!(f, "{})", cycle[cycle.len() - 1])?;
         }
 
         Ok(())
