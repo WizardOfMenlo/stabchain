@@ -108,7 +108,11 @@ impl From<ClassicalPermutation> for CyclePermutation {
                 accounted.insert(current);
                 cycle.push(current);
             }
-            cycles.push(cycle);
+
+            // Do not add 1-cycles
+            if cycle.len() > 1 {
+                cycles.push(cycle);
+            }
         }
 
         CyclePermutation::from_vec_unchecked(cycles)
