@@ -2,6 +2,8 @@ use super::ClassicalPermutation;
 use crate::perm::Permutation;
 use serde::{Deserialize, Serialize};
 
+use std::fmt;
+
 /// A permutation in disjoint cycle notation
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CyclePermutation {
@@ -52,6 +54,25 @@ impl From<CyclePermutation> for Permutation {
     fn from(perm: CyclePermutation) -> Self {
         let int: ClassicalPermutation = perm.into();
         int.into()
+    }
+}
+
+impl fmt::Display for CyclePermutation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.cycles().is_empty() {
+            write!(f, "()")?;
+            return Ok(());
+        }
+
+        for cycle in &self.cycles {
+            write!(f, "(")?;
+            for img in cycle {
+                write!(f, "{} ", img)?;
+            }
+            write!(f, ")")?;
+        }
+
+        Ok(())
     }
 }
 

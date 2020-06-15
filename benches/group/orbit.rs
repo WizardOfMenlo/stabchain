@@ -94,6 +94,7 @@ fn transversal_vs_factored_symmetric(c: &mut Criterion) {
     group.finish();
 }
 
+/*
 fn transversal_vs_factored_dihedral(c: &mut Criterion) {
     let mut group = c.benchmark_group("group__orbit__transversal_vs_factored_dihedral");
     for i in RANGE_OF_VALUES.iter() {
@@ -122,6 +123,7 @@ fn transversal_vs_factored_dihedral(c: &mut Criterion) {
     }
     group.finish();
 }
+*/
 
 fn transversal_vs_factored_cyclic(c: &mut Criterion) {
     let mut group = c.benchmark_group("group__orbit__transversal_vs_factored_cyclic");
@@ -158,6 +160,6 @@ criterion_group!(
     orbit_vs_factored_dihedral,
     orbit_vs_factored_cyclic,
     transversal_vs_factored_symmetric,
-    transversal_vs_factored_dihedral,
+    //transversal_vs_factored_dihedral,
     transversal_vs_factored_cyclic,
 );

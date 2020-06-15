@@ -12,6 +12,7 @@ use builder::PermBuilder;
 
 use std::cell::RefCell;
 use std::cmp::max;
+use std::fmt;
 use std::rc::Rc;
 
 /// Represents a permutation
@@ -190,6 +191,13 @@ impl PermBuilder for Permutation {
 
     fn collapse(&self) -> Permutation {
         self.clone()
+    }
+}
+
+impl fmt::Display for Permutation {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use export::CyclePermutation;
+        write!(f, "{}", CyclePermutation::from(self.clone()))
     }
 }
 

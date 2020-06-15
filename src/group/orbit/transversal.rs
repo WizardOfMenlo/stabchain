@@ -8,6 +8,7 @@ use std::collections::{HashMap, VecDeque};
 /// memory intensive. In applications please use FactoredTransversal
 /// (After some testing, it seems that it is also slower computationally,
 /// so don't use unless wanting some pain)
+#[derive(Debug)]
 pub struct Transversal {
     base: usize,
     pub(super) transversal: HashMap<usize, Permutation>,
