@@ -6,7 +6,7 @@ pub struct RandPerm {
     size: usize,
     rng: ThreadRng,
     gen_elements: Vec<Permutation>,
-    a: Permutation,
+    accum: Permutation,
 }
 
 impl RandPerm {
@@ -33,13 +33,13 @@ impl RandPerm {
         for i in k..min_size {
             gen_elements.push(gen_elements[(i - k) % k].clone());
         }
-        let a = Permutation::id();
+        let accum = Permutation::id();
         let size = max(min_size, k);
         let mut rand = RandPerm {
             size,
             rng,
             gen_elements,
-            a,
+            accum,
         };
         // Inital randomisation.
         for _ in 0..initial_runs {
@@ -67,12 +67,12 @@ impl RandPerm {
         let e = self.rng.gen_range(-1, 2);
         // Randomly determine order of operation.
         // The operation works by replacing a list entry with a product, and then accumulating with the stored permutation.
-        if self.rng.gen::<f64>() < 0.50 {
+        if self.rng.gen::<bool>() {
             self.gen_elements[s] = self.gen_elements[s].multiply(&self.gen_elements[t].pow(e));
-            self.a = self.a.multiply(&self.gen_elements[s]);
+            self.accum = self.accum.multiply(&self.gen_elements[s]);
         } else {
             self.gen_elements[s] = self.gen_elements[t].pow(e).multiply(&self.gen_elements[s]);
-            self.a = self.gen_elements[s].multiply(&self.a);
+            self.accum = self.gen_elements[s].multiply(&self.accum);
         }
         self.a.clone()
     }
