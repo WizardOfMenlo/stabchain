@@ -193,4 +193,21 @@ mod tests {
         //check orbit size
         assert_eq!(4, fc.len());
     }
+    /// Test the factored transversal calculation for a generating set with multiple generators.
+    #[test]
+    fn multiple_generators() {
+        use crate::perm::export::CyclePermutation;
+        let gens: Vec<Permutation> = vec![
+            CyclePermutation::from_vec(vec![vec![1, 6, 4, 3], vec![2, 7, 5]]).into(),
+            CyclePermutation::from_vec(vec![vec![1, 4], vec![2, 6, 3]]).into(),
+        ];
+        //All points should be in the orbit (according to GAP)
+        for i in 0_usize..6 {
+            let fc = FactoredTransversal::from_generators(i, &gens[..]);
+            for j in 0_usize..6 {
+                assert!(fc.in_orbit(j));
+                assert_eq!(j, fc.representative(j).unwrap().apply(i));
+            }
+        }
+    }
 }
