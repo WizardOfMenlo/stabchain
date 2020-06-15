@@ -47,6 +47,7 @@ impl FactoredTransversal {
             let delta = to_traverse.pop_front().unwrap();
             for g in gens {
                 let gamma = g.apply(delta);
+
                 // If the orbit doensn't contain this value, then add it to the factored transversal.
                 transversal.entry(gamma).or_insert_with(|| {
                     to_traverse.push_back(gamma);
@@ -75,10 +76,7 @@ impl FactoredTransversal {
             let mut rep = Permutation::id();
             // Move along the orbit till we reach a representative that the base moves to the point.
             while gamma != self.base {
-                println!("gamma := {}", gamma);
-                println!("rep := {}", rep);
-
-                let g_inv = self.transversal.get(&delta).unwrap();
+                let g_inv = self.transversal.get(&gamma).unwrap();
                 rep = rep.multiply(g_inv);
                 gamma = g_inv.apply(gamma);
             }
@@ -194,31 +192,5 @@ mod tests {
         }
         //check orbit size
         assert_eq!(4, fc.len());
-    }
-
-    #[test]
-    fn quick_test_transversal() {
-        use super::Group;
-        let g = Group::dihedral_2n(2);
-        g.generators().iter().for_each(|p| println!("{}", p));
-        let transversal = g.transversal(0);
-        println!("{}", transversal.representative(0).unwrap());
-        println!("{}", transversal.representative(1).unwrap());
-        println!("{}", transversal.representative(2).unwrap());
-        println!("{}", transversal.representative(3).unwrap());
-
-        panic!();
-    }
-
-    #[test]
-    fn quick_test_factored_transversal() {
-        use super::Group;
-        let g = Group::dihedral_2n(2);
-        g.generators().iter().for_each(|p| println!("{}", p));
-        let transversal = g.transversal(0);
-
-        transversal.representative(2).unwrap();
-
-        panic!();
     }
 }
