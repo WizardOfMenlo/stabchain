@@ -2,6 +2,8 @@ use super::ClassicalPermutation;
 use crate::perm::Permutation;
 use serde::{Deserialize, Serialize};
 
+use std::fmt;
+
 /// A permutation in disjoint cycle notation
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CyclePermutation {
@@ -55,6 +57,25 @@ impl From<CyclePermutation> for Permutation {
     }
 }
 
+impl fmt::Display for CyclePermutation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.cycles().is_empty() {
+            write!(f, "()")?;
+            return Ok(());
+        }
+
+        for cycle in &self.cycles {
+            write!(f, "(")?;
+            for img in cycle[0..cycle.len() - 1].iter() {
+                write!(f, "{} ", img)?;
+            }
+            write!(f, "{})", cycle[cycle.len() - 1])?;
+        }
+
+        Ok(())
+    }
+}
+
 impl From<ClassicalPermutation> for CyclePermutation {
     fn from(perm: ClassicalPermutation) -> Self {
         use std::collections::HashSet;
@@ -87,7 +108,11 @@ impl From<ClassicalPermutation> for CyclePermutation {
                 accounted.insert(current);
                 cycle.push(current);
             }
-            cycles.push(cycle);
+
+            // Do not add 1-cycles
+            if cycle.len() > 1 {
+                cycles.push(cycle);
+            }
         }
 
         CyclePermutation::from_vec_unchecked(cycles)

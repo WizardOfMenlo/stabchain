@@ -1,6 +1,8 @@
-pub mod factored_transversal;
+pub mod orbit;
+pub mod utils;
 
 use crate::perm::export::CyclePermutation;
+use crate::perm::utils::order_n_permutation;
 use crate::perm::Permutation;
 
 #[derive(Debug, Clone)]
@@ -21,14 +23,24 @@ impl Group {
         &self.generators[..]
     }
 
-    /// Computes the factored transversal from the group generators
-    pub fn factored_transversal(&self, base: usize) -> factored_transversal::FactoredTransversal {
-        factored_transversal::FactoredTransversal::from_generators(base, &self.generators)
+    /// Computes the orbit of the generator.
+    /// Note that in most cases factored_transversal is a better choice
+    /// As it allows to compute representatives with only marginally more work
+    pub fn orbit(&self, base: usize) -> orbit::Orbit {
+        orbit::Orbit::new(self, base)
     }
 
-    fn order_n_permutation(n: usize) -> Permutation {
-        assert!(n > 0);
-        CyclePermutation::from_vec(vec![(1..=n).collect()]).into()
+    /// Computes the transversal from the group generators (use factored transversal instead for memory efficience)
+    pub fn transversal(&self, base: usize) -> orbit::transversal::Transversal {
+        orbit::transversal::Transversal::new(self, base)
+    }
+
+    /// Computes the factored transversal from the group generators
+    pub fn factored_transversal(
+        &self,
+        base: usize,
+    ) -> orbit::factored_transversal::FactoredTransversal {
+        orbit::factored_transversal::FactoredTransversal::new(self, base)
     }
 
     /// Generates the trivial group, which only contains the identity
@@ -43,15 +55,15 @@ impl Group {
 
         Group::new(&[
             CyclePermutation::from_vec((1..=n).map(|i| vec![i, 2 * n - i + 1]).collect()).into(),
-            Self::order_n_permutation(2 * n),
+            order_n_permutation(1, 2 * n),
         ])
     }
 
-    /// Generate the cyclical group on n elements
+    /// Generate the cyclical group on n elements (more accurately, generates the cyclical group from a cycle on 1..=n)
     pub fn cyclic(n: usize) -> Self {
         assert!(n > 0);
 
-        Group::new(&[Self::order_n_permutation(n)])
+        Group::new(&[order_n_permutation(1, n)])
     }
 
     /// Generate the symmetric group on n points
@@ -64,7 +76,7 @@ impl Group {
 
         Group::new(&[
             CyclePermutation::from_vec(vec![vec![1, 2]]).into(),
-            Self::order_n_permutation(n),
+            order_n_permutation(1, n),
         ])
     }
 }
@@ -94,5 +106,11 @@ mod tests {
     fn symmetric_creation() {
         let g = Group::symmetric(5);
         assert_eq!(g.generators().len(), 2);
+    }
+
+    #[test]
+    fn orbit_vs_factored_orbit() {
+        let g = Group::symmetric(10);
+        assert_eq!(g.orbit(0), g.factored_transversal(0).orbit())
     }
 }
