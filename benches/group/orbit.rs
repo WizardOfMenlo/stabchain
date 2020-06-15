@@ -1,6 +1,6 @@
 use criterion::{criterion_group, BenchmarkId, Criterion};
 
-const RANGE_OF_VALUES: [usize; 7] = [8, 16, 32, 64, 128, 256, 512];
+const RANGE_OF_VALUES: [usize; 4] = [8, 16, 32, 64];
 
 use stabchain::group::Group;
 
