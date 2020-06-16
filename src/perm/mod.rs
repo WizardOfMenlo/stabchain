@@ -323,6 +323,18 @@ mod tests {
         assert_eq!(perm1.multiply(&perm2), expected_perm)
     }
 
+    /// Check that the multiplication is associative
+    #[test]
+    fn mult_perm_associative() {
+        let perm1 = Permutation::from(vec![1, 5, 4, 0, 2, 3]);
+        let perm2 = Permutation::from(vec![3, 2, 0, 1]);
+        let perm3 = Permutation::from(vec![6, 5, 4, 3, 2, 1, 0]);
+        assert_eq!(
+            perm1.multiply(&perm2).multiply(&perm3),
+            perm1.multiply(&perm2.multiply(&perm3))
+        );
+    }
+
     /// Test that multiplication for the lazy or eager implementaions are identical
     #[test]
     fn mult_perm_lazy_eager() {
