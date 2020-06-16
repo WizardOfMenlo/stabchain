@@ -43,6 +43,16 @@ impl Group {
         orbit::factored_transversal::FactoredTransversal::new(self, base)
     }
 
+    /// Computes the smallest n s.t. G <= S_n
+    pub fn symmetric_super_order(&self) -> usize {
+        self.generators
+            .iter()
+            .flat_map(|g| g.lmp())
+            .max()
+            .unwrap_or(0)
+            + 1
+    }
+
     /// Generates the trivial group, which only contains the identity
     pub fn trivial() -> Self {
         // TODO: Should we include the identity here?
@@ -127,5 +137,13 @@ mod tests {
     fn orbit_vs_factored_orbit() {
         let g = Group::symmetric(10);
         assert_eq!(g.orbit(0), g.factored_transversal(0).orbit())
+    }
+
+    #[test]
+    fn check_symmetric_super() {
+        assert_eq!(Group::trivial().symmetric_super_order(), 1);
+        assert_eq!(Group::symmetric(10).symmetric_super_order(), 10);
+        assert_eq!(Group::dihedral_2n(10).symmetric_super_order(), 20);
+        assert_eq!(Group::cyclic(15).symmetric_super_order(), 15);
     }
 }

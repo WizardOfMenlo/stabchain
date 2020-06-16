@@ -21,6 +21,13 @@ impl Orbit {
         }
     }
 
+    /// Is this a complete orbit?
+    pub fn complete(&self, g: &Group) -> bool {
+        // If subgroup of S_n can at most move n points, if we already have seen all of them
+        // the orbit must be complete
+        self.orbit.len() == g.symmetric_super_order()
+    }
+
     /// Get the base (w)
     pub fn base(&self) -> usize {
         self.base
@@ -75,6 +82,40 @@ pub fn orbit(g: &Group, w: usize) -> HashSet<usize> {
             let gamma = g.apply(delta);
             if orbit.insert(gamma) {
                 to_traverse.push_back(gamma);
+            }
+        }
+    }
+
+    orbit
+}
+
+/// Algorithm to compute orbit from a group. This variant optimizes by checking
+/// if the orbit is complete before doing more work
+pub fn orbit_complete_opt(g: &Group, w: usize) -> HashSet<usize> {
+    let maximal_orbit_size = g.symmetric_super_order();
+    let gens = g.generators();
+
+    // Orbit are the ones that have been acted on by the generators
+    let mut orbit = HashSet::new();
+    orbit.insert(w);
+
+    // To traverse are those still to be expanded
+    let mut to_traverse = VecDeque::new();
+    to_traverse.push_back(w);
+
+    // Get unused
+    while !to_traverse.is_empty() {
+        let delta = to_traverse.pop_front().unwrap();
+        for g in gens {
+            // Apply generator and insert
+            let gamma = g.apply(delta);
+            if orbit.insert(gamma) {
+                to_traverse.push_back(gamma);
+            }
+
+            // Check if the orbit complete, if so return
+            if orbit.len() == maximal_orbit_size {
+                return orbit;
             }
         }
     }
