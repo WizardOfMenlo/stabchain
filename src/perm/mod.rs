@@ -317,10 +317,14 @@ mod tests {
         let perm2 = Permutation::from(vec![0, 2, 1]);
         let expected_perm = Permutation::from(vec![2, 0, 1]);
         assert_eq!(perm1.multiply(&perm2), expected_perm);
+        // Should not be the same when order is reveresed.
+        assert_ne!(perm2.multiply(&perm1), expected_perm);
         let perm1 = Permutation::from(vec![1, 2, 3, 0]);
         let perm2 = Permutation::from(vec![0, 2, 1]);
         let expected_perm = Permutation::from(vec![2, 1, 3, 0]);
-        assert_eq!(perm1.multiply(&perm2), expected_perm)
+        assert_eq!(perm1.multiply(&perm2), expected_perm);
+        // Should not be the same when order is reveresed.
+        assert_ne!(perm2.multiply(&perm1), expected_perm);
     }
 
     /// Check that the multiplication is associative
