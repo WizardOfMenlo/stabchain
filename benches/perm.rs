@@ -61,6 +61,24 @@ fn exponentiation(c: &mut Criterion) {
     group.finish();
 }
 
+fn exponentiation_small_exponent(c: &mut Criterion) {
+    let mut group = c.benchmark_group("permutation__small_exp");
+    for i in (1..16).step_by(2) {
+        group.bench_with_input(BenchmarkId::new("pow", i), &i, |b, i| {
+            let perm = random_permutation(1024);
+            b.iter(|| perm.pow(*i as isize))
+        });
+        group.bench_with_input(BenchmarkId::new("multijoin", i), &i, |b, i| {
+            use stabchain::perm::builder::join::MultiJoin;
+            use stabchain::perm::builder::PermBuilder;
+            let perm = random_permutation(1024);
+            let join = MultiJoin::new(std::iter::repeat(perm).take(*i));
+            b.iter(|| join.collapse())
+        });
+    }
+    group.finish();
+}
+
 /// Benchmark the check of an identity, although this should be constant due to it being an empty check.
 fn identity_check(c: &mut Criterion) {
     let id = Permutation::id();
@@ -86,5 +104,6 @@ criterion_group!(
     inverse_of_product,
     identity_check,
     inverse,
-    exponentiation
+    exponentiation,
+    exponentiation_small_exponent,
 );
