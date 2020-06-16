@@ -210,4 +210,53 @@ mod tests {
             }
         }
     }
+
+    /// Test the factored transversal calculation for a generating set with multiple generators
+    /// when not all elements are in the orbit.
+    #[test]
+    fn multiple_generators_non_full_orbit() {
+        use crate::perm::export::CyclePermutation;
+        let gens: Vec<Permutation> = vec![
+            CyclePermutation::from_vec(vec![vec![1, 2, 6]]).into(),
+            CyclePermutation::from_vec(vec![vec![3, 5, 7]]).into(),
+        ];
+        let fc1 = FactoredTransversal::from_generators(5, &gens[..]);
+        assert_eq!(3, fc1.len());
+        let fc2 = FactoredTransversal::from_generators(4, &gens[..]);
+        assert_eq!(3, fc2.len());
+        let fc3 = FactoredTransversal::from_generators(3, &gens[..]);
+        assert_eq!(1, fc3.len());
+        for i in [0, 1, 5].iter() {
+            // Tests for fc1
+            assert!(fc1.in_orbit(*i));
+            assert_eq!(*i, fc1.representative(*i).unwrap().apply(5));
+            // Tests for fc2
+            assert!(!fc2.in_orbit(*i));
+            assert_eq!(None, fc2.representative(*i));
+            // Tests for fc3
+            assert!(!fc3.in_orbit(*i));
+            assert_eq!(None, fc3.representative(*i));
+        }
+        for i in [2, 4, 6].iter() {
+            // Tests for fc1
+            assert!(!fc1.in_orbit(*i));
+            assert_eq!(None, fc1.representative(*i));
+            // Tests for fc2
+            assert!(fc2.in_orbit(*i));
+            assert_eq!(*i, fc2.representative(*i).unwrap().apply(4));
+            // Tests for fc3
+            assert!(!fc3.in_orbit(*i));
+            assert_eq!(None, fc3.representative(*i));
+        }
+        // Now to test for element 3
+        // Tests for fc1
+        assert!(!fc1.in_orbit(3));
+        assert_eq!(None, fc1.representative(3));
+        // Tests for fc2
+        assert!(!fc2.in_orbit(3));
+        assert_eq!(None, fc2.representative(3));
+        // Tests for fc3
+        assert!(fc3.in_orbit(3));
+        assert_eq!(3, fc3.representative(3).unwrap().apply(3));
+    }
 }
