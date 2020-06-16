@@ -196,6 +196,7 @@ mod tests {
     #[test]
     fn multiple_generators() {
         use crate::perm::export::CyclePermutation;
+        // Cycle notation is used for conveninece, but we do need to switch to 0 indexed for assertions.
         let gens: Vec<Permutation> = vec![
             CyclePermutation::from_vec(vec![vec![1, 6, 4, 3], vec![2, 7, 5]]).into(),
             CyclePermutation::from_vec(vec![vec![1, 4], vec![2, 6, 3]]).into(),
@@ -215,6 +216,7 @@ mod tests {
     #[test]
     fn multiple_generators_non_full_orbit() {
         use crate::perm::export::CyclePermutation;
+        // Cycle notation is used for conveninece, but we do need to switch to 0 indexed for assertions.
         let gens: Vec<Permutation> = vec![
             CyclePermutation::from_vec(vec![vec![1, 2, 6]]).into(),
             CyclePermutation::from_vec(vec![vec![3, 5, 7]]).into(),
