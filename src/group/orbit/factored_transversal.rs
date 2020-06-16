@@ -62,10 +62,9 @@ impl FactoredTransversal {
     ///```
     /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
-    /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
-    /// let rep = Permutation::from(vec![1, 0]);
-    /// assert_eq!(rep, fc.representative(1).unwrap());
-    /// assert_eq!(Permutation::id(), fc.representative(0).unwrap());
+    /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0, 2])]);
+    /// assert_eq!(1, fc.representative(1).unwrap().apply(0));
+    /// assert_eq!(None, fc.representative(2));
     ///```
     pub fn representative(&self, delta: usize) -> Option<Permutation> {
         // Check if the element is in the orbit.
