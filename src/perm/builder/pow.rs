@@ -59,7 +59,7 @@ fn pow(perm: Permutation, x: usize) -> Permutation {
     }
 
     if x == 1 {
-        return perm.clone();
+        return perm;
     }
 
     if x % 2 == 0 {
