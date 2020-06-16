@@ -2,9 +2,8 @@
 //!
 //! This crate implements permutations on integers
 
-// mod randomreplacement;
 pub mod algos;
-mod builder;
+pub mod builder;
 pub mod export;
 pub mod utils;
 

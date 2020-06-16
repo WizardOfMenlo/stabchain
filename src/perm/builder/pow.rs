@@ -1,5 +1,4 @@
 use super::super::Permutation;
-use super::join::MultiJoin;
 use super::PermBuilder;
 
 #[derive(Debug, Clone)]
@@ -50,12 +49,25 @@ where
             return Permutation::id();
         }
 
-        MultiJoin::new(
-            std::iter::repeat(self.perm.clone())
-                .take(self.power.abs() as usize)
-                .map(|p| p.collapse()),
-        )
-        .collapse()
+        pow(self.perm.collapse(), self.power as usize)
+    }
+}
+
+fn pow(perm: Permutation, x: usize) -> Permutation {
+    if x == 0 {
+        return Permutation::id();
+    }
+
+    if x == 1 {
+        return perm.clone();
+    }
+
+    if x % 2 == 0 {
+        let p = pow(perm, x / 2);
+        p.multiply(&p)
+    } else {
+        let p = pow(perm.clone(), (x - 1) / 2);
+        perm.multiply(&p.multiply(&p))
     }
 }
 
@@ -97,7 +109,7 @@ mod tests {
 
     #[test]
     fn application_positive() {
-        use super::MultiJoin;
+        use crate::perm::builder::join::MultiJoin;
         let perm = Permutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
         let lazy_pow = perm.build_pow(4);
         let lazy_mult = MultiJoin::new(std::iter::repeat(perm.clone()).take(4));
@@ -111,7 +123,7 @@ mod tests {
 
     #[test]
     fn application_negative() {
-        use super::MultiJoin;
+        use crate::perm::builder::join::MultiJoin;
         let perm_inv = Permutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
         let perm = perm_inv.inv();
         let lazy_pow = perm_inv.build_pow(-4);

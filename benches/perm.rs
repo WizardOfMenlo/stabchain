@@ -27,20 +27,36 @@ fn inverse_of_product(c: &mut Criterion) {
             let second = random_permutation(*i);
             b.iter(|| black_box(inv(&first.multiply(&second))))
         });
-        group.bench_with_input(
-            BenchmarkId::new("permutation__prod_of_inv", i),
-            i,
-            |b, i| {
-                let first = random_permutation(*i);
-                let second = random_permutation(*i);
-                b.iter(|| {
-                    let first = inv(&first);
-                    let second = inv(&second);
+        group.bench_with_input(BenchmarkId::new("prod_of_inv", i), i, |b, i| {
+            let first = random_permutation(*i);
+            let second = random_permutation(*i);
+            b.iter(|| {
+                let first = inv(&first);
+                let second = inv(&second);
 
-                    second.multiply(&first)
-                })
-            },
-        );
+                second.multiply(&first)
+            })
+        });
+    }
+    group.finish();
+}
+
+// Use specialized exponentitation vs generic multi join
+fn exponentiation(c: &mut Criterion) {
+    let mut group = c.benchmark_group("permutation__exp");
+    // Note, we use permutations of S_2n to the power of n, in order to avoid id as much as possible
+    for i in RANGE_OF_VALUES.iter().map(|i| i * 2) {
+        group.bench_with_input(BenchmarkId::new("pow", i), &i, |b, i| {
+            let perm = random_permutation(*i);
+            b.iter(|| perm.pow((i / 2) as isize))
+        });
+        group.bench_with_input(BenchmarkId::new("multijoin", i), &i, |b, i| {
+            use stabchain::perm::builder::join::MultiJoin;
+            use stabchain::perm::builder::PermBuilder;
+            let perm = random_permutation(*i);
+            let join = MultiJoin::new(std::iter::repeat(perm).take(i / 2));
+            b.iter(|| join.collapse())
+        });
     }
     group.finish();
 }
@@ -69,5 +85,6 @@ criterion_group!(
     random_instantiation,
     inverse_of_product,
     identity_check,
-    inverse
+    inverse,
+    exponentiation
 );
