@@ -62,10 +62,9 @@ impl FactoredTransversal {
     ///```
     /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
-    /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
-    /// let rep = Permutation::from(vec![1, 0]);
-    /// assert_eq!(rep, fc.representative(1).unwrap());
-    /// assert_eq!(Permutation::id(), fc.representative(0).unwrap());
+    /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0, 2])]);
+    /// assert_eq!(1, fc.representative(1).unwrap().apply(0));
+    /// assert_eq!(None, fc.representative(2));
     ///```
     pub fn representative(&self, delta: usize) -> Option<Permutation> {
         // Check if the element is in the orbit.
@@ -192,5 +191,73 @@ mod tests {
         }
         //check orbit size
         assert_eq!(4, fc.len());
+    }
+    /// Test the factored transversal calculation for a generating set with multiple generators.
+    #[test]
+    fn multiple_generators() {
+        use crate::perm::export::CyclePermutation;
+        // Cycle notation is used for conveninece, but we do need to switch to 0 indexed for assertions.
+        let gens: Vec<Permutation> = vec![
+            CyclePermutation::from_vec(vec![vec![1, 6, 4, 3], vec![2, 7, 5]]).into(),
+            CyclePermutation::from_vec(vec![vec![1, 4], vec![2, 6, 3]]).into(),
+        ];
+        //All points should be in the orbit (according to GAP)
+        for i in 0_usize..6 {
+            let fc = FactoredTransversal::from_generators(i, &gens[..]);
+            for j in 0_usize..6 {
+                assert!(fc.in_orbit(j));
+                assert_eq!(j, fc.representative(j).unwrap().apply(i));
+            }
+        }
+    }
+
+    /// Test the factored transversal calculation for a generating set with multiple generators
+    /// when not all elements are in the orbit.
+    #[test]
+    fn multiple_generators_non_full_orbit() {
+        use crate::perm::export::CyclePermutation;
+        // Cycle notation is used for conveninece, but we do need to switch to 0 indexed for assertions.
+        let gens: Vec<Permutation> = vec![
+            CyclePermutation::from_vec(vec![vec![1, 2, 6]]).into(),
+            CyclePermutation::from_vec(vec![vec![3, 5, 7]]).into(),
+        ];
+        let fc1 = FactoredTransversal::from_generators(5, &gens[..]);
+        assert_eq!(3, fc1.len());
+        let fc2 = FactoredTransversal::from_generators(4, &gens[..]);
+        assert_eq!(3, fc2.len());
+        let fc3 = FactoredTransversal::from_generators(3, &gens[..]);
+        assert_eq!(1, fc3.len());
+        for i in [0, 1, 5].iter() {
+            // Tests for fc1
+            assert!(fc1.in_orbit(*i));
+            assert_eq!(*i, fc1.representative(*i).unwrap().apply(5));
+            // Tests for fc2
+            assert!(!fc2.in_orbit(*i));
+            assert_eq!(None, fc2.representative(*i));
+            // Tests for fc3
+            assert!(!fc3.in_orbit(*i));
+            assert_eq!(None, fc3.representative(*i));
+        }
+        for i in [2, 4, 6].iter() {
+            // Tests for fc1
+            assert!(!fc1.in_orbit(*i));
+            assert_eq!(None, fc1.representative(*i));
+            // Tests for fc2
+            assert!(fc2.in_orbit(*i));
+            assert_eq!(*i, fc2.representative(*i).unwrap().apply(4));
+            // Tests for fc3
+            assert!(!fc3.in_orbit(*i));
+            assert_eq!(None, fc3.representative(*i));
+        }
+        // Now to test for element 3
+        // Tests for fc1
+        assert!(!fc1.in_orbit(3));
+        assert_eq!(None, fc1.representative(3));
+        // Tests for fc2
+        assert!(!fc2.in_orbit(3));
+        assert_eq!(None, fc2.representative(3));
+        // Tests for fc3
+        assert!(fc3.in_orbit(3));
+        assert_eq!(3, fc3.representative(3).unwrap().apply(3));
     }
 }

@@ -271,6 +271,7 @@ mod tests {
     #[test]
     fn not_eq_perm() {
         assert_ne!(Permutation::id(), Permutation::from_vec(vec![2, 1, 0]));
+        assert_ne!(Permutation::from_vec(vec![2, 1, 0]), Permutation::id());
     }
 
     #[test]
@@ -316,10 +317,26 @@ mod tests {
         let perm2 = Permutation::from(vec![0, 2, 1]);
         let expected_perm = Permutation::from(vec![2, 0, 1]);
         assert_eq!(perm1.multiply(&perm2), expected_perm);
+        // Should not be the same when order is reveresed.
+        assert_ne!(perm2.multiply(&perm1), expected_perm);
         let perm1 = Permutation::from(vec![1, 2, 3, 0]);
         let perm2 = Permutation::from(vec![0, 2, 1]);
         let expected_perm = Permutation::from(vec![2, 1, 3, 0]);
-        assert_eq!(perm1.multiply(&perm2), expected_perm)
+        assert_eq!(perm1.multiply(&perm2), expected_perm);
+        // Should not be the same when order is reveresed.
+        assert_ne!(perm2.multiply(&perm1), expected_perm);
+    }
+
+    /// Check that the multiplication is associative
+    #[test]
+    fn mult_perm_associative() {
+        let perm1 = Permutation::from(vec![1, 5, 4, 0, 2, 3]);
+        let perm2 = Permutation::from(vec![3, 2, 0, 1]);
+        let perm3 = Permutation::from(vec![6, 5, 4, 3, 2, 1, 0]);
+        assert_eq!(
+            perm1.multiply(&perm2).multiply(&perm3),
+            perm1.multiply(&perm2.multiply(&perm3))
+        );
     }
 
     /// Test that multiplication for the lazy or eager implementaions are identical
@@ -332,6 +349,41 @@ mod tests {
             perm1.multiply(&perm2),
             perm1.build_multiply(&perm2).collapse()
         )
+    }
+
+    /// Test inverse for the indentity.
+    #[test]
+    fn invert_perm_id() {
+        let id = Permutation::id();
+        assert_eq!(id, id.inv());
+        assert_eq!(id, id.inv().inv());
+    }
+    /// Test inverting permutation for normal cases.
+    #[test]
+    fn invert_perm() {
+        let id = Permutation::id();
+        //Permutation that is its own inverse
+        let perm1 = Permutation::from(vec![5, 4, 2, 6, 1, 0, 3]);
+        assert_eq!(perm1, perm1.inv());
+        assert_eq!(perm1.multiply(&perm1.inv()), id);
+        // n-cycle permutations
+        let perm2 = Permutation::from(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
+        let perm2_inv = Permutation::from(vec![9, 0, 1, 2, 3, 4, 5, 6, 7, 8]);
+        assert_ne!(perm2, perm2_inv);
+        assert_eq!(perm2_inv, perm2.inv());
+        assert_eq!(perm2, perm2.inv().inv());
+        assert_eq!(perm2, perm2_inv.inv());
+        assert_eq!(perm2.multiply(&perm2_inv), id);
+        assert_eq!(perm2_inv.multiply(&perm2), id);
+        //Permutations with more than one cycle.
+        let perm3 = Permutation::from(vec![2, 5, 4, 6, 0, 3, 1]);
+        let perm3_inv = Permutation::from(vec![4, 6, 0, 5, 2, 1, 3]);
+        assert_ne!(perm3, perm3_inv);
+        assert_eq!(perm3_inv, perm3.inv());
+        assert_eq!(perm3, perm3.inv().inv());
+        assert_eq!(perm3, perm3_inv.inv());
+        assert_eq!(perm3.multiply(&perm3_inv), id);
+        assert_eq!(perm3_inv.multiply(&perm3), id);
     }
 
     #[test]
