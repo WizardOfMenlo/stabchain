@@ -53,20 +53,22 @@ where
     }
 }
 
-fn pow(perm: Permutation, x: usize) -> Permutation {
-    if x == 0 {
+// Recursive helper function, uses repeated exponentiation
+// to perform exponentiation to the n in O(log n) steps
+fn pow(perm: Permutation, n: usize) -> Permutation {
+    if n == 0 {
         return Permutation::id();
     }
 
-    if x == 1 {
+    if n == 1 {
         return perm;
     }
 
-    if x % 2 == 0 {
-        let p = pow(perm, x / 2);
+    if n % 2 == 0 {
+        let p = pow(perm, n / 2);
         p.multiply(&p)
     } else {
-        let p = pow(perm.clone(), (x - 1) / 2);
+        let p = pow(perm.clone(), (n - 1) / 2);
         perm.multiply(&p.multiply(&p))
     }
 }
