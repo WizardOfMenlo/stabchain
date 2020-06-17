@@ -38,11 +38,6 @@ where
     }
 }
 
-// TODO: Here I revert to the full permutation
-// Ideally I would like to have a Vec<Box<dyn Permutation>> (even tough it uses dynamic dispatching)
-// to allow for true lazy "trees" all the way down. However Sized does not allow this. I think the best
-// way to overcome this is via a top level enum (similar to seed::Node)
-
 #[derive(Debug, Clone)]
 pub struct MultiJoin {
     args: Vec<Permutation>,

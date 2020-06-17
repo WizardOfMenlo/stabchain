@@ -1,7 +1,7 @@
-mod join;
-mod pow;
+pub mod join;
+pub mod pow;
 
-pub use super::Permutation;
+use super::Permutation;
 use join::Join;
 use pow::Pow;
 
