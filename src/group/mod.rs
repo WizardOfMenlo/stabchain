@@ -77,14 +77,23 @@ impl Group {
         Group::new(&[])
     }
 
-    /// This generates the dihedral group D_2n.
+    /// This generates the dihedral group D_2n. I.e. the group of isometries on the regular n-gon
     pub fn dihedral_2n(n: usize) -> Self {
+        //https://math.stackexchange.com/questions/3614294/choice-of-generator-in-dihedral-group
         assert!(n > 0);
 
-        Group::new(&[
-            CyclePermutation::from_vec((1..=n).map(|i| vec![i, 2 * n - i + 1]).collect()).into(),
-            order_n_permutation(1, 2 * n),
-        ])
+        let reflection_perm = if n % 2 == 0 {
+            let k = n / 2;
+            // (1 2k)(2, 2k - 1)...(k, k+1)
+            CyclePermutation::from_vec((1..=k).map(|i| vec![i, 2 * k - i + 1]).collect())
+        } else {
+            let k = (n - 1) / 2;
+            // (2, 2k + 1)...(k + 1, k+2)
+            CyclePermutation::from_vec((2..=(k + 1)).map(|i| vec![i, 2 * k - i + 3]).collect())
+        }
+        .into();
+
+        Group::new(&[reflection_perm, order_n_permutation(1, 2 * n)])
     }
 
     /// Generate the cyclical group on n elements (more accurately, generates the cyclical group from a cycle on 1..=n)
