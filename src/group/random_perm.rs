@@ -64,7 +64,7 @@ impl RandPerm {
             t = self.rng.gen_range(0, self.size);
         }
         // Either take product or quotient.
-        let e = self.rng.gen_range(-1, 2);
+        let e: usize = if self.rng.gen::<bool>() { 1 } else { -1 };
         // Randomly determine order of operation.
         // The operation works by replacing a list entry with a product, and then accumulating with the stored permutation.
         if self.rng.gen::<bool>() {
