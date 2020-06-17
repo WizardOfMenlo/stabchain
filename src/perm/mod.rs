@@ -34,6 +34,25 @@ impl Permutation {
         }
     }
 
+    /// Shifts a permutation on S_n to one on S_{n + k} where the first k points are fixed
+    /// Equivalent to take p sigma q where p maps i to i - k and q maps i to i + k
+    /// ```
+    /// use stabchain::perm::export::CyclePermutation;
+    /// use stabchain::perm::Permutation;
+    /// let perm : Permutation = CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into();
+    /// assert_eq!(perm.shift(5), CyclePermutation::from_vec(vec![vec![7, 8, 9]]).into())
+    /// ```
+    pub fn shift(&self, k: usize) -> Permutation {
+        if self.is_id() {
+            return Permutation::id();
+        }
+
+        let mut images: Vec<_> = (0..k).collect();
+        let new_images = self.vals.iter().map(|i| i + k);
+        images.extend(new_images);
+        Permutation::from_vec_unchecked(images)
+    }
+
     /// Tests if the permutation is the identity
     /// ```
     /// use stabchain::perm::Permutation;
@@ -409,5 +428,19 @@ mod tests {
         assert_eq!(*id, cycle.divide(cycle));
         assert_eq!(*cycle, id.divide(cycle2));
         assert_eq!(*cycle2, id.divide(cycle));
+    }
+
+    #[test]
+    fn test_shift_identity() {
+        let p = Permutation::id();
+        assert!(p.shift(3).is_id())
+    }
+
+    #[test]
+    fn test_shift() {
+        use crate::perm::export::CyclePermutation;
+        let perm: Permutation = CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into();
+        let shifted: Permutation = CyclePermutation::from_vec(vec![vec![4, 5, 6]]).into();
+        assert_eq!(perm.shift(3), shifted)
     }
 }

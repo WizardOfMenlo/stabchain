@@ -53,6 +53,24 @@ impl Group {
             + 1
     }
 
+    /// Computes the direct product of two groups
+    pub fn product(g1: &Group, g2: &Group) -> Group {
+        if g1.generators.is_empty() {
+            return g2.clone();
+        }
+
+        if g2.generators.is_empty() {
+            return g1.clone();
+        }
+
+        let n = g1.symmetric_super_order();
+        let mut gens = Vec::new();
+        gens.extend(g1.generators().iter().cloned());
+        gens.extend(g2.generators().iter().map(|p| p.shift(n)));
+
+        Group::new(&gens[..])
+    }
+
     /// Generates the trivial group, which only contains the identity
     pub fn trivial() -> Self {
         // TODO: Should we include the identity here?
@@ -145,5 +163,22 @@ mod tests {
         assert_eq!(Group::symmetric(10).symmetric_super_order(), 10);
         assert_eq!(Group::dihedral_2n(10).symmetric_super_order(), 20);
         assert_eq!(Group::cyclic(15).symmetric_super_order(), 15);
+    }
+
+    #[test]
+    fn test_product() {
+        use crate::perm::export::CyclePermutation;
+        use crate::perm::Permutation;
+        use std::collections::HashSet;
+
+        let perm: Permutation = CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into();
+
+        let g = Group::new(&[perm.clone()]);
+        let prod = Group::product(&g, &g);
+
+        let gens: HashSet<_> = prod.generators().iter().cloned().collect();
+        assert_eq!(prod.generators().len(), 2);
+        assert!(gens.contains(&perm));
+        assert!(gens.contains(&(CyclePermutation::from_vec(vec![vec![4, 5, 6]]).into())));
     }
 }
