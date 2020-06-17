@@ -46,11 +46,11 @@ impl FactoredTransversal {
             //Take an unused element.
             let delta = to_traverse.pop_front().unwrap();
             for g in gens {
-                let gamma = g.apply(delta);
+                let point = g.apply(delta);
 
                 // If the orbit doensn't contain this value, then add it to the factored transversal.
-                transversal.entry(gamma).or_insert_with(|| {
-                    to_traverse.push_back(gamma);
+                transversal.entry(point).or_insert_with(|| {
+                    to_traverse.push_back(point);
                     g.inv()
                 });
             }
