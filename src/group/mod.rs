@@ -55,6 +55,14 @@ impl Group {
 
     /// Computes the direct product of two groups
     pub fn product(g1: &Group, g2: &Group) -> Group {
+        if g1.generators.is_empty() {
+            return g2.clone();
+        }
+
+        if g2.generators.is_empty() {
+            return g1.clone();
+        }
+
         let n = g1.symmetric_super_order();
         let mut gens = Vec::new();
         gens.extend(g1.generators().iter().cloned());

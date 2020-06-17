@@ -2,18 +2,12 @@ use super::Group;
 
 /// Creates a group generated from n copies of the cyclic group
 pub fn copies_of_cyclic(specification: &[usize]) -> Group {
-    use crate::perm::utils::order_n_permutation;
-
     assert!(specification.iter().all(|&n| n > 0));
 
-    let mut gens = Vec::new();
-    let mut count = 1;
-    for n in specification {
-        gens.push(order_n_permutation(count, *n));
-        count += n;
-    }
-
-    Group::new(&gens[..])
+    specification
+        .iter()
+        .map(|n| Group::cyclic(*n))
+        .fold(Group::trivial(), |g1, g2| Group::product(&g1, &g2))
 }
 
 #[cfg(test)]
