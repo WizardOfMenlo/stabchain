@@ -46,11 +46,11 @@ impl FactoredTransversal {
             //Take an unused element.
             let delta = to_traverse.pop_front().unwrap();
             for g in gens {
-                let gamma = g.apply(delta);
+                let point = g.apply(delta);
 
                 // If the orbit doensn't contain this value, then add it to the factored transversal.
-                transversal.entry(gamma).or_insert_with(|| {
-                    to_traverse.push_back(gamma);
+                transversal.entry(point).or_insert_with(|| {
+                    to_traverse.push_back(point);
                     g.inv()
                 });
             }
@@ -66,18 +66,18 @@ impl FactoredTransversal {
     /// assert_eq!(1, fc.representative(1).unwrap().apply(0));
     /// assert_eq!(None, fc.representative(2));
     ///```
-    pub fn representative(&self, delta: usize) -> Option<Permutation> {
+    pub fn representative(&self, point: usize) -> Option<Permutation> {
         // Check if the element is in the orbit.
-        if !self.in_orbit(delta) {
+        if !self.in_orbit(point) {
             None
         } else {
-            let mut gamma = delta;
+            let mut orbit_point = point;
             let mut rep = Permutation::id();
             // Move along the orbit till we reach a representative that the base moves to the point.
-            while gamma != self.base {
-                let g_inv = self.transversal.get(&gamma).unwrap();
+            while orbit_point != self.base {
+                let g_inv = self.transversal.get(&orbit_point).unwrap();
                 rep = rep.multiply(g_inv);
-                gamma = g_inv.apply(gamma);
+                orbit_point = g_inv.apply(orbit_point);
             }
             // Invert at the end, as the inverses are used.
             // If we want fgh, then we can instead do (h^-1, g^-1, f^-1)^-1.
