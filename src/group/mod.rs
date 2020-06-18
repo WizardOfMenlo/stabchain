@@ -1,4 +1,5 @@
 pub mod orbit;
+pub mod stabchain;
 pub mod utils;
 
 use crate::perm::export::CyclePermutation;
