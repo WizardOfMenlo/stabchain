@@ -1,14 +1,16 @@
+pub mod factored_transversal;
+pub mod transversal;
+
 use criterion::{criterion_group, BenchmarkId, Criterion};
 
 const RANGE_OF_VALUES: [usize; 4] = [8, 16, 32, 64];
 
+use stabchain::group::orbit::{orbit, orbit_complete_opt};
 use stabchain::group::Group;
 
 // Comparing orbit optimizations
 
 fn orbit_vs_optmized_orbit_complete(c: &mut Criterion) {
-    use stabchain::group::orbit::{orbit, orbit_complete_opt};
-
     let mut group = c.benchmark_group("group__orbit__orbit_vs_optmized_orbit_complete");
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("orbit", i), i, |b, i| {
@@ -24,8 +26,6 @@ fn orbit_vs_optmized_orbit_complete(c: &mut Criterion) {
 }
 
 fn orbit_vs_optmized_orbit_complete_many_generators(c: &mut Criterion) {
-    use stabchain::group::orbit::{orbit, orbit_complete_opt};
-
     let mut group = c.benchmark_group("group__orbit__orbit_vs_optmized_orbit_complete_many_gens");
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("orbit", i), i, |b, i| {
@@ -41,7 +41,6 @@ fn orbit_vs_optmized_orbit_complete_many_generators(c: &mut Criterion) {
 }
 
 fn orbit_vs_optmized_orbit_uncomplete(c: &mut Criterion) {
-    use stabchain::group::orbit::{orbit, orbit_complete_opt};
     use stabchain::group::utils::copies_of_cyclic;
 
     let mut group = c.benchmark_group("group__orbit__orbit_vs_optmized_orbit_uncomplete");
