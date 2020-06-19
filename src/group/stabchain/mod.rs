@@ -28,6 +28,17 @@ impl Stabchain {
         self.chain.iter().map(|g| g.base).collect()
     }
 
+    /// Get chain length
+    pub fn len(&self) -> usize {
+        // We don't include the end item here
+        self.chain.len()
+    }
+
+    /// Is the chain empty (i.e. originary group was trivial)
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     /// Get G^(n)
     pub fn layer(&self, n: usize) -> Option<&StabchainRecord> {
         self.chain.get(n)
@@ -81,7 +92,7 @@ impl StabchainBuilder {
 
     fn extend_inner(&mut self, p: Permutation) {
         // Note that id always in group
-        if element_testing::in_group(self.current_chain(), &p) {
+        if element_testing::is_in_group(self.current_chain(), &p) {
             return;
         }
 
@@ -209,23 +220,66 @@ impl StabchainRecord {
 mod tests {
     use super::*;
 
-    #[test]
-    fn random_test() {
-        let g = Group::product(
-            &Group::product(&Group::cyclic(500), &Group::cyclic(30)),
-            &Group::cyclic(11),
-        );
-        let chain = Stabchain::new(&g);
-        for record in &chain.chain {
-            println!("Base: {}", record.base + 1);
-            print!("Gens: <");
-            for gen in record.gens.generators() {
-                print!("{}, ", gen);
-            }
-            println!(">");
-            println!();
-        }
+    fn check_well_formed_chain(s: &Stabchain) {
+        let mut previous = None;
+        for record in s.chain.iter() {
+            let gens = record.group();
+            let transversal = record.transversal();
 
-        panic!();
+            // Check the computed transversal, and the one computed from generators agree
+            // We do not directly check the transversal since representatives are not unique
+            assert_eq!(transversal.orbit(), gens.orbit(record.base));
+
+            // Check taht everything is stabilized correctly
+            if !previous.is_none() {
+                let stabilized = previous.unwrap();
+                assert_eq!(gens.orbit(stabilized).len(), 1);
+            }
+
+            previous = Some(record.base);
+        }
+    }
+
+    #[test]
+    fn trivial_chain() {
+        let g = Group::trivial();
+        let chain = g.stabchain();
+        check_well_formed_chain(&chain);
+        assert!(chain.is_empty());
+    }
+
+    #[test]
+    fn klein4_chain() {
+        let g = Group::klein_4();
+        let chain = g.stabchain();
+        check_well_formed_chain(&chain);
+    }
+
+    #[test]
+    fn cyclic_chain() {
+        let g = Group::cyclic(100);
+        let chain = g.stabchain();
+        check_well_formed_chain(&chain);
+    }
+
+    #[test]
+    fn dihedral_chain() {
+        let g = Group::dihedral_2n(3);
+        let chain = g.stabchain();
+        check_well_formed_chain(&chain);
+    }
+
+    #[test]
+    fn alternating_chain() {
+        let g = Group::alternating(5);
+        let chain = g.stabchain();
+        check_well_formed_chain(&chain);
+    }
+
+    #[test]
+    fn symmetric_chain() {
+        let g = Group::symmetric(5);
+        let chain = g.stabchain();
+        check_well_formed_chain(&chain);
     }
 }

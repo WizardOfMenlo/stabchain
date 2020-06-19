@@ -1,7 +1,7 @@
 use super::StabchainRecord;
 use crate::perm::Permutation;
 
-pub fn in_group<'a>(it: impl IntoIterator<Item = &'a StabchainRecord>, p: &Permutation) -> bool {
+pub fn is_in_group<'a>(it: impl IntoIterator<Item = &'a StabchainRecord>, p: &Permutation) -> bool {
     // Early exit
     if p.is_id() {
         return true;
@@ -20,4 +20,30 @@ pub fn in_group<'a>(it: impl IntoIterator<Item = &'a StabchainRecord>, p: &Permu
     }
 
     g.is_id()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::group::Group;
+
+    #[test]
+    fn id_test() {
+        let g = Group::trivial();
+        let stab = g.stabchain();
+        assert!(is_in_group(stab.iter(), &Permutation::id()));
+    }
+
+    /*
+    #[test]
+    fn perm_in_symmetric() {
+        use crate::perm::utils::random_permutation;
+
+        let g = Group::symmetric(5);
+        let stab = g.stabchain();
+        assert!(is_in_group(stab.iter(), &Permutation::id()));
+        assert!(is_in_group(stab.iter(), &random_permutation(5)));
+        assert!(!is_in_group(stab.iter(), &random_permutation(6)));
+    }
+    */
 }
