@@ -80,6 +80,11 @@ impl Group {
         Group::new(&[])
     }
 
+    /// Creates the Klein 4 group
+    pub fn klein_4() -> Self {
+        Self::dihedral_2n(2)
+    }
+
     /// This generates the dihedral group D_2n. I.e. the group of isometries on the regular n-gon
     pub fn dihedral_2n(n: usize) -> Self {
         //https://math.stackexchange.com/questions/3614294/choice-of-generator-in-dihedral-group

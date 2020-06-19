@@ -167,10 +167,10 @@ mod tests {
 
     #[test]
     fn random_test() {
-        let g = Group::dihedral_2n(4);
+        let g = Group::klein_4();
         let chain = Stabchain::new(g);
-        for record in chain.chain {
-            println!("Base: {}", record.base);
+        for record in &chain.chain {
+            println!("Base: {}", record.base + 1);
             print!("Gens: <");
             for gen in record.gens.generators() {
                 print!("{}, ", gen);
@@ -178,6 +178,7 @@ mod tests {
             println!(">");
             println!();
         }
-        panic!()
+
+        dbg!(chain);
     }
 }
