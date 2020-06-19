@@ -44,7 +44,7 @@ impl StabchainBuilder {
         if self.bottom_of_the_chain() {
             return &[];
         }
-        &self.chain[0..self.current_pos]
+        &self.chain[self.current_pos..self.chain.len()]
     }
 
     fn extend_lower_level(&mut self, p: Permutation) {
@@ -90,13 +90,12 @@ impl StabchainBuilder {
         let mut new_transversal = HashMap::new();
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
+            let orbit_element_repr = record.transversal.get(&orbit_element).unwrap();
             let new_image = p.apply(orbit_element);
             // If we already saw the element
             if record.transversal.contains_key(&new_image)
                 || new_transversal.contains_key(&new_image)
             {
-                let orbit_element_repr = record.transversal.get(&orbit_element).unwrap();
-
                 let image_repr = record
                     .transversal
                     .get(&new_image)
@@ -107,11 +106,12 @@ impl StabchainBuilder {
                 self.extend_lower_level(new_perm);
             } else {
                 // TODO: Is this the correct way to update transversal
-                new_transversal.insert(new_image, p.clone());
+                new_transversal.insert(new_image, orbit_element_repr.multiply(&p));
             }
         }
 
         // We now want to check all the newly added elements
+        // TODO: We can probably elide one lookup here with another to_check
         to_check.extend(new_transversal.keys().copied());
 
         // Update the record
@@ -119,10 +119,10 @@ impl StabchainBuilder {
 
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
+            let orbit_element_repr = record.transversal.get(&orbit_element).unwrap().clone();
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
                 let new_image = generator.apply(orbit_element);
                 if record.transversal.contains_key(&new_image) {
-                    let orbit_element_repr = record.transversal.get(&orbit_element).unwrap();
                     let image_repr = record.transversal.get(&new_image).unwrap();
 
                     let new_perm = orbit_element_repr
@@ -131,7 +131,9 @@ impl StabchainBuilder {
                     self.extend_lower_level(new_perm);
                 } else {
                     // TODO: Is this how to update the transversal
-                    record.transversal.insert(new_image, generator.clone());
+                    record
+                        .transversal
+                        .insert(new_image, orbit_element_repr.multiply(generator));
                 }
             }
         }
@@ -158,4 +160,32 @@ pub struct StabchainRecord {
     base: usize,
     gens: Group,
     transversal: HashMap<usize, Permutation>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn random_test() {
+        use crate::perm::export::CyclePermutation;
+        /*
+        let g = Group::new(&[
+            CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into(),
+            CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into(),
+            CyclePermutation::from_vec(vec![vec![3, 4, 5]]).into(),
+        ]);
+        */
+        let g = Group::symmetric(3);
+        let chain = Stabchain::new(g);
+        for record in chain.chain {
+            println!("Base: {}", record.base);
+            print!("Gens: <");
+            for gen in record.gens.generators() {
+                print!("{}, ", gen);
+            }
+            println!(">");
+        }
+        panic!()
+    }
 }

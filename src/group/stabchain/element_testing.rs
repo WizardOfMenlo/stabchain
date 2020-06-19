@@ -2,6 +2,11 @@ use super::StabchainRecord;
 use crate::perm::Permutation;
 
 pub fn in_group<'a>(it: impl IntoIterator<Item = &'a StabchainRecord>, p: &Permutation) -> bool {
+    // Early exit
+    if p.is_id() {
+        return true;
+    }
+
     let mut g = p.clone();
     for record in it {
         let base = record.base;

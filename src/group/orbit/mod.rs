@@ -124,7 +124,7 @@ pub fn orbit_complete_opt(g: &Group, w: usize) -> HashSet<usize> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     #[test]
     fn orbit_of_identity() {
