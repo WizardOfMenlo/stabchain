@@ -111,15 +111,14 @@ impl StabchainBuilder {
         }
 
         // We now want to check all the newly added elements
-        // TODO: We can probably elide one lookup here with another to_check
-        to_check.extend(new_transversal.keys().copied());
+        let mut to_check =
+            VecDeque::from_iter(new_transversal.iter().map(|(o, p)| (*o, p.clone())));
 
         // Update the record
         record.transversal.extend(new_transversal);
 
         while !to_check.is_empty() {
-            let orbit_element = to_check.pop_back().unwrap();
-            let orbit_element_repr = record.transversal.get(&orbit_element).unwrap().clone();
+            let (orbit_element, orbit_element_repr) = to_check.pop_back().unwrap();
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
                 let new_image = generator.apply(orbit_element);
                 if record.transversal.contains_key(&new_image) {
