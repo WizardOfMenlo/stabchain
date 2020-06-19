@@ -14,7 +14,7 @@ pub struct Stabchain {
 
 impl Stabchain {
     /// Creates a stabilizer chain from a Group
-    pub fn new(g: Group) -> Self {
+    pub fn new(g: &Group) -> Self {
         let mut builder = StabchainBuilder::new();
         for gen in g.generators() {
             builder.extend(gen.clone());
@@ -215,7 +215,7 @@ mod tests {
             &Group::product(&Group::cyclic(500), &Group::cyclic(30)),
             &Group::cyclic(11),
         );
-        let chain = Stabchain::new(g);
+        let chain = Stabchain::new(&g);
         for record in &chain.chain {
             println!("Base: {}", record.base + 1);
             print!("Gens: <");

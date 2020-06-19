@@ -46,6 +46,11 @@ impl Group {
         orbit::factored_transversal::FactoredTransversal::new(self, base)
     }
 
+    /// Computes a stabilizer chain for this group
+    pub fn stabchain(&self) -> stabchain::Stabchain {
+        stabchain::Stabchain::new(self)
+    }
+
     /// Computes the smallest n s.t. G <= S_n
     pub fn symmetric_super_order(&self) -> usize {
         self.generators
