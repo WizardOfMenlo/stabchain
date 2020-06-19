@@ -168,14 +168,6 @@ mod tests {
 
     #[test]
     fn random_test() {
-        use crate::perm::export::CyclePermutation;
-        /*
-        let g = Group::new(&[
-            CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into(),
-            CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into(),
-            CyclePermutation::from_vec(vec![vec![3, 4, 5]]).into(),
-        ]);
-        */
         let g = Group::dihedral_2n(4);
         let chain = Stabchain::new(g);
         for record in chain.chain {
