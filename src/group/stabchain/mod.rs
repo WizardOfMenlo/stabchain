@@ -176,7 +176,7 @@ mod tests {
             CyclePermutation::from_vec(vec![vec![3, 4, 5]]).into(),
         ]);
         */
-        let g = Group::symmetric(3);
+        let g = Group::dihedral_2n(4);
         let chain = Stabchain::new(g);
         for record in chain.chain {
             println!("Base: {}", record.base);
@@ -185,6 +185,7 @@ mod tests {
                 print!("{}, ", gen);
             }
             println!(">");
+            println!();
         }
         panic!()
     }
