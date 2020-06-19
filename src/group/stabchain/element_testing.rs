@@ -14,5 +14,5 @@ pub fn in_group<'a>(it: impl IntoIterator<Item = &'a StabchainRecord>, p: &Permu
         g = g.divide(&representative);
     }
 
-    return g.is_id();
+    g.is_id()
 }

@@ -6,6 +6,8 @@ use crate::perm::export::CyclePermutation;
 use crate::perm::utils::order_n_permutation;
 use crate::perm::Permutation;
 
+use std::iter::FromIterator;
+
 #[derive(Debug, Clone)]
 pub struct Group {
     generators: Vec<Permutation>,
@@ -131,6 +133,13 @@ impl Group {
             CyclePermutation::from_vec(vec![vec![1, 2]]).into(),
             order_n_permutation(1, n),
         ])
+    }
+}
+
+impl FromIterator<Permutation> for Group {
+    fn from_iter<T: IntoIterator<Item = Permutation>>(iter: T) -> Group {
+        let v = iter.into_iter().collect();
+        Group { generators: v }
     }
 }
 

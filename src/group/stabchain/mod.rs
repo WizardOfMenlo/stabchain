@@ -2,40 +2,52 @@ pub mod element_testing;
 
 use crate::group::Group;
 use crate::perm::Permutation;
-use std::collections::HashMap;
+
+use std::collections::{HashMap, VecDeque};
+use std::iter::FromIterator;
 
 #[derive(Debug)]
 pub struct Stabchain {}
 
 struct StabchainBuilder {
-    // None represents the last element
-    current_pos: Option<usize>,
+    // None represents the tail element
+    current_pos: usize,
     chain: Vec<StabchainRecord>,
 }
 
 impl StabchainBuilder {
     fn new() -> Self {
         StabchainBuilder {
-            current_pos: None,
+            current_pos: 0,
             chain: Vec::new(),
         }
     }
 
-    fn current_chain(&self) -> &[StabchainRecord] {
-        if self.current_pos.is_none() {
-            return &[];
-        }
-        &self.chain[0..self.current_pos.unwrap()]
+    fn bottom_of_the_chain(&self) -> bool {
+        self.current_pos == self.chain.len()
     }
 
-    fn extend(&mut self, p: Permutation) {
-        // Note that id always in in_group
+    fn current_chain(&self) -> &[StabchainRecord] {
+        if self.bottom_of_the_chain() {
+            return &[];
+        }
+        &self.chain[0..self.current_pos]
+    }
+
+    fn extend_lower_level(&mut self, p: Permutation) {
+        self.current_pos += 1;
+        self.extend_inner(p);
+        self.current_pos -= 1;
+    }
+
+    fn extend_inner(&mut self, p: Permutation) {
+        // Note that id always in group
         if element_testing::in_group(self.current_chain(), &p) {
             return;
         }
 
         // Bottom of the chain
-        if self.current_pos.is_none() {
+        if self.bottom_of_the_chain() {
             let moved_point = p.lmp().expect("This should never be id");
             let mut record = StabchainRecord {
                 base: moved_point,
@@ -53,15 +65,76 @@ impl StabchainBuilder {
                 representative = representative.multiply(&p);
             }
             self.chain.push(record);
-            // Note that we do not set current_pos, as it is already None and we are going always down the chain
-            self.extend(representative);
+            self.extend_lower_level(representative);
             return;
         }
 
         // Then we already had something in this layer
+        // Gets the record to be updated
+        let mut record = self.chain[self.current_pos].clone();
+
+        let mut to_check = VecDeque::from_iter(record.transversal.keys().copied());
+        let mut new_transversal = HashMap::new();
+        while !to_check.is_empty() {
+            let orbit_element = to_check.pop_back().unwrap();
+            let new_image = p.apply(orbit_element);
+            // If we already saw the element
+            if record.transversal.contains_key(&new_image)
+                || new_transversal.contains_key(&new_image)
+            {
+                let orbit_element_repr = record.transversal.get(&orbit_element).unwrap();
+
+                let image_repr = record
+                    .transversal
+                    .get(&new_image)
+                    .or_else(|| new_transversal.get(&new_image))
+                    .unwrap();
+
+                let new_perm = orbit_element_repr.multiply(&p).multiply(&image_repr.inv());
+                self.extend_lower_level(new_perm);
+            } else {
+                // TODO: Is this the correct way to update transversal
+                new_transversal.insert(new_image, p.clone());
+            }
+        }
+
+        // We now want to check all the newly added elements
+        to_check.extend(new_transversal.keys().copied());
+
+        // Update the record
+        record.transversal.extend(new_transversal);
+
+        while !to_check.is_empty() {
+            let orbit_element = to_check.pop_back().unwrap();
+            for generator in std::iter::once(&p).chain(record.gens.generators()) {
+                let new_image = generator.apply(orbit_element);
+                if record.transversal.contains_key(&new_image) {
+                    let orbit_element_repr = record.transversal.get(&orbit_element).unwrap();
+                    let image_repr = record.transversal.get(&new_image).unwrap();
+
+                    let new_perm = orbit_element_repr
+                        .multiply(generator)
+                        .multiply(&image_repr.inv());
+                    self.extend_lower_level(new_perm);
+                } else {
+                    // TODO: Is this how to update the transversal
+                    record.transversal.insert(new_image, generator.clone());
+                }
+            }
+        }
+
+        record.gens =
+            Group::from_iter(std::iter::once(&p).chain(record.gens.generators()).cloned());
+        self.chain[self.current_pos] = record;
+    }
+
+    fn extend(&mut self, p: Permutation) {
+        self.current_pos = 0;
+        self.extend_inner(p);
     }
 }
 
+#[derive(Clone)]
 pub struct StabchainRecord {
     base: usize,
     gens: Group,
