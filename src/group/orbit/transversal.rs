@@ -18,10 +18,11 @@ pub struct Transversal {
 impl Transversal {
     /// Create from the group
     pub fn new(g: &Group, base: usize) -> Self {
-        Transversal {
-            base,
-            transversal: transversal(g, base),
-        }
+        Self::from_raw(base, transversal(g, base))
+    }
+
+    pub(crate) fn from_raw(base: usize, transversal: HashMap<usize, Permutation>) -> Self {
+        Transversal { base, transversal }
     }
 
     /// Get the base of the transversal

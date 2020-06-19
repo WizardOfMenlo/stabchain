@@ -1,5 +1,6 @@
 pub mod element_testing;
 
+use crate::group::orbit::transversal::Transversal;
 use crate::group::Group;
 use crate::perm::Permutation;
 
@@ -12,6 +13,7 @@ pub struct Stabchain {
 }
 
 impl Stabchain {
+    /// Creates a stabilizer chain from a Group
     pub fn new(g: Group) -> Self {
         let mut builder = StabchainBuilder::new();
         for gen in g.generators() {
@@ -20,10 +22,34 @@ impl Stabchain {
 
         builder.build()
     }
+
+    /// Get the base corresponding to this stabilizer chain
+    pub fn base(&self) -> Vec<usize> {
+        self.chain.iter().map(|g| g.base).collect()
+    }
+
+    /// Get G^(n)
+    pub fn layer(&self, n: usize) -> Option<&StabchainRecord> {
+        self.chain.get(n)
+    }
+
+    /// Get an iterator over the records
+    pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord> {
+        self.chain.iter()
+    }
 }
 
+impl IntoIterator for Stabchain {
+    type Item = StabchainRecord;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.chain.into_iter()
+    }
+}
+
+// Helper struct, used to build the stabilizer chain
 struct StabchainBuilder {
-    // None represents the tail element
     current_pos: usize,
     chain: Vec<StabchainRecord>,
 }
@@ -154,11 +180,29 @@ impl StabchainBuilder {
     }
 }
 
+/// All the information stored in a layer of the stabilizer chain
 #[derive(Debug, Clone)]
 pub struct StabchainRecord {
     base: usize,
     gens: Group,
     transversal: HashMap<usize, Permutation>,
+}
+
+impl StabchainRecord {
+    /// Get the associated group
+    pub fn group(&self) -> &Group {
+        &self.gens
+    }
+
+    /// Get the base of this layer, i.e. the element that the next layer stabilizes
+    pub fn base(&self) -> usize {
+        self.base
+    }
+
+    /// Get the transversal of the base under this group
+    pub fn transversal(&self) -> Transversal {
+        Transversal::from_raw(self.base, self.transversal.clone())
+    }
 }
 
 #[cfg(test)]
@@ -167,7 +211,10 @@ mod tests {
 
     #[test]
     fn random_test() {
-        let g = Group::klein_4();
+        let g = Group::product(
+            &Group::product(&Group::cyclic(500), &Group::cyclic(30)),
+            &Group::cyclic(11),
+        );
         let chain = Stabchain::new(g);
         for record in &chain.chain {
             println!("Base: {}", record.base + 1);
@@ -179,6 +226,6 @@ mod tests {
             println!();
         }
 
-        dbg!(chain);
+        panic!();
     }
 }
