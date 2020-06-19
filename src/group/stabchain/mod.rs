@@ -7,7 +7,20 @@ use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
 #[derive(Debug)]
-pub struct Stabchain {}
+pub struct Stabchain {
+    chain: Vec<StabchainRecord>,
+}
+
+impl Stabchain {
+    pub fn new(g: Group) -> Self {
+        let mut builder = StabchainBuilder::new();
+        for gen in g.generators() {
+            builder.extend(gen.clone());
+        }
+
+        builder.build()
+    }
+}
 
 struct StabchainBuilder {
     // None represents the tail element
@@ -125,6 +138,8 @@ impl StabchainBuilder {
 
         record.gens =
             Group::from_iter(std::iter::once(&p).chain(record.gens.generators()).cloned());
+
+        // Store the updated record in the chain
         self.chain[self.current_pos] = record;
     }
 
@@ -132,9 +147,13 @@ impl StabchainBuilder {
         self.current_pos = 0;
         self.extend_inner(p);
     }
+
+    fn build(self) -> Stabchain {
+        Stabchain { chain: self.chain }
+    }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct StabchainRecord {
     base: usize,
     gens: Group,
