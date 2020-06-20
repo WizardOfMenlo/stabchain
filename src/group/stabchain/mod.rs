@@ -129,6 +129,7 @@ impl StabchainBuilder {
             let orbit_element = to_check.pop_back().unwrap();
             let orbit_element_repr = record.transversal.get(&orbit_element).unwrap();
             let new_image = p.apply(orbit_element);
+
             // If we already saw the element
             if record.transversal.contains_key(&new_image)
                 || new_transversal.contains_key(&new_image)
@@ -280,6 +281,13 @@ mod tests {
     fn symmetric_chain() {
         let g = Group::symmetric(5);
         let chain = g.stabchain();
+        for record in chain.iter() {
+            println!("{}", record.base + 1);
+            println!("{}", &record.gens);
+            println!();
+        }
+
+        dbg!(&chain);
         check_well_formed_chain(&chain);
     }
 }
