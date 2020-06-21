@@ -155,27 +155,39 @@ impl StabchainBuilder {
         // Update the record
         record.transversal.extend(new_transversal);
 
+        // While we have orbit elements (and representatives to check)
         while !to_check.is_empty() {
+            // Get the pair
             let (orbit_element, orbit_element_repr) = to_check.pop_back().unwrap();
+
+            // For each generator (and p)
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
                 let new_image = generator.apply(orbit_element);
+
+                // If we have already seen the image
                 if record.transversal.contains_key(&new_image) {
+                    // Get the representative
                     let image_repr = record.transversal.get(&new_image).unwrap();
 
+                    // Extend lower level
                     let new_perm = orbit_element_repr
                         .multiply(generator)
                         .multiply(&image_repr.inv());
                     self.extend_lower_level(new_perm);
                 } else {
+                    // Compute the repr s.t. repr^(orbit_element_repr * generator) = orbit_element ^ generator = new_image
                     let repr = orbit_element_repr.multiply(generator);
-                    // TODO: Is this how to update the transversal
+
+                    // Store in transversal
                     record.transversal.insert(new_image, repr.clone());
 
+                    // Update and ask to check the new image
                     to_check.push_back((new_image, repr));
                 }
             }
         }
 
+        // Update the generators adding p
         record.gens =
             Group::from_iter(std::iter::once(&p).chain(record.gens.generators()).cloned());
 
@@ -232,7 +244,7 @@ mod tests {
             // We do not directly check the transversal since representatives are not unique
             assert_eq!(transversal.orbit(), gens.orbit(record.base));
 
-            // Check taht everything is stabilized correctly
+            // Check that everything is stabilized correctly
             if !previous.is_none() {
                 let stabilized = previous.unwrap();
                 assert_eq!(gens.orbit(stabilized).len(), 1);
