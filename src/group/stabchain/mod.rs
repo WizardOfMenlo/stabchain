@@ -167,10 +167,11 @@ impl StabchainBuilder {
                         .multiply(&image_repr.inv());
                     self.extend_lower_level(new_perm);
                 } else {
+                    let repr = orbit_element_repr.multiply(generator);
                     // TODO: Is this how to update the transversal
-                    record
-                        .transversal
-                        .insert(new_image, orbit_element_repr.multiply(generator));
+                    record.transversal.insert(new_image, repr.clone());
+
+                    to_check.push_back((new_image, repr));
                 }
             }
         }
@@ -281,13 +282,6 @@ mod tests {
     fn symmetric_chain() {
         let g = Group::symmetric(5);
         let chain = g.stabchain();
-        for record in chain.iter() {
-            println!("{}", record.base + 1);
-            println!("{}", &record.gens);
-            println!();
-        }
-
-        dbg!(&chain);
         check_well_formed_chain(&chain);
     }
 }
