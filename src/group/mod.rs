@@ -1,4 +1,5 @@
 pub mod orbit;
+pub mod random_perm;
 pub mod stabchain;
 pub mod utils;
 
@@ -111,7 +112,7 @@ impl Group {
         }
         .into();
 
-        Group::new(&[reflection_perm, order_n_permutation(1, 2 * n)])
+        Group::new(&[reflection_perm, order_n_permutation(1, n)])
     }
 
     /// Generate the cyclical group on n elements (more accurately, generates the cyclical group from a cycle on 1..=n)
@@ -210,7 +211,7 @@ mod tests {
     fn check_symmetric_super() {
         assert_eq!(Group::trivial().symmetric_super_order(), 1);
         assert_eq!(Group::symmetric(10).symmetric_super_order(), 10);
-        assert_eq!(Group::dihedral_2n(10).symmetric_super_order(), 20);
+        assert_eq!(Group::dihedral_2n(10).symmetric_super_order(), 10);
         assert_eq!(Group::cyclic(15).symmetric_super_order(), 15);
     }
 

@@ -23,8 +23,10 @@ impl FactoredTransversal {
     /// let fc = FactoredTransversal::new(&Group::symmetric(10), 1);
     ///```
     pub fn new(g: &Group, base: usize) -> Self {
-        let gens = &g.generators[..];
-        Self::from_generators(base, gens)
+        FactoredTransversal {
+            base,
+            transversal: factored_transversal(g, base),
+        }
     }
 
     /// Given a set of generating elements and element, construct the factored transversal.
@@ -35,27 +37,7 @@ impl FactoredTransversal {
     /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
     ///```
     pub fn from_generators(base: usize, gens: &[Permutation]) -> Self {
-        let mut transversal = HashMap::new();
-        let id = Permutation::id();
-        transversal.insert(base, id);
-        // Orbit elements that have not been used yet.
-        let mut to_traverse = VecDeque::new();
-        to_traverse.push_back(base);
-        // While there are still elements of the orbit unused.
-        while !to_traverse.is_empty() {
-            //Take an unused element.
-            let delta = to_traverse.pop_front().unwrap();
-            for g in gens {
-                let point = g.apply(delta);
-
-                // If the orbit doensn't contain this value, then add it to the factored transversal.
-                transversal.entry(point).or_insert_with(|| {
-                    to_traverse.push_back(point);
-                    g.inv()
-                });
-            }
-        }
-        FactoredTransversal { base, transversal }
+        FactoredTransversal::new(&Group::new(gens), base)
     }
 
     /// Calculate a representative of the given element in the orbit, or None if this element isn't in the orbit.
@@ -131,6 +113,65 @@ impl FactoredTransversal {
     pub fn orbit(&self) -> super::Orbit {
         self.into()
     }
+}
+
+/// Computes the factored transversal for a Group
+pub fn factored_transversal(g: &Group, base: usize) -> HashMap<usize, Permutation> {
+    let gens = g.generators();
+    let mut transversal = HashMap::new();
+    let id = Permutation::id();
+    transversal.insert(base, id);
+    // Orbit elements that have not been used yet.
+    let mut to_traverse = VecDeque::new();
+    to_traverse.push_back(base);
+    // While there are still elements of the orbit unused.
+    while !to_traverse.is_empty() {
+        //Take an unused element.
+        let delta = to_traverse.pop_front().unwrap();
+        for g in gens {
+            let point = g.apply(delta);
+
+            // If the orbit doensn't contain this value, then add it to the factored transversal.
+            transversal.entry(point).or_insert_with(|| {
+                to_traverse.push_back(point);
+                g.inv()
+            });
+        }
+    }
+
+    transversal
+}
+
+/// Computes the factored transversal for a Group. Use optmization on complete orbits
+pub fn factored_transversal_complete_opt(g: &Group, base: usize) -> HashMap<usize, Permutation> {
+    let maximal_orbit_size = g.symmetric_super_order();
+    let gens = g.generators();
+    let mut transversal = HashMap::new();
+    let id = Permutation::id();
+    transversal.insert(base, id);
+    // Orbit elements that have not been used yet.
+    let mut to_traverse = VecDeque::new();
+    to_traverse.push_back(base);
+    // While there are still elements of the orbit unused.
+    while !to_traverse.is_empty() {
+        //Take an unused element.
+        let delta = to_traverse.pop_front().unwrap();
+        for g in gens {
+            let point = g.apply(delta);
+
+            // If the orbit doensn't contain this value, then add it to the factored transversal.
+            transversal.entry(point).or_insert_with(|| {
+                to_traverse.push_back(point);
+                g.inv()
+            });
+
+            if transversal.len() == maximal_orbit_size {
+                return transversal;
+            }
+        }
+    }
+
+    transversal
 }
 
 #[cfg(test)]

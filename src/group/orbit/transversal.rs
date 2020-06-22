@@ -85,6 +85,43 @@ pub fn transversal(g: &Group, base: usize) -> HashMap<usize, Permutation> {
     transversal
 }
 
+/// Optimized version of transversal which does less work on complete groups
+// Needed since entry requires &mut
+#[allow(clippy::map_entry)]
+pub fn transversal_complete_opt(g: &Group, base: usize) -> HashMap<usize, Permutation> {
+    // Get the generatos
+    let gens = &g.generators[..];
+    let maximal_orbit_size = g.symmetric_super_order();
+    let mut transversal = HashMap::new();
+
+    // Init the transversal
+    transversal.insert(base, Permutation::id());
+
+    // We use this to store elements to expand
+    let mut to_traverse = VecDeque::new();
+    to_traverse.push_back(base);
+
+    // While we have stuff to do
+    while !to_traverse.is_empty() {
+        let delta = to_traverse.pop_front().unwrap();
+        for g in gens {
+            let gamma = g.apply(delta);
+
+            if !transversal.contains_key(&gamma) {
+                to_traverse.push_back(gamma);
+                let delta_repr = transversal.get(&delta).cloned().unwrap();
+                transversal.insert(gamma, delta_repr.multiply(g));
+            }
+
+            if transversal.len() == maximal_orbit_size {
+                return transversal;
+            }
+        }
+    }
+
+    transversal
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

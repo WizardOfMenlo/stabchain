@@ -154,7 +154,7 @@ mod tests {
         let g = Group::dihedral_2n(5);
         // All points are deranged
 
-        assert_eq!(orbit(&g, 1), HashSet::from_iter(0..10));
+        assert_eq!(orbit(&g, 1), HashSet::from_iter(0..5));
     }
 
     #[test]
