@@ -54,10 +54,14 @@ impl Transversal {
 use std::fmt;
 impl fmt::Display for Transversal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[Transversal: base := {}, elements := {{", self.base(),)?;
+        write!(
+            f,
+            "[Transversal: base := {}, elements := {{",
+            self.base() + 1,
+        )?;
 
         for (orbit, repr) in &self.transversal {
-            write!(f, "({}, {}) ", orbit, repr)?
+            write!(f, "({}, {}) ", orbit + 1, repr)?
         }
 
         write!(f, "}}]")

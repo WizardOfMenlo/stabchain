@@ -73,8 +73,8 @@ impl fmt::Display for Orbit {
         write!(
             f,
             "[Orbit: base := {}, elements := {:?} ]",
-            self.base(),
-            self.orbit
+            self.base() + 1,
+            self.orbit.iter().map(|i| i + 1).collect::<HashSet<_>>()
         )
     }
 }

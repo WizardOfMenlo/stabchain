@@ -121,11 +121,11 @@ impl fmt::Display for FactoredTransversal {
         write!(
             f,
             "[FactoredTransversal: base := {}, elements := {{",
-            self.base(),
+            self.base() + 1,
         )?;
 
         for (orbit, repr) in &self.transversal {
-            write!(f, "({}, {}) ", orbit, repr)?
+            write!(f, "({}, {}) ", orbit + 1, repr)?
         }
 
         write!(f, "}}]")

@@ -291,7 +291,7 @@ impl fmt::Display for Stabchain {
 
 impl fmt::Display for StabchainRecord {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[base := {}, {}]", self.base(), self.group())
+        write!(f, "[base := {}, {}]", self.base() + 1, self.group())
     }
 }
 
