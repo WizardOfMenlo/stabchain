@@ -1,8 +1,10 @@
 pub mod element_testing;
+mod moved_point_selector;
 
 use crate::group::orbit::transversal::Transversal;
 use crate::group::Group;
 use crate::perm::Permutation;
+use moved_point_selector::MovedPointSelector;
 
 use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
@@ -13,14 +15,22 @@ pub struct Stabchain {
 }
 
 impl Stabchain {
-    /// Creates a stabilizer chain from a Group
-    pub fn new(g: &Group) -> Self {
-        let mut builder = StabchainBuilder::new();
+    fn new_impl(g: &Group, selector: impl MovedPointSelector) -> Self {
+        let mut builder = StabchainBuilder::new(selector);
         for gen in g.generators() {
             builder.extend(gen.clone());
         }
 
         builder.build()
+    }
+
+    /// Creates a stabilizer chain from a Group
+    pub fn new(g: &Group) -> Self {
+        Self::new_impl(g, moved_point_selector::LmpSelector)
+    }
+
+    pub fn new_with_base(g: &Group, base: &[usize]) -> Self {
+        Self::new_impl(g, moved_point_selector::FixedBaseSelector::new(base))
     }
 
     /// Get the base corresponding to this stabilizer chain
@@ -60,16 +70,18 @@ impl IntoIterator for Stabchain {
 }
 
 // Helper struct, used to build the stabilizer chain
-struct StabchainBuilder {
+struct StabchainBuilder<T: MovedPointSelector> {
     current_pos: usize,
     chain: Vec<StabchainRecord>,
+    selector: T,
 }
 
-impl StabchainBuilder {
-    fn new() -> Self {
+impl<T: MovedPointSelector> StabchainBuilder<T> {
+    fn new(selector: T) -> Self {
         StabchainBuilder {
             current_pos: 0,
             chain: Vec::new(),
+            selector,
         }
     }
 
@@ -98,7 +110,7 @@ impl StabchainBuilder {
 
         // Bottom of the chain
         if self.bottom_of_the_chain() {
-            let moved_point = p.lmp().expect("This should never be id");
+            let moved_point = self.selector.moved_point(&p);
             let mut record = StabchainRecord {
                 base: moved_point,
                 gens: Group::new(&[p.clone()]),

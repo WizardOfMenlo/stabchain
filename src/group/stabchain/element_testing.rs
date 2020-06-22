@@ -41,7 +41,15 @@ mod tests {
         let g = Group::symmetric(5);
         let stab = g.stabchain();
         assert!(is_in_group(stab.iter(), &Permutation::id()));
-        assert!(is_in_group(stab.iter(), &random_permutation(5)));
-        assert!(!is_in_group(stab.iter(), &random_permutation(6)));
+        let perm = random_permutation(5);
+
+        for g in stab.iter() {
+            println!("base := {}", g.base() + 1);
+            println!("{}", g.group());
+        }
+
+        dbg!(&stab);
+        dbg!(&perm);
+        assert!(is_in_group(stab.iter(), &perm));
     }
 }

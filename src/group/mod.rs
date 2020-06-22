@@ -51,6 +51,11 @@ impl Group {
         stabchain::Stabchain::new(self)
     }
 
+    /// Computes a stabilizer chain for this group with a base
+    pub fn stabchain_base(&self, base: &[usize]) -> stabchain::Stabchain {
+        stabchain::Stabchain::new_with_base(self, base)
+    }
+
     /// Computes the smallest n s.t. G <= S_n
     pub fn symmetric_super_order(&self) -> usize {
         self.generators
