@@ -47,6 +47,12 @@ mod tests {
     }
 
     #[test]
+    fn test_alternating() {
+        let g = Group::alternating(4);
+        assert_eq!(group_elements(&g).generators().len(), 12);
+    }
+
+    #[test]
     fn test_symmetric() {
         let g = Group::symmetric(4);
         assert_eq!(group_elements(&g).generators().len(), 24);

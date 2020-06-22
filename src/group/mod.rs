@@ -58,6 +58,12 @@ impl Group {
         stabchain::Stabchain::new_with_base(self, base)
     }
 
+    /// Bruteforce the elements to get all elements in the group
+    /// Unless time is a very cheap commodity, do not do on large groups
+    pub fn bruteforce_elements(&self) -> Self {
+        brute_force::group_elements(self)
+    }
+
     /// Computes the smallest n s.t. G <= S_n
     pub fn symmetric_super_order(&self) -> usize {
         self.generators
