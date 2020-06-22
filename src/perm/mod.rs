@@ -39,8 +39,8 @@ impl Permutation {
     /// ```
     /// use stabchain::perm::export::CyclePermutation;
     /// use stabchain::perm::Permutation;
-    /// let perm : Permutation = CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into();
-    /// assert_eq!(perm.shift(5), CyclePermutation::from_vec(vec![vec![7, 8, 9]]).into())
+    /// let perm : Permutation = CyclePermutation::single_cycle(&[2, 3, 4]).into();
+    /// assert_eq!(perm.shift(5), CyclePermutation::single_cycle(&[7, 8, 9]).into())
     /// ```
     pub fn shift(&self, k: usize) -> Permutation {
         if self.is_id() {
@@ -439,8 +439,8 @@ mod tests {
     #[test]
     fn test_shift() {
         use crate::perm::export::CyclePermutation;
-        let perm: Permutation = CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into();
-        let shifted: Permutation = CyclePermutation::from_vec(vec![vec![4, 5, 6]]).into();
+        let perm: Permutation = CyclePermutation::single_cycle(&[1, 2, 3]).into();
+        let shifted: Permutation = CyclePermutation::single_cycle(&[4, 5, 6]).into();
         assert_eq!(perm.shift(3), shifted)
     }
 }

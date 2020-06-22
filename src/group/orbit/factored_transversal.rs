@@ -276,8 +276,8 @@ mod tests {
         use crate::perm::export::CyclePermutation;
         // Cycle notation is used for conveninece, but we do need to switch to 0 indexed for assertions.
         let gens: Vec<Permutation> = vec![
-            CyclePermutation::from_vec(vec![vec![1, 2, 6]]).into(),
-            CyclePermutation::from_vec(vec![vec![3, 5, 7]]).into(),
+            CyclePermutation::single_cycle(&[1, 2, 6]).into(),
+            CyclePermutation::single_cycle(&[3, 5, 7]).into(),
         ];
         let fc1 = FactoredTransversal::from_generators(5, &gens[..]);
         assert_eq!(3, fc1.len());

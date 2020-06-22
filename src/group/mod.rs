@@ -259,7 +259,7 @@ mod tests {
         use crate::perm::Permutation;
         use std::collections::HashSet;
 
-        let perm: Permutation = CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into();
+        let perm: Permutation = CyclePermutation::single_cycle(&[1, 2, 3]).into();
 
         let g = Group::new(&[perm.clone()]);
         let prod = Group::product(&g, &g);
@@ -267,7 +267,7 @@ mod tests {
         let gens: HashSet<_> = prod.generators().iter().cloned().collect();
         assert_eq!(prod.generators().len(), 2);
         assert!(gens.contains(&perm));
-        assert!(gens.contains(&(CyclePermutation::from_vec(vec![vec![4, 5, 6]]).into())));
+        assert!(gens.contains(&(CyclePermutation::single_cycle(&[4, 5, 6]).into())));
     }
 
     #[test]

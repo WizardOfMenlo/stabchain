@@ -151,7 +151,7 @@ mod tests {
 
     #[test]
     fn create_from_cycles() {
-        let cyclic = CyclePermutation::from_vec(vec![vec![1, 2, 3, 4, 5]]);
+        let cyclic = CyclePermutation::single_cycle(&[1, 2, 3, 4, 5]);
         assert_eq!(cyclic.cycles().len(), 1);
     }
 
@@ -181,7 +181,7 @@ mod tests {
 
     #[test]
     fn cyclical_to_classical_transposition() {
-        let cyclic: ClassicalPermutation = CyclePermutation::from_vec(vec![vec![1, 2]]).into();
+        let cyclic: ClassicalPermutation = CyclePermutation::single_cycle(&[1, 2]).into();
         let classic = ClassicalPermutation::from_slice(&[2, 1]);
         assert_eq!(cyclic, classic);
     }
