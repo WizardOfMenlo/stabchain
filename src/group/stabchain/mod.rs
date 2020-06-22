@@ -241,6 +241,24 @@ impl StabchainRecord {
     }
 }
 
+use std::fmt;
+
+impl fmt::Display for Stabchain {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for i in self.iter() {
+            write!(f, "{}", i)?
+        }
+
+        Ok(())
+    }
+}
+
+impl fmt::Display for StabchainRecord {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[ base := {}, {}]", self.base(), self.group())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -323,19 +341,21 @@ mod tests {
         use crate::perm::export::CyclePermutation;
         use std::collections::HashMap;
 
+        let g = Group::new(&[
+            CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into(),
+            CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into(),
+        ]);
+
         let chain = Stabchain {
             chain: vec![
                 StabchainRecord {
                     base: 0,
-                    gens: Group::new(&[
-                        CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into(),
-                        CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into(),
-                    ]),
+                    gens: g.clone(),
                     transversal: {
                         let mut m = HashMap::new();
                         m.insert(0, Permutation::id());
-                        m.insert(1, CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into());
-                        m.insert(2, CyclePermutation::from_vec(vec![vec![1, 3, 2]]).into());
+                        m.insert(1, CyclePermutation::single_cycle(&[1, 2, 3]).into());
+                        m.insert(2, CyclePermutation::single_cycle(&[1, 3, 2]).into());
                         m.insert(3, CyclePermutation::from_vec(vec![vec![1, 4, 2]]).into());
                         m
                     },
@@ -355,5 +375,11 @@ mod tests {
         };
 
         check_well_formed_chain(&chain);
+
+        println!("{}", g.stabchain_base(&[0, 1]));
+        println!();
+        println!("{}", chain);
+
+        panic!();
     }
 }
