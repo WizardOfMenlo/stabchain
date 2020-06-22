@@ -6,7 +6,8 @@ use std::iter::FromIterator;
 
 /// Very naive way to get all elements in a group
 /// Please don't do this in practice
-// I think this is a false positive
+// Since Permutation has RefCell it could theorically mess up the ordering. However, since the hash is dependant only
+// on the fixed part is will not in practice
 #[deny(clippy::mutable_key_type)]
 pub fn group_elements(g: &Group) -> Group {
     let gens = g.generators();
