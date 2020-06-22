@@ -1,3 +1,4 @@
+pub mod brute_force;
 pub mod orbit;
 pub mod random_perm;
 pub mod stabchain;
@@ -168,7 +169,7 @@ impl fmt::Display for Group {
 
         write!(f, "gens := <")?;
         for gen in &self.generators[0..self.generators.len() - 1] {
-            write!(f, "{},", gen)?;
+            write!(f, "{}, ", gen)?;
         }
         write!(f, "{}>", self.generators[self.generators.len() - 1])
     }

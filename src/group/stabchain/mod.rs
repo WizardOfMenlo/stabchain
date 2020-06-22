@@ -380,6 +380,16 @@ mod tests {
         println!();
         println!("{}", chain);
 
+        use crate::group::random_perm::RandPerm;
+
+        let mut gen = RandPerm::from_generators(11, g.generators().into(), 50);
+
+        for _ in 0..100 {
+            let perm = gen.random_permutation();
+            println!("{}", perm);
+            assert!(super::element_testing::is_in_group(chain.iter(), &perm));
+        }
+
         panic!();
     }
 }
