@@ -29,8 +29,44 @@ impl Stabchain {
         Self::new_impl(g, moved_point_selector::LmpSelector)
     }
 
+    /// Creates a stabilizer with a predefined base
     pub fn new_with_base(g: &Group, base: &[usize]) -> Self {
         Self::new_impl(g, moved_point_selector::FixedBaseSelector::new(base))
+    }
+
+    // Utility to get the chain
+    fn get_chain_at_layer(&self, layer: usize) -> &[StabchainRecord] {
+        // Infinite chain of trivial subgroups!
+        if self.chain.len() >= layer {
+            return &[];
+        }
+
+        &self.chain[layer..self.chain.len()]
+    }
+
+    /// Is the element in the group?
+    pub fn in_group(&self, g: &Permutation) -> bool {
+        self.in_subgroup(g, 0)
+    }
+
+    /// Check membership at the subgroup
+    pub fn in_subgroup(&self, g: &Permutation, layer: usize) -> bool {
+        element_testing::is_in_group(self.get_chain_at_layer(layer), g)
+    }
+
+    /// Get representatives that multiply to g
+    /// TODO: If there is something useful to do with these, make a struct for Vec<Permutation>
+    pub fn coset_representatives(&self, g: &Permutation) -> Option<Vec<Permutation>> {
+        self.coset_representatives_in_subgroup(g, 0)
+    }
+
+    /// Get representatives that multiply to g
+    pub fn coset_representatives_in_subgroup(
+        &self,
+        g: &Permutation,
+        layer: usize,
+    ) -> Option<Vec<Permutation>> {
+        element_testing::coset_representative(self.get_chain_at_layer(layer), g)
     }
 
     /// Get the base corresponding to this stabilizer chain
