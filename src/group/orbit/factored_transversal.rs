@@ -14,6 +14,29 @@ pub struct FactoredTransversal {
     pub(super) transversal: HashMap<usize, Permutation>,
 }
 
+pub fn representative_raw(
+    transversal: &HashMap<usize, Permutation>,
+    base: usize,
+    point: usize,
+) -> Option<Permutation> {
+    // Check if the element is in the orbit.
+    if !transversal.contains_key(&point) {
+        None
+    } else {
+        let mut orbit_point = point;
+        let mut rep = Permutation::id();
+        // Move along the orbit till we reach a representative that the base moves to the point.
+        while orbit_point != base {
+            let g_inv = transversal.get(&orbit_point).unwrap();
+            rep = rep.multiply(g_inv);
+            orbit_point = g_inv.apply(orbit_point);
+        }
+        // Invert at the end, as the inverses are used.
+        // If we want fgh, then we can instead do (h^-1, g^-1, f^-1)^-1.
+        Some(rep.inv())
+    }
+}
+
 #[allow(clippy::len_without_is_empty)]
 impl FactoredTransversal {
     /// Given a group, construct the factored transversal
@@ -49,22 +72,7 @@ impl FactoredTransversal {
     /// assert_eq!(None, fc.representative(2));
     ///```
     pub fn representative(&self, point: usize) -> Option<Permutation> {
-        // Check if the element is in the orbit.
-        if !self.in_orbit(point) {
-            None
-        } else {
-            let mut orbit_point = point;
-            let mut rep = Permutation::id();
-            // Move along the orbit till we reach a representative that the base moves to the point.
-            while orbit_point != self.base {
-                let g_inv = self.transversal.get(&orbit_point).unwrap();
-                rep = rep.multiply(g_inv);
-                orbit_point = g_inv.apply(orbit_point);
-            }
-            // Invert at the end, as the inverses are used.
-            // If we want fgh, then we can instead do (h^-1, g^-1, f^-1)^-1.
-            Some(rep.inv())
-        }
+        representative_raw(&self.transversal, self.base, point)
     }
 
     /// Get the base element of the Factored Transversal.
