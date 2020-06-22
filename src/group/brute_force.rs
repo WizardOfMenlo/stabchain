@@ -8,7 +8,7 @@ use std::iter::FromIterator;
 /// Please don't do this in practice
 // Since Permutation has RefCell it could theorically mess up the ordering. However, since the hash is dependant only
 // on the fixed part is will not in practice
-#[deny(clippy::mutable_key_type)]
+#[allow(clippy::mutable_key_type)]
 pub fn group_elements(g: &Group) -> Group {
     let gens = g.generators();
     let mut res = HashSet::new();
