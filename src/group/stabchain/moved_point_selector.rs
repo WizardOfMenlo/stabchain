@@ -23,7 +23,7 @@ pub(crate) struct FixedBaseSelector {
 impl FixedBaseSelector {
     pub(crate) fn new(base: &[usize]) -> Self {
         FixedBaseSelector {
-            base: base.into_iter().copied().collect(),
+            base: base.iter().copied().collect(),
         }
     }
 }

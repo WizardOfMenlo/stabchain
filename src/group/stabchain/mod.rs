@@ -138,6 +138,7 @@ impl<T: MovedPointSelector> StabchainBuilder<T> {
         self.current_pos -= 1;
     }
 
+    #[allow(clippy::map_entry)]
     fn extend_inner(&mut self, p: Permutation) {
         // Note that id always in group
         if element_testing::is_in_group(self.current_chain(), &p) {

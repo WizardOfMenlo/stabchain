@@ -6,6 +6,8 @@ use std::iter::FromIterator;
 
 /// Very naive way to get all elements in a group
 /// Please don't do this in practice
+// I think this is a false positive
+#[deny(clippy::mutable_key_type)]
 pub fn group_elements(g: &Group) -> Group {
     let gens = g.generators();
     let mut res = HashSet::new();
