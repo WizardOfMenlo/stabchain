@@ -51,6 +51,19 @@ impl Transversal {
     }
 }
 
+use std::fmt;
+impl fmt::Display for Transversal {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[Transversal: base := {}, elements := {{", self.base(),)?;
+
+        for (orbit, repr) in &self.transversal {
+            write!(f, "({}, {}) ", orbit, repr)?
+        }
+
+        write!(f, "}}]")
+    }
+}
+
 /// Computes the transversal of the base. It computes the orbit and the corresponding
 /// set of representatives
 
