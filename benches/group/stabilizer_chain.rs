@@ -3,7 +3,7 @@ const RANGE_OF_VALUES: [usize; 5] = [8, 10, 16, 20, 32];
 use stabchain::group::Group;
 
 fn stabchain_cyclic(c: &mut Criterion) {
-    let mut group = c.benchmark_group("group__stabchain__cyclic");
+    let mut group = c.benchmark_group("group__stabchain__ss__cyclic");
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
             let g = Group::cyclic(*i);
@@ -14,7 +14,7 @@ fn stabchain_cyclic(c: &mut Criterion) {
 }
 
 fn stabchain_symmetric(c: &mut Criterion) {
-    let mut group = c.benchmark_group("group__stabchain__symmetric");
+    let mut group = c.benchmark_group("group__stabchain__ss__symmetric");
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
             let g = Group::symmetric(*i);
@@ -25,7 +25,7 @@ fn stabchain_symmetric(c: &mut Criterion) {
 }
 
 fn stabchain_direct_product_symm(c: &mut Criterion) {
-    let mut group = c.benchmark_group("group__stabchain__product_symmetric");
+    let mut group = c.benchmark_group("group__stabchain__ss__product_symmetric");
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
             let g = Group::product(&Group::symmetric(*i), &Group::symmetric(*i));
