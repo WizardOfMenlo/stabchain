@@ -35,6 +35,11 @@ impl CyclePermutation {
         CyclePermutation::from_vec_unchecked(cycles)
     }
 
+    /// Been needing this for a while. (1 2 3)
+    pub fn single_cycle(cycle: &[usize]) -> Self {
+        Self::from_vec(vec![cycle.iter().copied().collect()])
+    }
+
     fn from_vec_unchecked(v: Vec<Vec<usize>>) -> Self {
         CyclePermutation { cycles: v }
     }

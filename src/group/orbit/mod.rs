@@ -42,6 +42,11 @@ impl Orbit {
     pub fn len(&self) -> usize {
         self.orbit.len()
     }
+
+    /// Get an iterator over orbit element
+    pub fn iter(&self) -> impl Iterator<Item = &usize> {
+        self.orbit.iter()
+    }
 }
 
 impl From<&factored_transversal::FactoredTransversal> for Orbit {
@@ -59,6 +64,18 @@ impl From<&transversal::Transversal> for Orbit {
             base: t.base(),
             orbit: t.transversal.keys().copied().collect(),
         }
+    }
+}
+
+use std::fmt;
+impl fmt::Display for Orbit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "[Orbit: base := {}, elements := {:?} ]",
+            self.base() + 1,
+            self.orbit.iter().map(|i| i + 1).collect::<HashSet<_>>()
+        )
     }
 }
 
@@ -124,7 +141,7 @@ pub fn orbit_complete_opt(g: &Group, w: usize) -> HashSet<usize> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::*;
     #[test]
     fn orbit_of_identity() {

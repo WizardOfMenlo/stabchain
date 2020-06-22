@@ -1,10 +1,14 @@
+pub mod brute_force;
 pub mod orbit;
 pub mod random_perm;
+pub mod stabchain;
 pub mod utils;
 
 use crate::perm::export::CyclePermutation;
 use crate::perm::utils::order_n_permutation;
 use crate::perm::Permutation;
+
+use std::iter::FromIterator;
 
 #[derive(Debug, Clone)]
 pub struct Group {
@@ -44,6 +48,22 @@ impl Group {
         orbit::factored_transversal::FactoredTransversal::new(self, base)
     }
 
+    /// Computes a stabilizer chain for this group
+    pub fn stabchain(&self) -> stabchain::Stabchain {
+        stabchain::Stabchain::new(self)
+    }
+
+    /// Computes a stabilizer chain for this group with a base
+    pub fn stabchain_base(&self, base: &[usize]) -> stabchain::Stabchain {
+        stabchain::Stabchain::new_with_base(self, base)
+    }
+
+    /// Bruteforce the elements to get all elements in the group
+    /// Unless time is a very cheap commodity, do not do on large groups
+    pub fn bruteforce_elements(&self) -> Self {
+        brute_force::group_elements(self)
+    }
+
     /// Computes the smallest n s.t. G <= S_n
     pub fn symmetric_super_order(&self) -> usize {
         self.generators
@@ -76,6 +96,11 @@ impl Group {
     pub fn trivial() -> Self {
         // TODO: Should we include the identity here?
         Group::new(&[])
+    }
+
+    /// Creates the Klein 4 group
+    pub fn klein_4() -> Self {
+        Self::dihedral_2n(2)
     }
 
     /// This generates the dihedral group D_2n. I.e. the group of isometries on the regular n-gon
@@ -134,18 +159,25 @@ impl Group {
     }
 }
 
+impl FromIterator<Permutation> for Group {
+    fn from_iter<T: IntoIterator<Item = Permutation>>(iter: T) -> Group {
+        let v = iter.into_iter().collect();
+        Group { generators: v }
+    }
+}
+
 use std::fmt;
 impl fmt::Display for Group {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.generators.is_empty() {
-            return write!(f, "gens := < >");
+            return write!(f, "[Group: gens := <>]");
         }
 
-        write!(f, "gens := <")?;
+        write!(f, "[Group: gens := <")?;
         for gen in &self.generators[0..self.generators.len() - 1] {
-            write!(f, "{},", gen)?;
+            write!(f, "{}, ", gen)?;
         }
-        write!(f, "{}>", self.generators[self.generators.len() - 1])
+        write!(f, "{}>]", self.generators[self.generators.len() - 1])
     }
 }
 

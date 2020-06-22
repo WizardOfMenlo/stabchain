@@ -115,6 +115,23 @@ impl FactoredTransversal {
     }
 }
 
+use std::fmt;
+impl fmt::Display for FactoredTransversal {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "[FactoredTransversal: base := {}, elements := {{",
+            self.base() + 1,
+        )?;
+
+        for (orbit, repr) in &self.transversal {
+            write!(f, "({}, {}) ", orbit + 1, repr)?
+        }
+
+        write!(f, "}}]")
+    }
+}
+
 /// Computes the factored transversal for a Group
 pub fn factored_transversal(g: &Group, base: usize) -> HashMap<usize, Permutation> {
     let gens = g.generators();

@@ -8,7 +8,7 @@ use std::collections::{HashMap, VecDeque};
 /// memory intensive. In applications please use FactoredTransversal
 /// (After some testing, it seems that it is also slower computationally,
 /// so don't use unless wanting some pain)
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Transversal {
     base: usize,
     pub(super) transversal: HashMap<usize, Permutation>,
@@ -18,10 +18,11 @@ pub struct Transversal {
 impl Transversal {
     /// Create from the group
     pub fn new(g: &Group, base: usize) -> Self {
-        Transversal {
-            base,
-            transversal: transversal(g, base),
-        }
+        Self::from_raw(base, transversal(g, base))
+    }
+
+    pub(crate) fn from_raw(base: usize, transversal: HashMap<usize, Permutation>) -> Self {
+        Transversal { base, transversal }
     }
 
     /// Get the base of the transversal
@@ -47,6 +48,23 @@ impl Transversal {
     /// Checks if element is in the orbit
     pub fn in_orbit(&self, delta: usize) -> bool {
         self.transversal.contains_key(&delta)
+    }
+}
+
+use std::fmt;
+impl fmt::Display for Transversal {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "[Transversal: base := {}, elements := {{",
+            self.base() + 1,
+        )?;
+
+        for (orbit, repr) in &self.transversal {
+            write!(f, "({}, {}) ", orbit + 1, repr)?
+        }
+
+        write!(f, "}}]")
     }
 }
 
