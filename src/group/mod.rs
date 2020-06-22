@@ -278,9 +278,9 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_row_col_symm() {
-        let _g = Group::make_row_col_symmetry(60, 60);
-        dbg!(_g.generators.len());
-        panic!()
+        let g = Group::make_row_col_symmetry(60, 60);
+        assert_eq!(g.generators.len(), 118);
     }
 }
