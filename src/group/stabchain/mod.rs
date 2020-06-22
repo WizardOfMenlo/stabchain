@@ -155,7 +155,6 @@ impl<T: MovedPointSelector> StabchainBuilder<T> {
                 let new_perm = orbit_element_repr.multiply(&p).multiply(&image_repr.inv());
                 self.extend_lower_level(new_perm);
             } else {
-                // TODO: Is this the correct way to update transversal
                 new_transversal.insert(new_image, orbit_element_repr.multiply(&p));
             }
         }
@@ -256,6 +255,16 @@ mod tests {
             // We do not directly check the transversal since representatives are not unique
             assert_eq!(transversal.orbit(), gens.orbit(record.base));
 
+            for elem in transversal.orbit().iter().copied() {
+                assert_eq!(
+                    elem,
+                    transversal
+                        .representative(elem)
+                        .unwrap()
+                        .apply(record.base())
+                );
+            }
+
             // Check that everything is stabilized correctly
             if !previous.is_none() {
                 let stabilized = previous.unwrap();
@@ -306,6 +315,45 @@ mod tests {
     fn symmetric_chain() {
         let g = Group::symmetric(5);
         let chain = g.stabchain();
+        check_well_formed_chain(&chain);
+    }
+
+    #[test]
+    fn book_example() {
+        use crate::perm::export::CyclePermutation;
+        use std::collections::HashMap;
+
+        let chain = Stabchain {
+            chain: vec![
+                StabchainRecord {
+                    base: 0,
+                    gens: Group::new(&[
+                        CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into(),
+                        CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into(),
+                    ]),
+                    transversal: {
+                        let mut m = HashMap::new();
+                        m.insert(0, Permutation::id());
+                        m.insert(1, CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into());
+                        m.insert(2, CyclePermutation::from_vec(vec![vec![1, 3, 2]]).into());
+                        m.insert(3, CyclePermutation::from_vec(vec![vec![1, 4, 2]]).into());
+                        m
+                    },
+                },
+                StabchainRecord {
+                    base: 1,
+                    gens: Group::new(&[CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into()]),
+                    transversal: {
+                        let mut m = HashMap::new();
+                        m.insert(1, Permutation::id());
+                        m.insert(2, CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into());
+                        m.insert(3, CyclePermutation::from_vec(vec![vec![2, 4, 3]]).into());
+                        m
+                    },
+                },
+            ],
+        };
+
         check_well_formed_chain(&chain);
     }
 }

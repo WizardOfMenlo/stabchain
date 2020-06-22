@@ -34,6 +34,7 @@ mod tests {
         assert!(is_in_group(stab.iter(), &Permutation::id()));
     }
 
+    /*
     #[test]
     fn perm_in_symmetric() {
         use crate::perm::utils::random_permutation;
@@ -52,4 +53,5 @@ mod tests {
         dbg!(&perm);
         assert!(is_in_group(stab.iter(), &perm));
     }
+    */
 }

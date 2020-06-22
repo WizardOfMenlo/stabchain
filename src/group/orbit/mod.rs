@@ -42,6 +42,11 @@ impl Orbit {
     pub fn len(&self) -> usize {
         self.orbit.len()
     }
+
+    /// Get an iterator over orbit element
+    pub fn iter(&self) -> impl Iterator<Item = &usize> {
+        self.orbit.iter()
+    }
 }
 
 impl From<&factored_transversal::FactoredTransversal> for Orbit {
