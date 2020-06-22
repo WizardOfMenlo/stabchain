@@ -134,6 +134,21 @@ impl Group {
     }
 }
 
+use std::fmt;
+impl fmt::Display for Group {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.generators.is_empty() {
+            return write!(f, "gens := < >");
+        }
+
+        write!(f, "gens := <")?;
+        for gen in &self.generators[0..self.generators.len() - 1] {
+            write!(f, "{},", gen)?;
+        }
+        write!(f, "{}>", self.generators[self.generators.len() - 1])
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::Group;
