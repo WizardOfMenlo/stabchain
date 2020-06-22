@@ -7,7 +7,7 @@ fn main() {
         let arg = line.expect("Invalid line read");
         let images: Vec<_> = arg
             .trim()
-            .split(" ")
+            .split(' ')
             .map(|s| s.parse::<usize>().unwrap())
             .collect();
 
