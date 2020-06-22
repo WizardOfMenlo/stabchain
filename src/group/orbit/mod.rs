@@ -67,6 +67,18 @@ impl From<&transversal::Transversal> for Orbit {
     }
 }
 
+use std::fmt;
+impl fmt::Display for Orbit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "[Orbit: base := {}, elements := {:?} ]",
+            self.base(),
+            self.orbit
+        )
+    }
+}
+
 /// Algorithm to compute orbit from a group
 pub fn orbit(g: &Group, w: usize) -> HashSet<usize> {
     let gens = g.generators();

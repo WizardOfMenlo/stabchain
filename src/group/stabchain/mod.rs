@@ -281,17 +281,17 @@ use std::fmt;
 
 impl fmt::Display for Stabchain {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for i in self.iter() {
-            write!(f, "{}", i)?
+        write!(f, "[Stabchain: ")?;
+        for (i, record) in self.iter().enumerate() {
+            write!(f, "G_{} := {} ", i, record)?
         }
-
-        Ok(())
+        write!(f, "]")
     }
 }
 
 impl fmt::Display for StabchainRecord {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[ base := {}, {}]", self.base(), self.group())
+        write!(f, "[base := {}, {}]", self.base(), self.group())
     }
 }
 

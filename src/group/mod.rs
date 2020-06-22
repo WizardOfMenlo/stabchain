@@ -170,14 +170,14 @@ use std::fmt;
 impl fmt::Display for Group {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.generators.is_empty() {
-            return write!(f, "gens := < >");
+            return write!(f, "[Group: gens := <>]");
         }
 
-        write!(f, "gens := <")?;
+        write!(f, "[Group: gens := <")?;
         for gen in &self.generators[0..self.generators.len() - 1] {
             write!(f, "{}, ", gen)?;
         }
-        write!(f, "{}>", self.generators[self.generators.len() - 1])
+        write!(f, "{}>]", self.generators[self.generators.len() - 1])
     }
 }
 
