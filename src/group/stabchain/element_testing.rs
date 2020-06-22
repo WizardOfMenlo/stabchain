@@ -10,7 +10,8 @@ pub fn is_in_group<'a>(it: impl IntoIterator<Item = &'a StabchainRecord>, p: &Pe
     let mut g = p.clone();
     for record in it {
         let base = record.base;
-        let application = p.apply(base);
+        let application = g.apply(base);
+
         if !record.transversal.contains_key(&application) {
             return false;
         }
@@ -34,7 +35,22 @@ mod tests {
         assert!(is_in_group(stab.iter(), &Permutation::id()));
     }
 
-    /*
+    #[test]
+    fn book_example() {
+        use crate::perm::export::CyclePermutation;
+
+        let g = Group::new(&[
+            CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into(),
+            CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into(),
+        ]);
+
+        let chain = g.stabchain_base(&[0, 1]);
+
+        let perm = CyclePermutation::from_vec(vec![vec![1, 2], vec![3, 4]]).into();
+
+        assert!(is_in_group(chain.iter(), &perm));
+    }
+
     #[test]
     fn perm_in_symmetric() {
         use crate::perm::utils::random_permutation;
@@ -53,5 +69,4 @@ mod tests {
         dbg!(&perm);
         assert!(is_in_group(stab.iter(), &perm));
     }
-    */
 }

@@ -47,19 +47,6 @@ mod tests {
     }
 
     #[test]
-    fn test_small_non_standard_group() {
-        use crate::perm::export::CyclePermutation;
-
-        let g = Group::new(&[
-            CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into(),
-            CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into(),
-        ]);
-
-        println!("{}", group_elements(&g));
-        panic!()
-    }
-
-    #[test]
     fn test_symmetric() {
         let g = Group::symmetric(4);
         assert_eq!(group_elements(&g).generators().len(), 24);

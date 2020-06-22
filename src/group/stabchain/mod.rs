@@ -374,22 +374,13 @@ mod tests {
             ],
         };
 
+        let computed_chain = g.stabchain_base(&[0, 1]);
         check_well_formed_chain(&chain);
+        check_well_formed_chain(&computed_chain);
 
-        println!("{}", g.stabchain_base(&[0, 1]));
-        println!();
-        println!("{}", chain);
-
-        use crate::group::random_perm::RandPerm;
-
-        let mut gen = RandPerm::from_generators(11, g.generators().into(), 50);
-
-        for _ in 0..100 {
-            let perm = gen.random_permutation();
-            println!("{}", perm);
-            assert!(super::element_testing::is_in_group(chain.iter(), &perm));
+        assert_eq!(chain.len(), computed_chain.len());
+        for (r1, r2) in chain.iter().zip(computed_chain.iter()) {
+            assert_eq!(r1.base(), r2.base());
         }
-
-        panic!();
     }
 }
