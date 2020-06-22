@@ -368,7 +368,14 @@ mod tests {
 
     #[test]
     fn symmetric_chain() {
-        let g = Group::symmetric(5);
+        let g = Group::symmetric(10);
+        let chain = g.stabchain();
+        check_well_formed_chain(&chain);
+    }
+
+    #[test]
+    fn product_chain() {
+        let g = Group::product(&Group::symmetric(15), &Group::symmetric(15));
         let chain = g.stabchain();
         check_well_formed_chain(&chain);
     }

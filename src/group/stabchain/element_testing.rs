@@ -109,8 +109,8 @@ mod tests {
         let chain = g.stabchain_base(&[0, 1]);
 
         let elements = g.bruteforce_elements();
-        for el in elements.generators() {
-            assert!(is_in_group(chain.iter(), el));
+        for el in elements {
+            assert!(is_in_group(chain.iter(), &el));
         }
     }
 

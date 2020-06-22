@@ -18,9 +18,7 @@ pub struct Group {
 impl Group {
     /// Instantiate the group from some generators
     pub fn new(generators: &[Permutation]) -> Self {
-        Group {
-            generators: generators.into(),
-        }
+        Self::from_iter(generators.iter().cloned())
     }
 
     /// Get a reference to the generators of the group
@@ -60,7 +58,7 @@ impl Group {
 
     /// Bruteforce the elements to get all elements in the group
     /// Unless time is a very cheap commodity, do not do on large groups
-    pub fn bruteforce_elements(&self) -> Self {
+    pub fn bruteforce_elements(&self) -> Vec<Permutation> {
         brute_force::group_elements(self)
     }
 
@@ -72,6 +70,15 @@ impl Group {
             .max()
             .unwrap_or(0)
             + 1
+    }
+
+    /// Conjugate the generators by this permutation
+    pub fn conjugate_gens(&self, p: &Permutation) -> Self {
+        Group::from_iter(
+            self.generators()
+                .iter()
+                .map(|g| p.inv().multiply(g).multiply(p)),
+        )
     }
 
     /// Computes the direct product of two groups
@@ -157,11 +164,35 @@ impl Group {
             order_n_permutation(1, n),
         ])
     }
+
+    /// Make this useful group for benchmarking
+    pub fn make_row_col_symmetry(x: usize, y: usize) -> Self {
+        let mut perms = Vec::new();
+        for i in 0..x {
+            let mut l = Vec::from_iter(0..x * y);
+            for j in 1..y {
+                l[i + (j - 1) * x] = (i + 1) + (j - 1) * y;
+                l[(i + 1) + (j - 1) * x] = i + (j - 1) * y;
+            }
+            perms.push(Permutation::from_vec(l));
+        }
+
+        for j in 1..y {
+            let mut l = Vec::from_iter(0..x * y);
+            for i in 0..x {
+                l[i + j * x] = i + (j - 1) * x;
+                l[i + (j - 1) * x] = i + j * x;
+            }
+            perms.push(Permutation::from_vec(l));
+        }
+
+        Group::new(&perms[..])
+    }
 }
 
 impl FromIterator<Permutation> for Group {
     fn from_iter<T: IntoIterator<Item = Permutation>>(iter: T) -> Group {
-        let v = iter.into_iter().collect();
+        let v = iter.into_iter().filter(|p| !p.is_id()).collect();
         Group { generators: v }
     }
 }
@@ -237,5 +268,19 @@ mod tests {
         assert_eq!(prod.generators().len(), 2);
         assert!(gens.contains(&perm));
         assert!(gens.contains(&(CyclePermutation::from_vec(vec![vec![4, 5, 6]]).into())));
+    }
+
+    #[test]
+    fn test_product_two_small_symm() {
+        let prod = Group::product(&Group::symmetric(4), &Group::symmetric(3));
+        let expanded = prod.bruteforce_elements();
+        assert_eq!(expanded.len(), 24 * 6);
+    }
+
+    #[test]
+    fn test_row_col_symm() {
+        let _g = Group::make_row_col_symmetry(60, 60);
+        dbg!(_g.generators.len());
+        panic!()
     }
 }
