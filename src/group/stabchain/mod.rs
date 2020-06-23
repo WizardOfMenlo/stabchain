@@ -385,6 +385,15 @@ mod tests {
     }
 
     #[test]
+    fn single_non_trivial_layer() {
+        use crate::perm::export::CyclePermutation;
+
+        let g = Group::new(&[CyclePermutation::single_cycle(&[1, 2]).into()]);
+        let chain = g.stabchain();
+        check_well_formed_chain(&chain);
+    }
+
+    #[test]
     fn book_example() {
         use crate::perm::export::CyclePermutation;
         use std::collections::HashMap;
