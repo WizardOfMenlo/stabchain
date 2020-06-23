@@ -368,7 +368,14 @@ mod tests {
 
     #[test]
     fn symmetric_chain() {
-        let g = Group::symmetric(5);
+        let g = Group::symmetric(10);
+        let chain = g.stabchain();
+        check_well_formed_chain(&chain);
+    }
+
+    #[test]
+    fn product_chain() {
+        let g = Group::product(&Group::symmetric(15), &Group::symmetric(15));
         let chain = g.stabchain();
         check_well_formed_chain(&chain);
     }
@@ -379,8 +386,8 @@ mod tests {
         use std::collections::HashMap;
 
         let g = Group::new(&[
-            CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into(),
-            CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into(),
+            CyclePermutation::single_cycle(&[1, 2, 3]).into(),
+            CyclePermutation::single_cycle(&[2, 3, 4]).into(),
         ]);
 
         let chain = Stabchain {
@@ -393,18 +400,18 @@ mod tests {
                         m.insert(0, Permutation::id());
                         m.insert(1, CyclePermutation::single_cycle(&[1, 2, 3]).into());
                         m.insert(2, CyclePermutation::single_cycle(&[1, 3, 2]).into());
-                        m.insert(3, CyclePermutation::from_vec(vec![vec![1, 4, 2]]).into());
+                        m.insert(3, CyclePermutation::single_cycle(&[1, 4, 2]).into());
                         m
                     },
                 },
                 StabchainRecord {
                     base: 1,
-                    gens: Group::new(&[CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into()]),
+                    gens: Group::new(&[CyclePermutation::single_cycle(&[2, 3, 4]).into()]),
                     transversal: {
                         let mut m = HashMap::new();
                         m.insert(1, Permutation::id());
-                        m.insert(2, CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into());
-                        m.insert(3, CyclePermutation::from_vec(vec![vec![2, 4, 3]]).into());
+                        m.insert(2, CyclePermutation::single_cycle(&[2, 3, 4]).into());
+                        m.insert(3, CyclePermutation::single_cycle(&[2, 4, 3]).into());
                         m
                     },
                 },

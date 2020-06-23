@@ -9,7 +9,7 @@ use std::iter::FromIterator;
 // Since Permutation has RefCell it could theorically mess up the ordering. However, since the hash is dependant only
 // on the fixed part is will not in practice
 #[allow(clippy::mutable_key_type)]
-pub fn group_elements(g: &Group) -> Group {
+pub fn group_elements(g: &Group) -> Vec<Permutation> {
     let gens = g.generators();
     let mut res = HashSet::new();
     // Get everything that is not the identity
@@ -29,8 +29,7 @@ pub fn group_elements(g: &Group) -> Group {
     }
 
     res.insert(Permutation::id());
-    let gens: Vec<_> = res.into_iter().collect();
-    Group::new(&gens[..])
+    res.into_iter().collect()
 }
 
 #[cfg(test)]
@@ -40,24 +39,24 @@ mod tests {
     #[test]
     fn test_trivial() {
         let g = Group::trivial();
-        assert_eq!(group_elements(&g).generators().len(), 1);
+        assert_eq!(group_elements(&g).len(), 1);
     }
 
     #[test]
     fn test_cyclic() {
         let g = Group::cyclic(10);
-        assert_eq!(group_elements(&g).generators().len(), 10);
+        assert_eq!(group_elements(&g).len(), 10);
     }
 
     #[test]
     fn test_alternating() {
         let g = Group::alternating(4);
-        assert_eq!(group_elements(&g).generators().len(), 12);
+        assert_eq!(group_elements(&g).len(), 12);
     }
 
     #[test]
     fn test_symmetric() {
         let g = Group::symmetric(4);
-        assert_eq!(group_elements(&g).generators().len(), 24);
+        assert_eq!(group_elements(&g).len(), 24);
     }
 }

@@ -86,8 +86,8 @@ mod tests {
         use crate::perm::export::CyclePermutation;
 
         let g = Group::new(&[
-            CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into(),
-            CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into(),
+            CyclePermutation::single_cycle(&[1, 2, 3]).into(),
+            CyclePermutation::single_cycle(&[2, 3, 4]).into(),
         ]);
 
         let chain = g.stabchain_base(&[0, 1]);
@@ -102,15 +102,15 @@ mod tests {
         use crate::perm::export::CyclePermutation;
 
         let g = Group::new(&[
-            CyclePermutation::from_vec(vec![vec![1, 2, 3]]).into(),
-            CyclePermutation::from_vec(vec![vec![2, 3, 4]]).into(),
+            CyclePermutation::single_cycle(&[1, 2, 3]).into(),
+            CyclePermutation::single_cycle(&[2, 3, 4]).into(),
         ]);
 
         let chain = g.stabchain_base(&[0, 1]);
 
         let elements = g.bruteforce_elements();
-        for el in elements.generators() {
-            assert!(is_in_group(chain.iter(), el));
+        for el in elements {
+            assert!(is_in_group(chain.iter(), &el));
         }
     }
 
