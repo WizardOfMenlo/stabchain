@@ -128,6 +128,18 @@ mod tests {
         }
     }
 
+    #[ignore]
+    #[test]
+    //Brute force to check if all elements of the symmetric group are in the resulting stabilizer chain.
+    fn perm_in_symmetric_brute_force() {
+        use crate::group::brute_force::group_elements;
+        let g = Group::symmetric(6);
+        let chain = g.stabchain();
+        for perm in group_elements(&g) {
+            assert!(chain.in_group(&perm));
+        }
+    }
+
     #[test]
     #[should_panic]
     fn perm_in_symmetric_invalid() {
