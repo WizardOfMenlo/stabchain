@@ -98,6 +98,22 @@ mod tests {
     }
 
     #[test]
+    fn symmetric_failing_example() {
+        use crate::perm::export::CyclePermutation;
+
+        let g = Group::symmetric(5);
+        let chain = g.stabchain();
+        println!("{}", chain);
+
+        assert!(is_in_group(
+            chain.iter(),
+            &CyclePermutation::single_cycle(&[1, 4]).into()
+        ));
+
+        assert!(chain.in_group(&CyclePermutation::single_cycle(&[1, 4]).into()));
+    }
+
+    #[test]
     fn book_example_complete_test() {
         use crate::perm::export::CyclePermutation;
 
