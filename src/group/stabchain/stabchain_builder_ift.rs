@@ -1,4 +1,5 @@
 use super::{element_testing, MovedPointSelector, Stabchain, StabchainRecord};
+use crate::group::orbit::factored_transversal::representative_raw;
 use crate::group::Group;
 use crate::perm::Permutation;
 use std::collections::{HashMap, VecDeque};
@@ -53,9 +54,7 @@ impl<T: MovedPointSelector> StabchainBuilderIFT<T> {
             let mut next_orbit_point = p.apply(moved_point);
             let mut representative = p.clone();
             while next_orbit_point != moved_point {
-                record
-                    .transversal
-                    .insert(next_orbit_point, representative.clone());
+                record.transversal.insert(next_orbit_point, p.inv());
                 next_orbit_point = p.apply(next_orbit_point);
                 representative = representative.multiply(&p);
             }
@@ -72,29 +71,27 @@ impl<T: MovedPointSelector> StabchainBuilderIFT<T> {
         let mut new_transversal = HashMap::new();
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
-            let orbit_element_repr = record.transversal.get(&orbit_element).unwrap();
+            let orbit_element_repr =
+                representative_raw(&record.transversal, record.base, orbit_element).unwrap();
             let new_image = p.apply(orbit_element);
 
             // If we already saw the element
             if record.transversal.contains_key(&new_image)
                 || new_transversal.contains_key(&new_image)
             {
-                let image_repr = record
-                    .transversal
-                    .get(&new_image)
-                    .or_else(|| new_transversal.get(&new_image))
+                let image_repr = representative_raw(&record.transversal, record.base, new_image)
+                    .or_else(|| representative_raw(&new_transversal, record.base, new_image))
                     .unwrap();
 
                 let new_perm = orbit_element_repr.multiply(&p).multiply(&image_repr.inv());
                 self.extend_lower_level(new_perm);
             } else {
-                new_transversal.insert(new_image, orbit_element_repr.multiply(&p));
+                new_transversal.insert(new_image, p.inv());
             }
         }
 
         // We now want to check all the newly added elements
-        let mut to_check =
-            VecDeque::from_iter(new_transversal.iter().map(|(o, p)| (*o, p.clone())));
+        let mut to_check = VecDeque::from_iter(new_transversal.keys().map(|o| *o));
 
         // Update the record
         record.transversal.extend(new_transversal);
@@ -102,7 +99,9 @@ impl<T: MovedPointSelector> StabchainBuilderIFT<T> {
         // While we have orbit elements (and representatives to check)
         while !to_check.is_empty() {
             // Get the pair
-            let (orbit_element, orbit_element_repr) = to_check.pop_back().unwrap();
+            let orbit_element = to_check.pop_back().unwrap();
+            let orbit_element_repr =
+                representative_raw(&record.transversal, record.base, orbit_element).unwrap();
 
             // For each generator (and p)
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
@@ -111,7 +110,8 @@ impl<T: MovedPointSelector> StabchainBuilderIFT<T> {
                 // If we have already seen the image
                 if record.transversal.contains_key(&new_image) {
                     // Get the representative
-                    let image_repr = record.transversal.get(&new_image).unwrap();
+                    let image_repr =
+                        representative_raw(&record.transversal, record.base, new_image).unwrap();
 
                     // Extend lower level
                     let new_perm = orbit_element_repr
@@ -119,14 +119,11 @@ impl<T: MovedPointSelector> StabchainBuilderIFT<T> {
                         .multiply(&image_repr.inv());
                     self.extend_lower_level(new_perm);
                 } else {
-                    // Compute the repr s.t. repr^(orbit_element_repr * generator) = orbit_element ^ generator = new_image
-                    let repr = orbit_element_repr.multiply(generator);
-
                     // Store in transversal
-                    record.transversal.insert(new_image, repr.clone());
+                    record.transversal.insert(new_image, generator.inv());
 
                     // Update and ask to check the new image
-                    to_check.push_back((new_image, repr));
+                    to_check.push_back(new_image);
                 }
             }
         }
