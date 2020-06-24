@@ -15,7 +15,7 @@ impl RandPerm {
     /// ```
     /// use stabchain::perm::Permutation;
     /// use stabchain::group::random_perm::RandPerm;
-    /// let generators : Vec<Permutation> = vec![Permutation::from(vec![1, 0]), Permutation::from(vec![0, 2, 3, 1])];
+    /// let generators = &[Permutation::from(vec![1, 0]), Permutation::from(vec![0, 2, 3, 1])];
     /// let rand_perm = RandPerm::from_generators(11, generators, 50);
     /// ```
     pub fn from_generators(
@@ -53,7 +53,7 @@ impl RandPerm {
     /// ```
     /// use stabchain::perm::Permutation;
     /// use stabchain::group::random_perm::RandPerm;
-    /// let generators : Vec<Permutation> = vec![Permutation::from(vec![1, 0]), Permutation::from(vec![0, 2, 3, 1])];
+    /// let generators = &[Permutation::from(vec![1, 0]), Permutation::from(vec![0, 2, 3, 1])];
     /// let mut rand_perm = RandPerm::from_generators(11, generators, 50);
     /// rand_perm.random_permutation();
     /// ```
