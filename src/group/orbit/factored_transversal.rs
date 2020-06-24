@@ -14,9 +14,8 @@ pub struct FactoredTransversal {
     pub(super) transversal: HashMap<usize, Permutation>,
 }
 
-#[allow(clippy::implicit_hasher)]
-pub fn representative_raw(
-    transversal: &HashMap<usize, Permutation>,
+pub(crate) fn representative_raw<S: std::hash::BuildHasher>(
+    transversal: &HashMap<usize, Permutation, S>,
     base: usize,
     point: usize,
 ) -> Option<Permutation> {
