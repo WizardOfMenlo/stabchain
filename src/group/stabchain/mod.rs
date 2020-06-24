@@ -35,13 +35,8 @@ impl Stabchain {
     }
 
     // Utility to get the chain
-    fn get_chain_at_layer(&self, layer: usize) -> &[StabchainRecord] {
-        // Infinite chain of trivial subgroups!
-        if self.chain.len() >= layer {
-            return &[];
-        }
-
-        &self.chain[layer..self.chain.len()]
+    fn get_chain_at_layer(&self, n: usize) -> impl Iterator<Item = &StabchainRecord> {
+        self.chain.iter().skip(n)
     }
 
     /// Is the element in the group?
@@ -125,11 +120,8 @@ impl<T: MovedPointSelector> StabchainBuilder<T> {
         self.current_pos == self.chain.len()
     }
 
-    fn current_chain(&self) -> &[StabchainRecord] {
-        if self.bottom_of_the_chain() {
-            return &[];
-        }
-        &self.chain[self.current_pos..self.chain.len()]
+    fn current_chain(&self) -> impl Iterator<Item = &StabchainRecord> {
+        self.chain.iter().skip(self.current_pos)
     }
 
     fn extend_lower_level(&mut self, p: Permutation) {
