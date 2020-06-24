@@ -64,6 +64,18 @@ impl Stabchain {
         element_testing::coset_representative(self.get_chain_at_layer(layer), g)
     }
 
+    /// Computes the size of the group by the orbits
+    pub fn group_size(&self) -> usize {
+        self.subgroup_size(0)
+    }
+
+    /// Computes the size of the subgroup by the orbits
+    pub fn subgroup_size(&self, layer: usize) -> usize {
+        self.get_chain_at_layer(layer)
+            .map(|s| s.transversal().len())
+            .fold(1, |a, b| a * b)
+    }
+
     /// Get the base corresponding to this stabilizer chain
     pub fn base(&self) -> Vec<usize> {
         self.chain.iter().map(|g| g.base).collect()
@@ -438,6 +450,19 @@ mod tests {
         assert_eq!(chain.len(), computed_chain.len());
         for (r1, r2) in chain.iter().zip(computed_chain.iter()) {
             assert_eq!(r1.base(), r2.base());
+        }
+    }
+
+    #[test]
+    fn stabchain_size_test_symmetric() {
+        let g = Group::symmetric(6);
+        assert_eq!(g.stabchain().group_size(), 2 * 3 * 4 * 5 * 6)
+    }
+
+    #[test]
+    fn stabchain_size_dihedral() {
+        for i in 1..32 {
+            assert_eq!(Group::dihedral_2n(i).stabchain().group_size(), 2 * i)
         }
     }
 }
