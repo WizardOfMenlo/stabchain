@@ -3,7 +3,7 @@ mod moved_point_selector;
 mod stabchain_builder_ift;
 mod stabchain_builder_naive;
 
-use crate::group::orbit::transversal::Transversal;
+use crate::group::orbit::factored_transversal::FactoredTransversal;
 use crate::group::Group;
 use crate::perm::Permutation;
 use moved_point_selector::MovedPointSelector;
@@ -17,7 +17,7 @@ pub struct Stabchain {
 
 impl Stabchain {
     fn new_impl(g: &Group, selector: impl MovedPointSelector) -> Self {
-        let mut builder = stabchain_builder_naive::StabchainBuilder::new(selector);
+        let mut builder = stabchain_builder_ift::StabchainBuilderIFT::new(selector);
         for gen in g.generators() {
             builder.extend(gen.clone());
         }
@@ -130,8 +130,8 @@ impl StabchainRecord {
     }
 
     /// Get the transversal of the base under this group
-    pub fn transversal(&self) -> Transversal {
-        Transversal::from_raw(self.base, self.transversal.clone())
+    pub fn transversal(&self) -> FactoredTransversal {
+        FactoredTransversal::from_raw(self.base, self.transversal.clone())
     }
 }
 

@@ -11,6 +11,7 @@ pub(super) struct StabchainBuilder<T: MovedPointSelector> {
     selector: T,
 }
 
+#[allow(dead_code)]
 impl<T: MovedPointSelector> StabchainBuilder<T> {
     pub(super) fn new(selector: T) -> Self {
         StabchainBuilder {
