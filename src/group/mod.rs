@@ -109,6 +109,7 @@ impl Group {
 
     /// Creates the Klein 4 group
     pub fn klein_4() -> Self {
+        //TODO fix this as this isn't K_4
         Self::dihedral_2n(2)
     }
 

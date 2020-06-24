@@ -89,6 +89,15 @@ impl Stabchain {
     pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord> {
         self.chain.iter()
     }
+
+    /// Calculate the order of the group this stabilizer chain represents.
+    pub fn order(&self) -> usize {
+        //The order is the product of the orbit lengths.
+        self.chain
+            .iter()
+            .map(|record| record.transversal.len())
+            .product::<usize>()
+    }
 }
 
 impl IntoIterator for Stabchain {
@@ -349,6 +358,7 @@ mod tests {
         let g = Group::dihedral_2n(3);
         let chain = g.stabchain();
         check_well_formed_chain(&chain);
+        assert_eq!(6, chain.order());
     }
 
     #[test]
@@ -356,6 +366,7 @@ mod tests {
         let g = Group::alternating(5);
         let chain = g.stabchain();
         check_well_formed_chain(&chain);
+        assert_eq!(60, chain.order());
     }
 
     #[test]
@@ -363,11 +374,21 @@ mod tests {
         let g = Group::symmetric(10);
         let chain = g.stabchain();
         check_well_formed_chain(&chain);
+        assert_eq!(3628800, chain.order())
     }
 
     #[test]
     fn product_chain() {
         let g = Group::product(&Group::symmetric(15), &Group::symmetric(15));
+        let chain = g.stabchain();
+        check_well_formed_chain(&chain);
+    }
+
+    #[test]
+    fn single_non_trivial_layer() {
+        use crate::perm::export::CyclePermutation;
+
+        let g = Group::new(&[CyclePermutation::single_cycle(&[1, 2]).into()]);
         let chain = g.stabchain();
         check_well_formed_chain(&chain);
     }

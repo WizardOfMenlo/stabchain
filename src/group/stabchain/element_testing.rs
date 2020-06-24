@@ -98,6 +98,22 @@ mod tests {
     }
 
     #[test]
+    fn symmetric_failing_example() {
+        use crate::perm::export::CyclePermutation;
+
+        let g = Group::symmetric(5);
+        let chain = g.stabchain();
+        println!("{}", chain);
+
+        assert!(is_in_group(
+            chain.iter(),
+            &CyclePermutation::single_cycle(&[1, 4]).into()
+        ));
+
+        assert!(chain.in_group(&CyclePermutation::single_cycle(&[1, 4]).into()));
+    }
+
+    #[test]
     fn book_example_complete_test() {
         use crate::perm::export::CyclePermutation;
 
@@ -125,6 +141,42 @@ mod tests {
         for _ in 0..50 {
             let perm = random_permutation(5);
             assert!(is_in_group(stab.iter(), &perm));
+        }
+    }
+
+    #[ignore]
+    #[test]
+    //Brute force to check if all elements of the symmetric group are in the resulting stabilizer chain.
+    fn perm_in_symmetric_brute_force() {
+        use crate::group::brute_force::group_elements;
+        let g = Group::symmetric(6);
+        let chain = g.stabchain();
+        for perm in group_elements(&g) {
+            assert!(chain.in_group(&perm));
+        }
+    }
+
+    #[ignore]
+    #[test]
+    //Brute force to check if all element of the alternating group are in the resulting stabilizer chain.
+    fn perm_in_alternating_brute_force() {
+        use crate::group::brute_force::group_elements;
+        let g = Group::alternating(6);
+        let chain = g.stabchain();
+        for perm in group_elements(&g) {
+            assert!(chain.in_group(&perm));
+        }
+    }
+
+    #[ignore]
+    #[test]
+    //Brute force to check if all element of the alternating group are in the resulting stabilizer chain.
+    fn perm_in_dihedral_brute_force() {
+        use crate::group::brute_force::group_elements;
+        let g = Group::dihedral_2n(50);
+        let chain = g.stabchain();
+        for perm in group_elements(&g) {
+            assert!(chain.in_group(&perm));
         }
     }
 
