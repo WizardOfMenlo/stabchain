@@ -156,6 +156,30 @@ mod tests {
         }
     }
 
+    #[ignore]
+    #[test]
+    //Brute force to check if all element of the alternating group are in the resulting stabilizer chain.
+    fn perm_in_alternating_brute_force() {
+        use crate::group::brute_force::group_elements;
+        let g = Group::alternating(6);
+        let chain = g.stabchain();
+        for perm in group_elements(&g) {
+            assert!(chain.in_group(&perm));
+        }
+    }
+
+    #[ignore]
+    #[test]
+    //Brute force to check if all element of the alternating group are in the resulting stabilizer chain.
+    fn perm_in_dihedral_brute_force() {
+        use crate::group::brute_force::group_elements;
+        let g = Group::dihedral_2n(50);
+        let chain = g.stabchain();
+        for perm in group_elements(&g) {
+            assert!(chain.in_group(&perm));
+        }
+    }
+
     #[test]
     #[should_panic]
     fn perm_in_symmetric_invalid() {
