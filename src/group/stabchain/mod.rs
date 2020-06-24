@@ -64,6 +64,19 @@ impl Stabchain {
         element_testing::coset_representative(self.get_chain_at_layer(layer), g)
     }
 
+    /// Calculate the order of the group this stabilizer chain represents.
+    pub fn order(&self) -> usize {
+        self.order_subgroup(0)
+    }
+
+    /// Calculate the order of the subgroupgroup this stabilizer chain represents.
+    pub fn order_subgroup(&self, layer: usize) -> usize {
+        //The order is the product of the orbit lengths.
+        self.get_chain_at_layer(layer)
+            .map(|record| record.transversal.len())
+            .product::<usize>()
+    }
+
     /// Get the base corresponding to this stabilizer chain
     pub fn base(&self) -> Vec<usize> {
         self.chain.iter().map(|g| g.base).collect()
@@ -88,15 +101,6 @@ impl Stabchain {
     /// Get an iterator over the records
     pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord> {
         self.chain.iter()
-    }
-
-    /// Calculate the order of the group this stabilizer chain represents.
-    pub fn order(&self) -> usize {
-        //The order is the product of the orbit lengths.
-        self.chain
-            .iter()
-            .map(|record| record.transversal.len())
-            .product::<usize>()
     }
 }
 
