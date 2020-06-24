@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use std::fmt;
 
+use num::integer::lcm;
+
 /// A permutation in disjoint cycle notation
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CyclePermutation {
@@ -11,6 +13,10 @@ pub struct CyclePermutation {
 }
 
 impl CyclePermutation {
+    pub fn id() -> Self {
+        CyclePermutation::from_vec(Vec::new())
+    }
+
     pub fn from_vec(cycles: Vec<Vec<usize>>) -> Self {
         use std::collections::HashMap;
         // Check the element range
@@ -33,6 +39,11 @@ impl CyclePermutation {
         assert!(counts.values().all(|&i| i <= 1));
 
         CyclePermutation::from_vec_unchecked(cycles)
+    }
+
+    /// Get the order of the permutations
+    pub fn order(&self) -> usize {
+        self.cycles.iter().map(|s| s.len()).fold(1, lcm)
     }
 
     /// Been needing this for a while. (1 2 3)
@@ -192,5 +203,29 @@ mod tests {
             CyclePermutation::from_vec(vec![vec![1, 3], vec![2, 4]]).into();
         let classic = ClassicalPermutation::from_slice(&[3, 4, 1, 2]);
         assert_eq!(cyclic, classic);
+    }
+
+    #[test]
+    fn test_order_id() {
+        let cyclic = CyclePermutation::id();
+        assert_eq!(cyclic.order(), 1);
+    }
+
+    #[test]
+    fn test_order_single_cycle() {
+        let cyclic = CyclePermutation::single_cycle(&[1, 2, 3, 8, 9]);
+        assert_eq!(cyclic.order(), 5);
+    }
+
+    #[test]
+    fn test_order_double_cycle() {
+        let cyclic = CyclePermutation::from_vec(vec![vec![1, 2, 3], vec![5, 6]]);
+        assert_eq!(cyclic.order(), 6);
+    }
+
+    #[test]
+    fn test_order_triple_cycle() {
+        let cyclic = CyclePermutation::from_vec(vec![vec![1, 2, 3], vec![5, 6], vec![7, 8, 9, 10]]);
+        assert_eq!(cyclic.order(), 12);
     }
 }
