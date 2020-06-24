@@ -139,12 +139,9 @@ mod tests {
         use crate::group::Group;
         let g = Group::symmetric(20);
         let mut rand_perm = RandPerm::from_generators(10, g.generators(), 1000);
-        // dbg!(&rand_perm);
         let chain = Stabchain::new(&g);
-        println!("{}", chain);
         for _ in 0..100 {
             let perm = rand_perm.random_permutation();
-            println!("{}", perm);
             assert!(chain.in_group(&perm));
         }
     }
