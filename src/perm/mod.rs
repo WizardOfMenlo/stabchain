@@ -3,6 +3,7 @@
 //! This crate implements permutations on integers
 
 pub mod algos;
+pub mod based;
 pub mod builder;
 pub mod export;
 pub mod utils;
@@ -19,7 +20,7 @@ use std::rc::Rc;
 /// The inverse is also stored in an option, so it can be cached.
 /// The RefCell is needed to ensure interior mutability and compliance
 /// with the Permutation API
-#[derive(Clone, Debug, Eq)]
+#[derive(Clone, Debug, Eq, Ord)]
 pub struct Permutation {
     vals: Rc<Vec<usize>>,
     invvals: RefCell<Option<Rc<Vec<usize>>>>,
