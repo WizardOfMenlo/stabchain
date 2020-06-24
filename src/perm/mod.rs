@@ -184,6 +184,18 @@ impl Permutation {
         self.build_pow(pow).collapse()
     }
 
+    /// Computes the order of the permutation
+    /// ```
+    /// use stabchain::perm::Permutation;
+    /// let a = Permutation::from_vec(vec![2, 0, 1]);
+    /// assert_eq!(a.pow(a.order() as isize), Permutation::id());
+    /// ```
+    pub fn order(&self) -> usize {
+        // TODO: If we ever use order in resource heavy context, optmize here
+        use crate::perm::export::CyclePermutation;
+        CyclePermutation::from(self.clone()).order()
+    }
+
     /// Computes f * g^-1
     pub fn divide(&self, other: &Permutation) -> Self {
         self.build_divide(other).collapse()
