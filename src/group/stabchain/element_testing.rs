@@ -17,7 +17,7 @@ pub fn is_in_group<'a>(it: impl IntoIterator<Item = &'a StabchainRecord>, p: &Pe
             return false;
         }
 
-        let representative = record.transversal.get(&application).unwrap();
+        let representative = record.transversal().representative(application).unwrap();
         g = g.divide(&representative);
     }
 
@@ -46,7 +46,7 @@ pub fn coset_representative<'a>(
             return None;
         }
 
-        let representative = record.transversal.get(&application).unwrap();
+        let representative = record.transversal().representative(application).unwrap();
         res.push(representative.clone());
         g = g.divide(&representative);
     }
