@@ -109,14 +109,22 @@ impl Group {
 
     /// Creates the Klein 4 group
     pub fn klein_4() -> Self {
-        //TODO fix this as this isn't K_4
-        Self::dihedral_2n(2)
+        Group::new(&[
+            CyclePermutation::single_cycle(&[1, 2]).into(),
+            CyclePermutation::single_cycle(&[3, 4]).into(),
+        ])
     }
 
     /// This generates the dihedral group D_2n. I.e. the group of isometries on the regular n-gon
     pub fn dihedral_2n(n: usize) -> Self {
         //https://math.stackexchange.com/questions/3614294/choice-of-generator-in-dihedral-group
         assert!(n > 0);
+        if n == 1 {
+            return Group::cyclic(2);
+        }
+        if n == 2 {
+            return Group::klein_4();
+        }
 
         let reflection_perm = if n % 2 == 0 {
             let k = n / 2;
