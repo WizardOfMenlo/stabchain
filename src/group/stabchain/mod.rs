@@ -2,6 +2,7 @@ pub mod element_testing;
 mod moved_point_selector;
 mod stabchain_builder_ift;
 mod stabchain_builder_naive;
+mod stabchain_builder_random;
 
 use crate::group::orbit::factored_transversal::FactoredTransversal;
 use crate::group::Group;
