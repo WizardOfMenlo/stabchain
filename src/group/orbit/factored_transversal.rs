@@ -52,6 +52,10 @@ impl FactoredTransversal {
         }
     }
 
+    pub(crate) fn from_raw(base: usize, transversal: HashMap<usize, Permutation>) -> Self {
+        FactoredTransversal { base, transversal }
+    }
+
     /// Given a set of generating elements and element, construct the factored transversal.
     /// Note, this algorithm does not use methods to optimize depth of three, see Seress2003 Section 4.4.
     ///```
