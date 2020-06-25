@@ -2,12 +2,13 @@ use crate::perm::Permutation;
 
 /// A very small trait, used to seamlessly switch between
 /// an automatic base repr, and one which uses a precomputed one
-pub(crate) trait MovedPointSelector {
+pub trait MovedPointSelector {
     /// Contract, should never be called with id
     fn moved_point(&mut self, p: &Permutation) -> usize;
 }
 
-pub(crate) struct LmpSelector;
+#[derive(Default)]
+pub struct LmpSelector;
 
 impl MovedPointSelector for LmpSelector {
     fn moved_point(&mut self, p: &Permutation) -> usize {
@@ -16,7 +17,8 @@ impl MovedPointSelector for LmpSelector {
 }
 
 use std::collections::VecDeque;
-pub(crate) struct FixedBaseSelector {
+#[derive(Default)]
+pub struct FixedBaseSelector {
     base: VecDeque<usize>,
 }
 
