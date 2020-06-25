@@ -5,16 +5,16 @@ use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
 // Helper struct, used to build the stabilizer chain
-pub(super) struct StabchainBuilder<T: MovedPointSelector> {
+pub(super) struct StabchainBuilderNaive<T: MovedPointSelector> {
     current_pos: usize,
     chain: Vec<StabchainRecord>,
     selector: T,
 }
 
 #[allow(dead_code)]
-impl<T: MovedPointSelector> StabchainBuilder<T> {
+impl<T: MovedPointSelector> StabchainBuilderNaive<T> {
     pub(super) fn new(selector: T) -> Self {
-        StabchainBuilder {
+        StabchainBuilderNaive {
             current_pos: 0,
             chain: Vec::new(),
             selector,
