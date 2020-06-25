@@ -91,7 +91,7 @@ impl<T: MovedPointSelector> StabchainBuilderIFT<T> {
         }
 
         // We now want to check all the newly added elements
-        let mut to_check = VecDeque::from_iter(new_transversal.keys().map(|o| *o));
+        let mut to_check = VecDeque::from_iter(new_transversal.keys().copied());
 
         // Update the record
         record.transversal.extend(new_transversal);
