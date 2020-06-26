@@ -142,9 +142,11 @@ impl<M> super::Builder for StabchainBuilderIFT<M>
 where
     M: MovedPointSelector,
 {
-    fn extend(&mut self, p: Permutation) {
-        self.current_pos = 0;
-        self.extend_inner(p);
+    fn set_generators(&mut self, gens: &Group) {
+        for gen in gens.generators() {
+            self.current_pos = 0;
+            self.extend_inner(gen.clone());
+        }
     }
 
     fn build(self) -> Stabchain {

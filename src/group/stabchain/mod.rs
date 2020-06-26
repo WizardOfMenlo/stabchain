@@ -22,10 +22,7 @@ impl Stabchain {
         build_strategy: impl BuilderStrategy<M>,
     ) -> Self {
         let mut builder = build_strategy.make_builder(selector);
-        for gen in g.generators() {
-            builder.extend(gen.clone());
-        }
-
+        builder.set_generators(g);
         builder.build()
     }
 

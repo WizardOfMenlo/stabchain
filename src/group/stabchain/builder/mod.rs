@@ -1,13 +1,12 @@
 use super::MovedPointSelector;
 use super::Stabchain;
-use crate::perm::Permutation;
+use crate::group::Group;
 
 mod ift;
 mod naive;
 
 pub trait Builder {
-    fn extend(&mut self, p: Permutation);
-
+    fn set_generators(&mut self, gens: &Group);
     fn build(self) -> Stabchain;
 }
 
