@@ -1,4 +1,7 @@
 use super::Group;
+use crate::perm::Permutation;
+use rand::seq::SliceRandom;
+use rand::Rng;
 
 /// Creates a group generated from n copies of the cyclic group
 pub fn copies_of_cyclic(specification: &[usize]) -> Group {
@@ -8,6 +11,27 @@ pub fn copies_of_cyclic(specification: &[usize]) -> Group {
         .iter()
         .map(|n| Group::cyclic(*n))
         .fold(Group::trivial(), |g1, g2| Group::product(&g1, &g2))
+}
+
+/// Generate random subproduct of the given generators.
+pub fn random_subproduct_full<T: Rng>(rng: &mut T, gens: &[Permutation]) {
+    random_subproduct_subset(rng, gens, gens.len());
+}
+
+/// Generate a random subproduct of a random k sized subset of the given generators.
+pub fn random_subproduct_subset<T: Rng>(
+    rng: &mut T,
+    gens: &[Permutation],
+    k: usize,
+) -> Permutation {
+    gens.choose_multiple(rng, k)
+        .fold(Permutation::id(), |accum, elem| {
+            if rng.gen::<bool>() {
+                accum
+            } else {
+                accum.multiply(elem)
+            }
+        })
 }
 
 #[cfg(test)]
