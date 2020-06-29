@@ -14,8 +14,8 @@ pub fn copies_of_cyclic(specification: &[usize]) -> Group {
 }
 
 /// Generate random subproduct of the given generators.
-pub fn random_subproduct_full<T: Rng>(rng: &mut T, gens: &[Permutation]) {
-    random_subproduct_subset(rng, gens, gens.len());
+pub fn random_subproduct_full<T: Rng>(rng: &mut T, gens: &[Permutation]) -> Permutation {
+    random_subproduct_subset(rng, gens, gens.len())
 }
 
 /// Generate a random subproduct of a random k sized subset of the given generators.
@@ -37,6 +37,8 @@ pub fn random_subproduct_subset<T: Rng>(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::perm::export::CyclePermutation;
+    use rand::thread_rng;
 
     #[test]
     fn test_generator_len() {
@@ -60,5 +62,33 @@ mod tests {
         assert_eq!(g.orbit(10).len(), 5);
         assert_eq!(g.orbit(11).len(), 5);
         assert_eq!(g.orbit(12).len(), 1);
+    }
+
+    #[test]
+    fn test_random_subproduct_full() {
+        let mut rng = thread_rng();
+        let g = Group::new(&[
+            CyclePermutation::single_cycle(&[1, 2, 4]).into(),
+            CyclePermutation::single_cycle(&[3, 5, 8]).into(),
+            CyclePermutation::single_cycle(&[7, 9]).into(),
+            CyclePermutation::single_cycle(&[1, 5, 6, 9]).into(),
+        ]);
+        for _ in 0..50 {
+            random_subproduct_full(&mut rng, g.generators());
+        }
+    }
+
+    #[test]
+    fn test_random_subproduct_subset() {
+        let mut rng = thread_rng();
+        let g = Group::new(&[
+            CyclePermutation::single_cycle(&[1, 2, 4]).into(),
+            CyclePermutation::single_cycle(&[3, 5, 8]).into(),
+            CyclePermutation::single_cycle(&[7, 9]).into(),
+            CyclePermutation::single_cycle(&[1, 5, 6, 9]).into(),
+        ]);
+        for _ in 0..50 {
+            random_subproduct_subset(&mut rng, g.generators(), 2);
+        }
     }
 }
