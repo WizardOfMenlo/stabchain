@@ -1,11 +1,11 @@
+pub mod builder;
 pub mod element_testing;
 mod moved_point_selector;
-mod stabchain_builder_ift;
-mod stabchain_builder_naive;
 
 use crate::group::orbit::factored_transversal::FactoredTransversal;
 use crate::group::Group;
 use crate::perm::Permutation;
+use builder::{Builder, BuilderStrategy};
 use moved_point_selector::MovedPointSelector;
 
 use std::collections::HashMap;
@@ -16,23 +16,49 @@ pub struct Stabchain {
 }
 
 impl Stabchain {
-    fn new_impl(g: &Group, selector: impl MovedPointSelector) -> Self {
-        let mut builder = stabchain_builder_ift::StabchainBuilderIFT::new(selector);
-        for gen in g.generators() {
-            builder.extend(gen.clone());
-        }
-
+    fn new_impl<M: MovedPointSelector>(
+        g: &Group,
+        selector: M,
+        build_strategy: impl BuilderStrategy<M>,
+    ) -> Self {
+        let mut builder = build_strategy.make_builder(selector);
+        builder.set_generators(g);
         builder.build()
     }
 
     /// Creates a stabilizer chain from a Group
     pub fn new(g: &Group) -> Self {
-        Self::new_impl(g, moved_point_selector::LmpSelector)
+        Self::new_impl(
+            g,
+            moved_point_selector::LmpSelector,
+            builder::IFTBuilderStrategy::default(),
+        )
+    }
+
+    /// Creates a stabilizer chain from a Group
+    pub fn new_with_builder(
+        g: &Group,
+        strat: impl BuilderStrategy<moved_point_selector::LmpSelector>,
+    ) -> Self {
+        Self::new_impl(g, moved_point_selector::LmpSelector, strat)
     }
 
     /// Creates a stabilizer with a predefined base
     pub fn new_with_base(g: &Group, base: &[usize]) -> Self {
-        Self::new_impl(g, moved_point_selector::FixedBaseSelector::new(base))
+        Self::new_impl(
+            g,
+            moved_point_selector::FixedBaseSelector::new(base),
+            builder::IFTBuilderStrategy::default(),
+        )
+    }
+
+    /// Creates a stabilizer with a predefined base
+    pub fn new_with_base_builder(
+        g: &Group,
+        base: &[usize],
+        strat: impl BuilderStrategy<moved_point_selector::FixedBaseSelector>,
+    ) -> Self {
+        Self::new_impl(g, moved_point_selector::FixedBaseSelector::new(base), strat)
     }
 
     // Utility to get the chain
