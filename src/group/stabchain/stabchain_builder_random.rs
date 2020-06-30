@@ -144,4 +144,70 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     pub(super) fn build(self) -> Stabchain {
         Stabchain { chain: self.chain }
     }
+
+    fn construct_strong_generating_set(&mut self, group: &Group, upper_bound: usize) {
+        //Find the largest moved point of any generator, i.e find which size of the symmetric group the generators are from.
+        let n = group
+            .generators
+            .iter()
+            .map(|gen| gen.lmp().expect("Should not be the identity."))
+            .max()
+            .unwrap_or(0);
+        let mut upper_bound = upper_bound;
+        let moved_point = 0; //todo check if this is correct?
+        let record = StabchainRecord {
+            base: moved_point,
+            gens: group.clone(),
+            transversal: [(moved_point, Permutation::id())].iter().cloned().collect(),
+        };
+        self.chain[self.current_pos] = record;
+        for g in group.generators() {
+            if !element_testing::is_in_group(self.current_chain(), &g) {
+                let j = self.selector.moved_point(&g);
+                //Evaluate points less than j.
+                for i in (0..=j).rev() {
+                    //Try complete the subgroup, increasing the upper bound if it fails.
+                    while !self.complete_stabchain_subgroup(&g, i, upper_bound) {
+                        upper_bound *= 2;
+                    }
+                }
+            }
+        }
+        // The iterator we are using. We need a copy in case we need to reset due to failure.
+        let orig_iter = (0..self.chain.len()).rev();
+        let mut iter = orig_iter.clone();
+        // TODO assume base e, but doesn't seem to b e specified.
+        let passes_required = (n as f32).ln().ln().ceil() as i32;
+        while let Some(i) = iter.next() {
+            // If this fails, then we double the upper bound and reset.
+            if !self.complete_stabchain_subgroup(&Permutation::id(), i, upper_bound) {
+                upper_bound *= 2;
+                //Reset the iterator back to the start.
+                iter = orig_iter.clone();
+                continue;
+            }
+            for _ in 0..(passes_required) {
+                // Perform the strong generator test, resetting if we have failure.
+                if !self.strong_generating_test() {
+                    upper_bound *= 2;
+                    //Reset the iterator back to the start.
+                    iter = orig_iter.clone();
+                    continue;
+                }
+            }
+        }
+    }
+
+    fn complete_stabchain_subgroup(
+        &mut self,
+        g: &Permutation,
+        point: usize,
+        upper_bound: usize,
+    ) -> bool {
+        false
+    }
+
+    fn strong_generating_test(&self) -> bool {
+        true
+    }
 }
