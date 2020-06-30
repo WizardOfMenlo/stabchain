@@ -10,6 +10,7 @@ pub(super) struct StabchainBuilderRandom<T: MovedPointSelector> {
     current_pos: usize,
     chain: Vec<StabchainRecord>,
     selector: T,
+    n: usize,
 }
 
 impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
@@ -18,6 +19,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             current_pos: 0,
             chain: Vec::new(),
             selector,
+            n: 0,
         }
     }
 
@@ -147,7 +149,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
 
     fn construct_strong_generating_set(&mut self, group: &Group, upper_bound: usize) {
         //Find the largest moved point of any generator, i.e find which size of the symmetric group the generators are from.
-        let n = group
+        self.n = group
             .generators
             .iter()
             .map(|gen| gen.lmp().expect("Should not be the identity."))
@@ -177,7 +179,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         let orig_iter = (0..self.chain.len()).rev();
         let mut iter = orig_iter.clone();
         // TODO assume base e, but doesn't seem to b e specified.
-        let passes_required = (n as f32).ln().ln().ceil() as i32;
+        let passes_required = (self.n as f32).ln().ln().ceil() as i32;
         while let Some(i) = iter.next() {
             // If this fails, then we double the upper bound and reset.
             if !self.complete_stabchain_subgroup(&Permutation::id(), i, upper_bound) {
