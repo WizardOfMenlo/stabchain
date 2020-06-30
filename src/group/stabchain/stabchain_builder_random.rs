@@ -2,8 +2,14 @@ use super::{element_testing, MovedPointSelector, Stabchain, StabchainRecord};
 use crate::group::orbit::factored_transversal::representative_raw;
 use crate::group::Group;
 use crate::perm::Permutation;
+use rand::rngs::ThreadRng;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+use std::cmp::min;
 use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
+
+const c: usize = 10;
 
 // Helper struct, used to build the stabilizer chain
 
@@ -13,6 +19,7 @@ pub(super) struct StabchainBuilderRandom<T: MovedPointSelector> {
     selector: T,
     n: usize,
     base: Vec<usize>,
+    rng: ThreadRng,
 }
 #[allow(dead_code)] //TODO remove
 impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
@@ -23,6 +30,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             selector,
             n: 0,
             base: Vec::new(),
+            rng: thread_rng(),
         }
     }
 
@@ -174,7 +182,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 //Evaluate points less than j.
                 for i in (0..=j).rev() {
                     //Try complete the subgroup, increasing the upper bound if it fails.
-                    while !self.complete_stabchain_subgroup(&g, i, upper_bound) {
+                    while !self.complete_stabchain_subgroup(g.clone(), i, upper_bound) {
                         upper_bound *= 2;
                     }
                 }
@@ -187,7 +195,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         let passes_required = (self.n as f32).ln().ln().ceil() as i32;
         while let Some(i) = iter.next() {
             // If this fails, then we double the upper bound and reset.
-            if !self.complete_stabchain_subgroup(&Permutation::id(), i, upper_bound) {
+            if !self.complete_stabchain_subgroup(Permutation::id(), i, upper_bound) {
                 upper_bound *= 2;
                 //Reset the iterator back to the start.
                 iter = orig_iter.clone();
@@ -208,11 +216,87 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
 
     fn complete_stabchain_subgroup(
         &mut self,
-        g: &Permutation,
-        point: usize,
+        g: Permutation,
+        layer: usize,
         upper_bound: usize,
     ) -> bool {
-        false
+        self.current_pos = layer;
+        self.check_transversal_augmentation(g);
+        let trivial_residues = 0;
+        let trivial_residues_required = ((c as f32) * (self.n as f32).ln()).ceil() as i32;
+        let subset_size = min(
+            self.n,
+            upper_bound * (upper_bound as f32).ln().floor() as usize,
+        );
+        //
+        while trivial_residues < trivial_residues_required {
+            //TODO move 64 to constant
+            let random_generations: usize = 64
+                * self
+                    .current_chain()
+                    .map(|record| record.transversal.len())
+                    .sum::<usize>();
+            for _ in 0..random_generations {
+                let u = self.random_schrier_generator();
+                let h_as_words = element_testing::coset_representative(self.current_chain(), &u);
+                let b_dash = [0..self.n].choose_multiple(&mut self.rng, subset_size);
+            }
+        }
+        true
+    }
+
+    fn random_schrier_generator(&self) -> Permutation {
+        todo!()
+    }
+
+    /// Check if adding a new element modifies the current layer of the chain.
+    fn check_transversal_augmentation(&mut self, p: Permutation) {
+        let mut record = self.chain[self.current_pos].clone();
+        let mut to_check = VecDeque::from_iter(record.transversal.keys().copied());
+        let mut new_transversal = HashMap::new();
+        while !to_check.is_empty() {
+            let orbit_element = to_check.pop_back().unwrap();
+            let new_image = p.apply(orbit_element);
+
+            // If we already saw the element
+            if !(record.transversal.contains_key(&new_image)
+                || new_transversal.contains_key(&new_image))
+            {
+                new_transversal.insert(new_image, p.inv());
+            }
+        }
+
+        // We now want to check all the newly added elements
+        let mut to_check = VecDeque::from_iter(new_transversal.keys().copied());
+
+        // Update the record
+        record.transversal.extend(new_transversal);
+
+        // While we have orbit elements (and representatives to check)
+        while !to_check.is_empty() {
+            // Get the pair
+            let orbit_element = to_check.pop_back().unwrap();
+            // For each generator (and p)
+            for generator in std::iter::once(&p).chain(record.gens.generators()) {
+                let new_image = generator.apply(orbit_element);
+
+                // If we have already seen the image
+                if !record.transversal.contains_key(&new_image) {
+                    // Store in transversal
+                    record.transversal.insert(new_image, generator.inv());
+
+                    // Update and ask to check the new image
+                    to_check.push_back(new_image);
+                }
+            }
+        }
+
+        // Update the generators adding p
+        record.gens =
+            Group::from_iter(std::iter::once(&p).chain(record.gens.generators()).cloned());
+
+        // Store the updated record in the chain
+        self.chain[self.current_pos] = record;
     }
 
     fn strong_generating_test(&self) -> bool {
