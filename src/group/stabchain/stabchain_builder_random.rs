@@ -6,13 +6,15 @@ use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
 // Helper struct, used to build the stabilizer chain
+
 pub(super) struct StabchainBuilderRandom<T: MovedPointSelector> {
     current_pos: usize,
     chain: Vec<StabchainRecord>,
     selector: T,
     n: usize,
+    base: Vec<usize>,
 }
-
+#[allow(dead_code)] //TODO remove
 impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     pub(super) fn new(selector: T) -> Self {
         StabchainBuilderRandom {
@@ -20,6 +22,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             chain: Vec::new(),
             selector,
             n: 0,
+            base: Vec::new(),
         }
     }
 
@@ -162,8 +165,10 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             gens: group.clone(),
             transversal: [(moved_point, Permutation::id())].iter().cloned().collect(),
         };
+        self.base.push(moved_point);
         self.chain[self.current_pos] = record;
         for g in group.generators() {
+            // If g has a non trivial residue
             if !element_testing::is_in_group(self.current_chain(), &g) {
                 let j = self.selector.moved_point(&g);
                 //Evaluate points less than j.
@@ -188,6 +193,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 iter = orig_iter.clone();
                 continue;
             }
+            //Perform the strong generator test ceil(log(log(n))) times, resetting if there is any failure.
             for _ in 0..(passes_required) {
                 // Perform the strong generator test, resetting if we have failure.
                 if !self.strong_generating_test() {
