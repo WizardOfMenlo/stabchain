@@ -3,13 +3,13 @@ use crate::group::orbit::factored_transversal::representative_raw;
 use crate::group::Group;
 use crate::perm::Permutation;
 use rand::rngs::ThreadRng;
-use rand::seq::SliceRandom;
+use rand::seq::IteratorRandom;
 use rand::thread_rng;
 use std::cmp::min;
 use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
-const c: usize = 10;
+const C: f32 = 10.0;
 
 // Helper struct, used to build the stabilizer chain
 
@@ -222,8 +222,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     ) -> bool {
         self.current_pos = layer;
         self.check_transversal_augmentation(g);
-        let trivial_residues = 0;
-        let trivial_residues_required = ((c as f32) * (self.n as f32).ln()).ceil() as i32;
+        let mut trivial_residues = 0;
+        let trivial_residues_required = (C * (self.n as f32).ln()).ceil() as i32;
         let subset_size = min(
             self.n,
             upper_bound * (upper_bound as f32).ln().floor() as usize,
@@ -238,8 +238,52 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     .sum::<usize>();
             for _ in 0..random_generations {
                 let u = self.random_schrier_generator();
-                let h_as_words = element_testing::coset_representative(self.current_chain(), &u);
-                let b_dash = [0..self.n].choose_multiple(&mut self.rng, subset_size);
+                let h_as_words = element_testing::coset_representative(self.current_chain(), &u)
+                    .expect("Should have a residue");
+                let b_dash = (0..self.n).choose_multiple(&mut self.rng, subset_size);
+                //Check if any points in base union base_dash are fixed by the permutation h.
+                //TODO should only be union of base and b_dash. Won't affect things, just wasted effort.
+                if self
+                    .base
+                    .clone()
+                    .into_iter()
+                    .chain(b_dash.clone())
+                    .any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b)
+                {
+                    //Check if h fixes all points of B, then add it as a base point.
+                    if !self
+                        .base
+                        .clone()
+                        .into_iter()
+                        .any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b)
+                    {
+                        //Search for a new base point that h moves.
+                        let new_base_point = b_dash
+                            .into_iter()
+                            .find(|&b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b)
+                            .expect("This point should exist");
+                        self.base.push(new_base_point);
+                        let record = StabchainRecord {
+                            base: new_base_point,
+                            gens: Group::new(&[]),
+                            transversal: [(new_base_point, Permutation::id())]
+                                .iter()
+                                .cloned()
+                                .collect(),
+                        };
+                        self.chain.push(record);
+                    }
+                    //Evaluate h as a permutation.
+                    let h = h_as_words
+                        .iter()
+                        .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
+                    let j_dash = self.selector.moved_point(&h);
+                    for k in (layer..=j_dash).rev() {
+                        self.complete_stabchain_subgroup(h.clone(), k, upper_bound);
+                    }
+                } else {
+                    trivial_residues += 1;
+                }
             }
         }
         true
