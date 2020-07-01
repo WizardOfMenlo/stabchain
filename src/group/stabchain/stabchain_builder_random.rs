@@ -380,7 +380,55 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.chain[self.current_pos] = record;
     }
 
-    fn strong_generating_test(&self) -> bool {
+    fn strong_generating_test(&mut self) -> bool {
+        for i in 0..self.chain.len() {
+            let random_generations: usize = 64
+                * self
+                    .current_chain()
+                    .map(|record| record.transversal.len())
+                    .sum::<usize>();
+            for _ in 0..random_generations {
+                let u = self.random_schrier_generator();
+                let h_as_words = element_testing::coset_representative(self.current_chain(), &u)
+                    .expect("Should have a residue");
+                let mut b_dash = 0..self.n;
+                //Check if any points in base union base_dash are fixed by the permutation h.
+                //TODO should only be union of base and b_dash. Won't affect things, just wasted effort.
+                if b_dash.any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b) {
+                    //Check if h fixes all points of B, then add it as a base point.
+                    if !self
+                        .base
+                        .clone()
+                        .into_iter()
+                        .any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b)
+                    {
+                        //Search for a new base point that h moves.
+                        let new_base_point = b_dash
+                            .into_iter()
+                            .find(|&b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b)
+                            .expect("This point should exist");
+                        self.base.push(new_base_point);
+                        let record = StabchainRecord {
+                            base: new_base_point,
+                            gens: Group::new(&[]),
+                            transversal: [(new_base_point, Permutation::id())]
+                                .iter()
+                                .cloned()
+                                .collect(),
+                        };
+                        self.chain.push(record);
+                    }
+                    //Evaluate h as a permutation.
+                    let h = h_as_words
+                        .iter()
+                        .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
+                    let i_dash = self.selector.moved_point(&h);
+                    for k in (i..=i_dash).rev() {
+                        self.complete_stabchain_subgroup(h.clone(), k, self.n);
+                    }
+                }
+            }
+        }
         true
     }
 }
