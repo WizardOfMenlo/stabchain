@@ -208,7 +208,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     upper_bound *= 2;
                     //Reset the iterator back to the start.
                     iter = orig_iter.clone();
-                    continue;
+                    break;
                 }
             }
         }
