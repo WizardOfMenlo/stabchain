@@ -2,7 +2,9 @@ use criterion::{criterion_group, BenchmarkId, Criterion};
 
 const RANGE_OF_VALUES: [usize; 4] = [8, 16, 32, 64];
 
-use stabchain::group::orbit::transversal::{transversal, transversal_complete_opt};
+use stabchain::group::orbit::transversal::simple_transversal::{
+    transversal, transversal_complete_opt,
+};
 use stabchain::group::Group;
 
 // Comparing orbit optimizations
