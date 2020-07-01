@@ -25,6 +25,7 @@ pub type DefaultStrategy<M> = IFTBuilderStrategy<M>;
 
 /// Schreir Sims with unfactored transversal. Faster than the
 /// factored transversal version, yet more memory intensive
+#[derive(Debug, Clone)]
 pub struct NaiveBuilderStrategy<M>(M);
 
 impl<M> NaiveBuilderStrategy<M> {
@@ -46,6 +47,7 @@ where
 
 /// Schreir Sims with factored transversal. Much more memory friendly,
 /// yet much slower
+#[derive(Debug, Clone)]
 pub struct IFTBuilderStrategy<M>(M);
 
 impl<M> IFTBuilderStrategy<M> {
