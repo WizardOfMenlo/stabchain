@@ -1,9 +1,10 @@
 use super::{element_testing, MovedPointSelector, Stabchain, StabchainRecord};
 use crate::group::orbit::factored_transversal::representative_raw;
+use crate::group::utils::{random_subproduct_full, random_subproduct_subset};
 use crate::group::Group;
 use crate::perm::Permutation;
 use rand::rngs::ThreadRng;
-use rand::seq::IteratorRandom;
+use rand::seq::{IteratorRandom, SliceRandom};
 use rand::thread_rng;
 use std::cmp::min;
 use std::collections::{HashMap, VecDeque};
@@ -289,8 +290,31 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         true
     }
 
-    fn random_schrier_generator(&self) -> Permutation {
-        todo!()
+    fn random_schrier_generator(&mut self) -> Permutation {
+        //First pick a random coset representative of the group
+        let record = &self.chain[self.current_pos];
+        let point = record
+            .transversal
+            .keys()
+            .choose(&mut self.rng)
+            .expect("Should be non empty");
+        let coset_representative = representative_raw(&record.transversal, record.base, *point);
+        //Generate a random subword.
+        let gens = self
+            .current_chain()
+            .flat_map(|record| record.gens.generators())
+            .map(|f| f.clone())
+            .collect::<Vec<Permutation>>();
+        let w1 = random_subproduct_full(&mut self.rng, &gens[..]);
+        let k = rand::Rng::gen_range(&mut self.rng, 0, gens.len() / 2 + 1);
+        let w2 = random_subproduct_subset(&mut self.rng, &gens[..], k);
+        let g = gens.choose(&mut self.rng).expect("Should be non empty");
+        let subword = if rand::Rng::gen::<bool>(&mut self.rng) {
+            w1.multiply(&w2)
+        } else {
+            w1.multiply(&g).multiply(&w2)
+        };
+        subword
     }
 
     /// Check if adding a new element modifies the current layer of the chain.
