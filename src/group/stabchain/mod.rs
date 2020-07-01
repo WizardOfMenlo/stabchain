@@ -2,38 +2,35 @@ pub mod builder;
 pub mod element_testing;
 pub mod moved_point_selector;
 
-use crate::group::orbit::factored_transversal::FactoredTransversal;
+use crate::group::orbit::abstraction::TransversalResolver;
 use crate::group::Group;
 use crate::perm::Permutation;
 use builder::{Builder, Strategy};
-use moved_point_selector::{DefaultSelector, MovedPointSelector};
+use moved_point_selector::MovedPointSelector;
 
 use std::collections::HashMap;
 
 #[derive(Debug)]
-pub struct Stabchain {
-    chain: Vec<StabchainRecord>,
+pub struct Stabchain<V> {
+    chain: Vec<StabchainRecord<V>>,
 }
 
-impl Stabchain {
+impl<V> Stabchain<V>
+where
+    V: TransversalResolver,
+{
     /// Creates a stabilizer chain, using a selected strategy.
-    pub fn new_with_strategy(g: &Group, build_strategy: impl Strategy) -> Self {
+    pub fn new_with_strategy<S, B: Builder<V>>(g: &Group, build_strategy: S) -> Self
+    where
+        S: Strategy<Transversal = V, BuilderT = B>,
+    {
         let mut builder = build_strategy.make_builder();
         builder.set_generators(g);
         builder.build()
     }
 
-    /// Creates a stabilizer chain from a Group. It is equivalent to new_with_strategy with default
-    /// moved point selector and default strategy
-    pub fn new(g: &Group) -> Self {
-        Self::new_with_strategy(
-            g,
-            builder::IFTBuilderStrategy::new(DefaultSelector::default()),
-        )
-    }
-
     // Utility to get the chain
-    fn get_chain_at_layer(&self, n: usize) -> impl Iterator<Item = &StabchainRecord> {
+    fn get_chain_at_layer(&self, n: usize) -> impl Iterator<Item = &StabchainRecord<V>> {
         self.chain.iter().skip(n)
     }
 
@@ -79,12 +76,12 @@ impl Stabchain {
     }
 
     /// Get G^(n)
-    pub fn layer(&self, n: usize) -> Option<&StabchainRecord> {
+    pub fn layer(&self, n: usize) -> Option<&StabchainRecord<V>> {
         self.chain.get(n)
     }
 
     /// Get an iterator over the records
-    pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord> {
+    pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord<V>> {
         self.chain.iter()
     }
 
@@ -98,8 +95,8 @@ impl Stabchain {
     }
 }
 
-impl IntoIterator for Stabchain {
-    type Item = StabchainRecord;
+impl<V> IntoIterator for Stabchain<V> {
+    type Item = StabchainRecord<V>;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -109,13 +106,14 @@ impl IntoIterator for Stabchain {
 
 /// All the information stored in a layer of the stabilizer chain
 #[derive(Debug, Clone)]
-pub struct StabchainRecord {
+pub struct StabchainRecord<V> {
     base: usize,
     gens: Group,
     transversal: HashMap<usize, Permutation>,
+    resolver: V,
 }
 
-impl StabchainRecord {
+impl<V> StabchainRecord<V> {
     /// Get the associated group
     pub fn group(&self) -> &Group {
         &self.gens
@@ -125,16 +123,39 @@ impl StabchainRecord {
     pub fn base(&self) -> usize {
         self.base
     }
+}
 
-    /// Get the transversal of the base under this group
-    pub fn transversal(&self) -> FactoredTransversal {
-        FactoredTransversal::from_raw(self.base, self.transversal.clone())
+impl<V> StabchainRecord<V>
+where
+    V: TransversalResolver,
+{
+    pub(crate) fn new(base: usize, gens: Group, transversal: HashMap<usize, Permutation>) -> Self {
+        StabchainRecord {
+            base,
+            gens,
+            transversal,
+            resolver: V::default(),
+        }
+    }
+
+    /// Get the resolver of the record
+    pub(crate) fn resolver(&self) -> &V {
+        &self.resolver
+    }
+
+    /// Get the resolver of the record
+    pub fn transversal(&self) -> V::AssociatedTransversal {
+        self.resolver
+            .into_transversal(self.transversal.clone(), self.base)
     }
 }
 
 use std::fmt;
 
-impl fmt::Display for Stabchain {
+impl<V> fmt::Display for Stabchain<V>
+where
+    V: TransversalResolver,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[Stabchain: ")?;
         for (i, record) in self.iter().enumerate() {
@@ -144,7 +165,7 @@ impl fmt::Display for Stabchain {
     }
 }
 
-impl fmt::Display for StabchainRecord {
+impl<V> fmt::Display for StabchainRecord<V> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[base := {}, {}]", self.base() + 1, self.group())
     }
@@ -154,7 +175,7 @@ impl fmt::Display for StabchainRecord {
 mod tests {
     use super::*;
 
-    fn check_well_formed_chain(s: &Stabchain) {
+    fn check_well_formed_chain<V: TransversalResolver>(s: &Stabchain<V>) {
         let mut previous = None;
         for record in s.chain.iter() {
             let gens = record.group();

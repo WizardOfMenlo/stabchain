@@ -1,4 +1,5 @@
 use super::{MovedPointSelector, Stabchain};
+use crate::group::orbit::abstraction::SimpleTransversalResolver;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
 use crate::perm::Permutation;
@@ -6,13 +7,13 @@ use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
 // Helper struct, used to build the stabilizer chain
-pub struct StabchainBuilderNaive<T: MovedPointSelector> {
+pub struct StabchainBuilderNaive<T> {
     current_pos: usize,
-    chain: Vec<StabchainRecord>,
+    chain: Vec<StabchainRecord<SimpleTransversalResolver>>,
     selector: T,
 }
 
-impl<T: MovedPointSelector> StabchainBuilderNaive<T> {
+impl<T> StabchainBuilderNaive<T> {
     pub(super) fn new(selector: T) -> Self {
         StabchainBuilderNaive {
             current_pos: 0,
@@ -25,10 +26,15 @@ impl<T: MovedPointSelector> StabchainBuilderNaive<T> {
         self.current_pos == self.chain.len()
     }
 
-    fn current_chain(&self) -> impl Iterator<Item = &StabchainRecord> {
+    fn current_chain(&self) -> impl Iterator<Item = &StabchainRecord<SimpleTransversalResolver>> {
         self.chain.iter().skip(self.current_pos)
     }
+}
 
+impl<T> StabchainBuilderNaive<T>
+where
+    T: MovedPointSelector,
+{
     fn extend_lower_level(&mut self, p: Permutation) {
         self.current_pos += 1;
         self.extend_inner(p);
@@ -45,11 +51,11 @@ impl<T: MovedPointSelector> StabchainBuilderNaive<T> {
         // Bottom of the chain
         if self.bottom_of_the_chain() {
             let moved_point = self.selector.moved_point(&p);
-            let mut record = StabchainRecord {
-                base: moved_point,
-                gens: Group::new(&[p.clone()]),
-                transversal: [(moved_point, Permutation::id())].iter().cloned().collect(),
-            };
+            let mut record = StabchainRecord::new(
+                moved_point,
+                Group::new(&[p.clone()]),
+                [(moved_point, Permutation::id())].iter().cloned().collect(),
+            );
 
             let mut next_orbit_point = p.apply(moved_point);
             let mut representative = p.clone();
@@ -141,7 +147,7 @@ impl<T: MovedPointSelector> StabchainBuilderNaive<T> {
     }
 }
 
-impl<M> super::Builder for StabchainBuilderNaive<M>
+impl<M> super::Builder<SimpleTransversalResolver> for StabchainBuilderNaive<M>
 where
     M: MovedPointSelector,
 {
@@ -152,7 +158,7 @@ where
         }
     }
 
-    fn build(self) -> Stabchain {
+    fn build(self) -> Stabchain<SimpleTransversalResolver> {
         Stabchain { chain: self.chain }
     }
 }

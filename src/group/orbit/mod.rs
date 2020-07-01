@@ -1,4 +1,4 @@
-pub mod factored_transversal;
+pub mod abstraction;
 pub mod transversal;
 
 use crate::group::Group;
