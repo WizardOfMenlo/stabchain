@@ -4,10 +4,10 @@ pub mod random_perm;
 pub mod stabchain;
 pub mod utils;
 
+use crate::group::stabchain::builder::Strategy;
 use crate::perm::export::CyclePermutation;
 use crate::perm::utils::order_n_permutation;
 use crate::perm::Permutation;
-use stabchain::builder::Strategy;
 
 use std::iter::FromIterator;
 
