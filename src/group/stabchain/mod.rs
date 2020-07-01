@@ -1,12 +1,12 @@
 pub mod builder;
 pub mod element_testing;
-mod moved_point_selector;
+pub mod moved_point_selector;
 
 use crate::group::orbit::factored_transversal::FactoredTransversal;
 use crate::group::Group;
 use crate::perm::Permutation;
-use builder::{Builder, BuilderStrategy};
-use moved_point_selector::MovedPointSelector;
+use builder::{Builder, Strategy};
+use moved_point_selector::{DefaultSelector, MovedPointSelector};
 
 use std::collections::HashMap;
 
@@ -16,49 +16,23 @@ pub struct Stabchain {
 }
 
 impl Stabchain {
-    fn new_impl<M: MovedPointSelector>(
+    /// Creates a stabilizer chain, using a selected strategy.
+    pub fn new_with_strategy<M: MovedPointSelector>(
         g: &Group,
-        selector: M,
-        build_strategy: impl BuilderStrategy<M>,
+        build_strategy: impl Strategy<M>,
     ) -> Self {
-        let mut builder = build_strategy.make_builder(selector);
+        let mut builder = build_strategy.make_builder();
         builder.set_generators(g);
         builder.build()
     }
 
-    /// Creates a stabilizer chain from a Group
+    /// Creates a stabilizer chain from a Group. It is equivalent to new_with_strategy with default
+    /// moved point selector and default strategy
     pub fn new(g: &Group) -> Self {
-        Self::new_impl(
+        Self::new_with_strategy(
             g,
-            moved_point_selector::LmpSelector,
-            builder::IFTBuilderStrategy::default(),
+            builder::IFTBuilderStrategy::new(DefaultSelector::default()),
         )
-    }
-
-    /// Creates a stabilizer chain from a Group
-    pub fn new_with_builder(
-        g: &Group,
-        strat: impl BuilderStrategy<moved_point_selector::LmpSelector>,
-    ) -> Self {
-        Self::new_impl(g, moved_point_selector::LmpSelector, strat)
-    }
-
-    /// Creates a stabilizer with a predefined base
-    pub fn new_with_base(g: &Group, base: &[usize]) -> Self {
-        Self::new_impl(
-            g,
-            moved_point_selector::FixedBaseSelector::new(base),
-            builder::IFTBuilderStrategy::default(),
-        )
-    }
-
-    /// Creates a stabilizer with a predefined base
-    pub fn new_with_base_builder(
-        g: &Group,
-        base: &[usize],
-        strat: impl BuilderStrategy<moved_point_selector::FixedBaseSelector>,
-    ) -> Self {
-        Self::new_impl(g, moved_point_selector::FixedBaseSelector::new(base), strat)
     }
 
     // Utility to get the chain
