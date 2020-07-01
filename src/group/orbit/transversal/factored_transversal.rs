@@ -44,7 +44,7 @@ pub(crate) fn representative_raw<S: std::hash::BuildHasher>(
 impl FactoredTransversal {
     /// Given a group, construct the factored transversal
     ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::transversal::FactoredTransversal;
     /// use stabchain::group::Group;
     /// let fc = FactoredTransversal::new(&Group::symmetric(10), 1);
     ///```
@@ -63,7 +63,7 @@ impl FactoredTransversal {
     /// Given a set of generating elements and element, construct the factored transversal.
     /// Note, this algorithm does not use methods to optimize depth of three, see Seress2003 Section 4.4.
     ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
     ///```
@@ -79,7 +79,7 @@ impl FactoredTransversal {
 impl Transversal for FactoredTransversal {
     /// Calculate a representative of the given element in the orbit, or None if this element isn't in the orbit.
     ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::transversal::{Transversal, FactoredTransversal};
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0, 2])]);
     /// assert_eq!(1, fc.representative(1).unwrap().apply(0));
@@ -92,7 +92,7 @@ impl Transversal for FactoredTransversal {
 
     /// Get the base element of the Factored Transversal.
     ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::transversal::{Transversal, FactoredTransversal};
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
     /// assert_eq!(0, fc.base());
@@ -103,7 +103,7 @@ impl Transversal for FactoredTransversal {
 
     /// Get the orbit size.
     ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::transversal::{Transversal, FactoredTransversal};
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
     /// assert_eq!(2, fc.len());
@@ -114,7 +114,7 @@ impl Transversal for FactoredTransversal {
 
     /// Test if an element is in the orbit.
     ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::transversal::{Transversal, FactoredTransversal};
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
     /// assert_eq!(1, fc.base());
@@ -126,7 +126,7 @@ impl Transversal for FactoredTransversal {
 
     /// Gets the orbits
     ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::transversal::{Transversal, FactoredTransversal};
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
     /// assert_eq!(1, fc.base());
