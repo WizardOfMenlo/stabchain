@@ -3,7 +3,7 @@ use crate::group::orbit::abstraction::TransversalResolver;
 use crate::perm::Permutation;
 
 /// Given a stabilizer chain, computes whether the given element is in the group
-pub fn is_in_group<'a, 'b, V>(
+pub fn is_in_group<'a, V>(
     it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
     p: &Permutation,
 ) -> bool
