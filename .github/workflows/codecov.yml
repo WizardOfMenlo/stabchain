@@ -12,7 +12,10 @@ jobs:
           override: true
       - uses: davidB/rust-cargo-make@v1
       - uses: actions/checkout@v1
+      - name: Build
+        run: cargo make
       - name: Runs codecov
         run: cargo make codecov-flow
         env:
           CARGO_MAKE_RUN_CODECOV: true
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
