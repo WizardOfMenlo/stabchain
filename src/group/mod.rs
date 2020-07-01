@@ -53,8 +53,8 @@ impl Group {
 
     /// Computes a stabilizer chain for this group with a base
     pub fn stabchain_base(&self, base: &[usize]) -> stabchain::Stabchain {
-        use stabchain::builder::DefaultStrategy;
-        use stabchain::moved_point_selector::FixedBaseSelector;
+        use self::stabchain::builder::DefaultStrategy;
+        use self::stabchain::moved_point_selector::FixedBaseSelector;
         stabchain::Stabchain::new_with_strategy(
             self,
             DefaultStrategy::new(FixedBaseSelector::new(base)),
