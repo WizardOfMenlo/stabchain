@@ -7,6 +7,7 @@ pub mod skeleton;
 pub use factored_transversal::FactoredTransversal;
 pub use simple_transversal::SimpleTransversal;
 
+#[clippy::allow(len_without_is_empty)]
 pub trait Transversal {
     /// Calculate a representative of the given element in the orbit, or None if this element isn't in the orbit.
     fn representative(&self, point: usize) -> Option<Permutation>;
