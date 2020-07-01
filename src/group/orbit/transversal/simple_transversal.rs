@@ -1,8 +1,9 @@
 use crate::group::Group;
 use crate::perm::Permutation;
 
+use super::skeleton::TransversalSkeleton;
 use super::Transversal;
-use crate::group::orbit::abstraction::{SimpleTransversalResolver, TransversalResolver};
+use crate::group::orbit::abstraction::SimpleTransversalResolver;
 
 use std::collections::{HashMap, VecDeque};
 
@@ -11,57 +12,12 @@ use std::collections::{HashMap, VecDeque};
 /// memory intensive. In applications please use FactoredTransversal
 /// (After some testing, it seems that it is also slower computationally,
 /// so don't use unless wanting some pain)
-#[derive(Debug)]
-pub struct SimpleTransversal {
-    base: usize,
-    transversal: HashMap<usize, Permutation>,
-    resolver: SimpleTransversalResolver,
-}
+pub type SimpleTransversal = TransversalSkeleton<SimpleTransversalResolver>;
 
 impl SimpleTransversal {
     /// Create from the group
     pub fn new(g: &Group, base: usize) -> Self {
-        Self::from_raw(base, transversal(g, base))
-    }
-
-    pub(crate) fn from_raw(base: usize, transversal: HashMap<usize, Permutation>) -> Self {
-        SimpleTransversal {
-            base,
-            transversal,
-            resolver: SimpleTransversalResolver,
-        }
-    }
-
-    pub(crate) fn orbit_els(&self) -> impl Iterator<Item = &usize> {
-        self.transversal.keys()
-    }
-}
-
-impl Transversal for SimpleTransversal {
-    /// Get the base of the transversal
-    fn base(&self) -> usize {
-        self.base
-    }
-
-    /// Get the orbit from the transversal
-    fn orbit(&self) -> crate::group::orbit::Orbit {
-        self.into()
-    }
-
-    /// Get the computed representative
-    fn representative(&self, delta: usize) -> Option<Permutation> {
-        self.resolver
-            .representative(&self.transversal, self.base, delta)
-    }
-
-    /// Get the size of the orbit
-    fn len(&self) -> usize {
-        self.transversal.len()
-    }
-
-    /// Checks if element is in the orbit
-    fn in_orbit(&self, delta: usize) -> bool {
-        self.transversal.contains_key(&delta)
+        Self::from_raw(base, transversal(g, base), SimpleTransversalResolver)
     }
 }
 
@@ -74,7 +30,7 @@ impl fmt::Display for SimpleTransversal {
             self.base() + 1,
         )?;
 
-        for (orbit, repr) in &self.transversal {
+        for (orbit, repr) in self.raw_elements() {
             write!(f, "({}, {}) ", orbit + 1, repr)?
         }
 
@@ -162,7 +118,7 @@ mod tests {
     fn id_transveral() {
         let g = Group::trivial();
         let fc = SimpleTransversal::new(&g, 3);
-        assert_eq!(fc.base, 3);
+        assert_eq!(fc.base(), 3);
         assert!(fc.in_orbit(3));
         assert!(!fc.in_orbit(2));
         assert!(!fc.in_orbit(1));

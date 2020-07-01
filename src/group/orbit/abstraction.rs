@@ -42,7 +42,7 @@ impl TransversalResolver for SimpleTransversalResolver {
         map: HashMap<usize, Permutation>,
         base: usize,
     ) -> Self::AssociatedTransversal {
-        super::transversal::SimpleTransversal::from_raw(base, map)
+        super::transversal::SimpleTransversal::from_raw(base, map, SimpleTransversalResolver)
     }
 }
 
@@ -68,6 +68,6 @@ impl TransversalResolver for FactoredTransversalResolver {
         map: HashMap<usize, Permutation>,
         base: usize,
     ) -> Self::AssociatedTransversal {
-        super::transversal::FactoredTransversal::from_raw(base, map)
+        super::transversal::FactoredTransversal::from_raw(base, map, FactoredTransversalResolver)
     }
 }

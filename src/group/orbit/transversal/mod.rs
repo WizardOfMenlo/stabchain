@@ -2,6 +2,7 @@ use crate::perm::Permutation;
 
 pub mod factored_transversal;
 pub mod simple_transversal;
+pub mod skeleton;
 
 pub use factored_transversal::FactoredTransversal;
 pub use simple_transversal::SimpleTransversal;
