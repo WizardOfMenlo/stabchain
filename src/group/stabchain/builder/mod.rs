@@ -15,7 +15,7 @@ pub trait Builder {
 
 /// A strategy is a lightweight struct that allows to
 /// (hopefully at compile time plz compiler) select which builder to use
-pub trait Strategy<M: MovedPointSelector> {
+pub trait Strategy {
     type BuilderT: Builder;
     fn make_builder(self) -> Self::BuilderT;
 }
@@ -33,7 +33,7 @@ impl<M> NaiveBuilderStrategy<M> {
     }
 }
 
-impl<M> Strategy<M> for NaiveBuilderStrategy<M>
+impl<M> Strategy for NaiveBuilderStrategy<M>
 where
     M: MovedPointSelector,
 {
@@ -54,7 +54,7 @@ impl<M> IFTBuilderStrategy<M> {
     }
 }
 
-impl<M> Strategy<M> for IFTBuilderStrategy<M>
+impl<M> Strategy for IFTBuilderStrategy<M>
 where
     M: MovedPointSelector,
 {

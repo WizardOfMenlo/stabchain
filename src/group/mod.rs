@@ -7,6 +7,7 @@ pub mod utils;
 use crate::perm::export::CyclePermutation;
 use crate::perm::utils::order_n_permutation;
 use crate::perm::Permutation;
+use stabchain::builder::Strategy;
 
 use std::iter::FromIterator;
 
@@ -59,6 +60,11 @@ impl Group {
             self,
             DefaultStrategy::new(FixedBaseSelector::new(base)),
         )
+    }
+
+    /// Computes a stabilizer chain for this group with a strategy
+    pub fn stabchain_with_strategy(&self, strat: impl Strategy) -> stabchain::Stabchain {
+        stabchain::Stabchain::new_with_strategy(self, strat)
     }
 
     /// Bruteforce the elements to get all elements in the group

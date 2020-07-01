@@ -17,10 +17,7 @@ pub struct Stabchain {
 
 impl Stabchain {
     /// Creates a stabilizer chain, using a selected strategy.
-    pub fn new_with_strategy<M: MovedPointSelector>(
-        g: &Group,
-        build_strategy: impl Strategy<M>,
-    ) -> Self {
+    pub fn new_with_strategy(g: &Group, build_strategy: impl Strategy) -> Self {
         let mut builder = build_strategy.make_builder();
         builder.set_generators(g);
         builder.build()
