@@ -174,6 +174,7 @@ impl<V> fmt::Display for StabchainRecord<V> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::group::orbit::transversal::Transversal;
 
     fn check_well_formed_chain<V: TransversalResolver>(s: &Stabchain<V>) {
         let mut previous = None;

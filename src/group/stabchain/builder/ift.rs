@@ -1,6 +1,6 @@
 use super::{MovedPointSelector, Stabchain};
 use crate::group::orbit::abstraction::FactoredTransversalResolver;
-use crate::group::orbit::factored_transversal::representative_raw;
+use crate::group::orbit::transversal::factored_transversal::representative_raw;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
 use crate::perm::Permutation;

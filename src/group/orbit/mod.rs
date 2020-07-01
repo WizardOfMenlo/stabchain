@@ -49,20 +49,22 @@ impl Orbit {
     }
 }
 
-impl From<&factored_transversal::FactoredTransversal> for Orbit {
-    fn from(t: &factored_transversal::FactoredTransversal) -> Self {
+impl From<&transversal::FactoredTransversal> for Orbit {
+    fn from(t: &transversal::FactoredTransversal) -> Self {
+        use transversal::Transversal;
         Orbit {
             base: t.base(),
-            orbit: t.transversal.keys().copied().collect(),
+            orbit: t.orbit_els().copied().collect(),
         }
     }
 }
 
-impl From<&transversal::Transversal> for Orbit {
-    fn from(t: &transversal::Transversal) -> Self {
+impl From<&transversal::SimpleTransversal> for Orbit {
+    fn from(t: &transversal::SimpleTransversal) -> Self {
+        use transversal::Transversal;
         Orbit {
             base: t.base(),
-            orbit: t.transversal.keys().copied().collect(),
+            orbit: t.orbit_els().copied().collect(),
         }
     }
 }

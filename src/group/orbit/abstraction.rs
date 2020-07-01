@@ -1,7 +1,7 @@
 use crate::perm::Permutation;
 use std::collections::HashMap;
 pub trait TransversalResolver: Default {
-    type AssociatedTransversal;
+    type AssociatedTransversal: super::transversal::Transversal;
 
     fn representative(
         &self,
@@ -21,7 +21,7 @@ pub trait TransversalResolver: Default {
 pub struct SimpleTransversalResolver;
 
 impl TransversalResolver for SimpleTransversalResolver {
-    type AssociatedTransversal = super::transversal::Transversal;
+    type AssociatedTransversal = super::transversal::SimpleTransversal;
 
     fn representative(
         &self,
@@ -37,7 +37,7 @@ impl TransversalResolver for SimpleTransversalResolver {
         map: HashMap<usize, Permutation>,
         base: usize,
     ) -> Self::AssociatedTransversal {
-        super::transversal::Transversal::from_raw(base, map)
+        super::transversal::SimpleTransversal::from_raw(base, map)
     }
 }
 
@@ -45,7 +45,7 @@ impl TransversalResolver for SimpleTransversalResolver {
 pub struct FactoredTransversalResolver;
 
 impl TransversalResolver for FactoredTransversalResolver {
-    type AssociatedTransversal = super::factored_transversal::FactoredTransversal;
+    type AssociatedTransversal = super::transversal::FactoredTransversal;
 
     fn representative(
         &self,
@@ -53,7 +53,7 @@ impl TransversalResolver for FactoredTransversalResolver {
         base: usize,
         point: usize,
     ) -> Option<Permutation> {
-        super::factored_transversal::representative_raw(map, base, point)
+        super::transversal::factored_transversal::representative_raw(map, base, point)
     }
 
     // Note that no validation is actually done here
@@ -62,6 +62,6 @@ impl TransversalResolver for FactoredTransversalResolver {
         map: HashMap<usize, Permutation>,
         base: usize,
     ) -> Self::AssociatedTransversal {
-        super::factored_transversal::FactoredTransversal::from_raw(base, map)
+        super::transversal::FactoredTransversal::from_raw(base, map)
     }
 }

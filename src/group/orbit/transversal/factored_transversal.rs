@@ -1,8 +1,11 @@
-use super::Group;
+use crate::group::orbit::transversal::Transversal;
+use crate::group::Group;
 use crate::perm::Permutation;
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
+
+use crate::group::orbit::abstraction::{FactoredTransversalResolver, TransversalResolver};
 
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
 /// Contains the base of this traversal, and a factored traversal of the orbit.
@@ -12,6 +15,7 @@ pub struct FactoredTransversal {
     base: usize,
     // The factored traversal/Schrier vector of the orbit.
     pub(super) transversal: HashMap<usize, Permutation>,
+    resolver: FactoredTransversalResolver,
 }
 
 pub(crate) fn representative_raw<S: std::hash::BuildHasher>(
@@ -37,7 +41,6 @@ pub(crate) fn representative_raw<S: std::hash::BuildHasher>(
     }
 }
 
-#[allow(clippy::len_without_is_empty)]
 impl FactoredTransversal {
     /// Given a group, construct the factored transversal
     ///```
@@ -46,14 +49,15 @@ impl FactoredTransversal {
     /// let fc = FactoredTransversal::new(&Group::symmetric(10), 1);
     ///```
     pub fn new(g: &Group, base: usize) -> Self {
-        FactoredTransversal {
-            base,
-            transversal: factored_transversal(g, base),
-        }
+        FactoredTransversal::from_raw(base, factored_transversal(g, base))
     }
 
     pub(crate) fn from_raw(base: usize, transversal: HashMap<usize, Permutation>) -> Self {
-        FactoredTransversal { base, transversal }
+        FactoredTransversal {
+            base,
+            transversal,
+            resolver: FactoredTransversalResolver,
+        }
     }
 
     /// Given a set of generating elements and element, construct the factored transversal.
@@ -67,6 +71,12 @@ impl FactoredTransversal {
         FactoredTransversal::new(&Group::new(gens), base)
     }
 
+    pub(crate) fn orbit_els(&self) -> impl Iterator<Item = &usize> {
+        self.transversal.keys()
+    }
+}
+
+impl Transversal for FactoredTransversal {
     /// Calculate a representative of the given element in the orbit, or None if this element isn't in the orbit.
     ///```
     /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
@@ -75,8 +85,9 @@ impl FactoredTransversal {
     /// assert_eq!(1, fc.representative(1).unwrap().apply(0));
     /// assert_eq!(None, fc.representative(2));
     ///```
-    pub fn representative(&self, point: usize) -> Option<Permutation> {
-        representative_raw(&self.transversal, self.base, point)
+    fn representative(&self, point: usize) -> Option<Permutation> {
+        self.resolver
+            .representative(&self.transversal, self.base, point)
     }
 
     /// Get the base element of the Factored Transversal.
@@ -86,7 +97,7 @@ impl FactoredTransversal {
     /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
     /// assert_eq!(0, fc.base());
     ///```
-    pub fn base(&self) -> usize {
+    fn base(&self) -> usize {
         self.base
     }
 
@@ -97,7 +108,7 @@ impl FactoredTransversal {
     /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
     /// assert_eq!(2, fc.len());
     ///```
-    pub fn len(&self) -> usize {
+    fn len(&self) -> usize {
         self.transversal.len()
     }
 
@@ -109,7 +120,7 @@ impl FactoredTransversal {
     /// assert_eq!(1, fc.base());
     /// assert!(fc.in_orbit(1));
     ///```
-    pub fn in_orbit(&self, pos: usize) -> bool {
+    fn in_orbit(&self, pos: usize) -> bool {
         self.transversal.contains_key(&pos)
     }
 
@@ -122,7 +133,7 @@ impl FactoredTransversal {
     /// let orbit = fc.orbit();
     /// assert_eq!(orbit.len(), 2);
     /// ```
-    pub fn orbit(&self) -> super::Orbit {
+    fn orbit(&self) -> crate::group::orbit::Orbit {
         self.into()
     }
 }
@@ -205,7 +216,7 @@ pub fn factored_transversal_complete_opt(g: &Group, base: usize) -> HashMap<usiz
 
 #[cfg(test)]
 mod tests {
-    use super::FactoredTransversal;
+    use super::{FactoredTransversal, Transversal};
     use crate::perm::Permutation;
 
     #[test]
