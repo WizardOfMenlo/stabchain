@@ -1,8 +1,11 @@
 use crate::perm::Permutation;
 use std::collections::HashMap;
+
+/// A trait encapsulating the different ways in which a transversal can access a representative
 pub trait TransversalResolver: Default {
     type AssociatedTransversal: super::transversal::Transversal;
 
+    /// Compute the representative
     fn representative(
         &self,
         map: &HashMap<usize, Permutation>,
@@ -10,6 +13,7 @@ pub trait TransversalResolver: Default {
         point: usize,
     ) -> Option<Permutation>;
 
+    /// Convert into a full blown transversal
     fn into_transversal(
         &self,
         map: HashMap<usize, Permutation>,
@@ -17,6 +21,7 @@ pub trait TransversalResolver: Default {
     ) -> Self::AssociatedTransversal;
 }
 
+/// A dispatcher which does simple lookups
 #[derive(Debug, Clone, Copy, Default)]
 pub struct SimpleTransversalResolver;
 
@@ -41,6 +46,7 @@ impl TransversalResolver for SimpleTransversalResolver {
     }
 }
 
+/// A dispatcher that does full Factored Transversal lookups
 #[derive(Debug, Clone, Copy, Default)]
 pub struct FactoredTransversalResolver;
 
