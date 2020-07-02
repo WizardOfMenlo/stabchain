@@ -68,6 +68,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             [(moved_point, Permutation::id())].iter().cloned().collect(),
         );
         self.base.push(moved_point);
+        debug_assert!(self.base.len() == 1);
         self.chain.push(record);
         for g in group.generators() {
             // If g has a non trivial residue
@@ -110,6 +111,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         layer: usize,
         upper_bound: usize,
     ) -> bool {
+        let previous_pos = self.current_pos;
         self.current_pos = layer;
         self.check_transversal_augmentation(g);
         let mut trivial_residues = 0;
@@ -179,6 +181,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 }
             }
         }
+        //Reset the current position to what it was previously.
+        self.current_pos = previous_pos;
         true
     }
 
@@ -273,6 +277,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
 
     /// Test that we have a base and strong generating set, rectifying this if we do not.
     fn strong_generating_test(&mut self) {
+        //Current position should be 0
+        debug_assert!(self.current_pos == 0);
         for i in 0..self.chain.len() {
             let random_generations: usize = 64
                 * self
@@ -283,6 +289,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 let h = self.random_schrier_generator();
                 let h_as_words = element_testing::coset_representative(self.current_chain(), &h)
                     .unwrap_or(vec![h.clone()]);
+                //TODO change to not evaluate all n points.
                 let mut b_dash = 0..self.n;
                 //Check if any points in base union base_dash are fixed by the permutation h.
                 //TODO should only be union of base and b_dash. Won't affect things, just wasted effort.
@@ -389,6 +396,7 @@ mod tests {
         let g = Group::symmetric(4);
         let mut builder = StabchainBuilderRandom::new(FmpSelector);
         builder.construct_strong_generating_set(&g, 10);
+        println!("{:?}", builder.base.clone());
         let chain = builder.build();
         check_well_formed_chain(&chain);
         println!("{}", chain);
