@@ -222,13 +222,14 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     /// Check if adding a new element modifies the current layer of the chain.
     fn check_transversal_augmentation(&mut self, p: Permutation) {
         let mut record = self.chain[self.current_pos].clone();
+        // If this element is already a generator, then we can exit
         let mut to_check = VecDeque::from_iter(record.transversal.keys().copied());
         let mut new_transversal = HashMap::new();
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
             let new_image = p.apply(orbit_element);
 
-            // If we already saw the element
+            // If we haven't seen this element.
             if !(record.transversal.contains_key(&new_image)
                 || new_transversal.contains_key(&new_image))
             {
@@ -250,7 +251,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
                 let new_image = generator.apply(orbit_element);
 
-                // If we have already seen the image
+                // If we haven't already seen the image
                 if !record.transversal.contains_key(&new_image) {
                     // Store in transversal
                     record.transversal.insert(new_image, generator.inv());
@@ -260,11 +261,11 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 }
             }
         }
-
-        // Update the generators adding p
-        record.gens =
-            Group::from_iter(std::iter::once(&p).chain(record.gens.generators()).cloned());
-
+        // Update the generators adding p if it isn't already present.
+        if !record.gens.generators().contains(&p) {
+            record.gens =
+                Group::from_iter(std::iter::once(&p).chain(record.gens.generators()).cloned());
+        }
         // Store the updated record in the chain
         self.chain[self.current_pos] = record;
     }
@@ -388,6 +389,7 @@ mod tests {
         builder.construct_strong_generating_set(&g, 10);
         let chain = builder.build();
         check_well_formed_chain(&chain);
+        println!("{}", chain);
         assert_eq!(24, chain.order())
     }
 }
