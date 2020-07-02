@@ -77,8 +77,7 @@ impl Group {
     pub fn stabchain_with_selector(
         &self,
         selector: impl MovedPointSelector,
-    ) -> stabchain::Stabchain {
-        use self::stabchain::builder::DefaultStrategy;
+    ) -> stabchain::Stabchain<impl TransversalResolver> {
         stabchain::Stabchain::new_with_strategy(self, DefaultStrategy::new(selector))
     }
 
