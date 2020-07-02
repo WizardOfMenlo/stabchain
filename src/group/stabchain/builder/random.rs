@@ -202,6 +202,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         let w2 = random_subproduct_subset(&mut self.rng, &gens[..], k);
         let g = gens.choose(&mut self.rng).expect("Should be non empty");
         //Combine this into a random subword, randomly including the generator or not.
+        //This is equivalent to w1*(*g^e)*w2 where e is generated from a uniform distribution in [0,1]
         let subword = if rand::Rng::gen::<bool>(&mut self.rng) {
             w1.multiply(&w2)
         } else {
@@ -209,14 +210,12 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         };
         let uw = coset_representative.multiply(&subword);
         //Get the residue of coset_representative*subword
-        let residue_as_words =
-            element_testing::coset_representative(self.current_chain(), &uw).unwrap_or(vec![uw]);
+        let residue_as_words = element_testing::coset_representative(self.current_chain(), &uw)
+            .unwrap_or(vec![uw.clone()]);
         //Take it's inverse as a word, i.e reverse the order and replace each entry with the inverse.
         let residue_inverse_as_word = residue_as_words.iter().map(|p| p.inv()).rev();
         //Combine everything together as a single permutation.
-        residue_inverse_as_word.fold(coset_representative.multiply(&subword), |accum, p| {
-            accum.multiply(&p)
-        })
+        residue_inverse_as_word.fold(uw, |accum, p| accum.multiply(&p))
     }
 
     /// Check if adding a new element modifies the current layer of the chain.
