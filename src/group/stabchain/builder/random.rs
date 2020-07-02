@@ -138,7 +138,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     .clone()
                     .into_iter()
                     .chain(b_dash.clone())
-                    .any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b)
+                    .any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b)
                 {
                     //Check if h fixes all points of B, then add it as a base point.
                     if !self
@@ -167,6 +167,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     let h = h_as_words
                         .iter()
                         .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
+                    //h should not be the identity, as it moves a point of the base.
+                    debug_assert!(!h.is_id());
                     let j_dash = self.selector.moved_point(&h);
                     for k in (layer..=j_dash).rev() {
                         self.complete_stabchain_subgroup(h.clone(), k, upper_bound);
