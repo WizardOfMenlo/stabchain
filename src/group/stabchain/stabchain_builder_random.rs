@@ -126,9 +126,10 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     .map(|record| record.transversal.len())
                     .sum::<usize>();
             for _ in 0..random_generations {
-                let u = self.random_schrier_generator();
-                let h_as_words = element_testing::coset_representative(self.current_chain(), &u)
-                    .expect("Should have a residue");
+                let h = self.random_schrier_generator();
+                //Get the coset representation of h.
+                let h_as_words = element_testing::coset_representative(self.current_chain(), &h)
+                    .unwrap_or(vec![h.clone()]);
                 let b_dash = (0..self.n).choose_multiple(&mut self.rng, subset_size);
                 //Check if any points in base union base_dash are fixed by the permutation h.
                 //TODO should only be union of base and b_dash. Won't affect things, just wasted effort.
@@ -204,12 +205,10 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         } else {
             w1.multiply(&g).multiply(&w2)
         };
+        let uw = coset_representative.multiply(&subword);
         //Get the residue of coset_representative*subword
-        let residue_as_words = element_testing::coset_representative(
-            self.current_chain(),
-            &coset_representative.multiply(&subword),
-        )
-        .expect("Should be present.");
+        let residue_as_words =
+            element_testing::coset_representative(self.current_chain(), &uw).unwrap_or(vec![uw]);
         //Take it's inverse as a word, i.e reverse the order and replace each entry with the inverse.
         let residue_inverse_as_word = residue_as_words.iter().map(|p| p.inv()).rev();
         //Combine everything together as a single permutation.
@@ -276,9 +275,9 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     .map(|record| record.transversal.len())
                     .sum::<usize>();
             for _ in 0..random_generations {
-                let u = self.random_schrier_generator();
-                let h_as_words = element_testing::coset_representative(self.current_chain(), &u)
-                    .expect("Should have a residue");
+                let h = self.random_schrier_generator();
+                let h_as_words = element_testing::coset_representative(self.current_chain(), &h)
+                    .unwrap_or(vec![h.clone()]);
                 let mut b_dash = 0..self.n;
                 //Check if any points in base union base_dash are fixed by the permutation h.
                 //TODO should only be union of base and b_dash. Won't affect things, just wasted effort.
