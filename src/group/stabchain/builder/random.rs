@@ -103,6 +103,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         }
     }
 
+    /// Generate new elements of the subgroup in order to complete it.
     fn complete_stabchain_subgroup(
         &mut self,
         g: Permutation,
@@ -181,6 +182,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         true
     }
 
+    /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
     fn random_schrier_generator(&mut self) -> Permutation {
         //First pick a random coset representative of the group
         let record = &self.chain[self.current_pos];
@@ -269,6 +271,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.chain[self.current_pos] = record;
     }
 
+    /// Test that we have a base and strong generating set, rectifying this if we do not.
     fn strong_generating_test(&mut self) {
         for i in 0..self.chain.len() {
             let random_generations: usize = 64
