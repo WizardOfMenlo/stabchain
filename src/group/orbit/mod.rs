@@ -1,4 +1,4 @@
-pub mod factored_transversal;
+pub mod abstraction;
 pub mod transversal;
 
 use crate::group::Group;
@@ -15,10 +15,11 @@ pub struct Orbit {
 impl Orbit {
     /// Build an orbit from a group
     pub fn new(g: &Group, w: usize) -> Self {
-        Orbit {
-            base: w,
-            orbit: orbit(g, w),
-        }
+        Self::from_raw(w, orbit(g, w))
+    }
+
+    pub(crate) fn from_raw(base: usize, orbit: HashSet<usize>) -> Self {
+        Orbit { base, orbit }
     }
 
     /// Is this a complete orbit?
@@ -46,24 +47,6 @@ impl Orbit {
     /// Get an iterator over orbit element
     pub fn iter(&self) -> impl Iterator<Item = &usize> {
         self.orbit.iter()
-    }
-}
-
-impl From<&factored_transversal::FactoredTransversal> for Orbit {
-    fn from(t: &factored_transversal::FactoredTransversal) -> Self {
-        Orbit {
-            base: t.base(),
-            orbit: t.transversal.keys().copied().collect(),
-        }
-    }
-}
-
-impl From<&transversal::Transversal> for Orbit {
-    fn from(t: &transversal::Transversal) -> Self {
-        Orbit {
-            base: t.base(),
-            orbit: t.transversal.keys().copied().collect(),
-        }
     }
 }
 

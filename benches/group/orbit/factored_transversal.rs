@@ -2,7 +2,7 @@ use criterion::{criterion_group, BenchmarkId, Criterion};
 
 const RANGE_OF_VALUES: [usize; 4] = [8, 16, 32, 64];
 
-use stabchain::group::orbit::factored_transversal::{
+use stabchain::group::orbit::transversal::factored_transversal::{
     factored_transversal, factored_transversal_complete_opt,
 };
 use stabchain::group::Group;

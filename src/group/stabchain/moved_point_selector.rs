@@ -4,12 +4,18 @@ const ID_ERROR: &str = "Should never be id";
 
 /// A very small trait, used to seamlessly switch between
 /// an automatic base repr, and one which uses a precomputed one
-pub(crate) trait MovedPointSelector {
+pub trait MovedPointSelector {
     /// Contract, should never be called with id
     fn moved_point(&mut self, p: &Permutation) -> usize;
 }
 
-pub(crate) struct LmpSelector;
+/// The default type of moved point selector. Should be a good choice
+/// in most cases, yet not a silver bullet
+pub type DefaultSelector = LmpSelector;
+
+/// A selector that always chooses the biggest moved point in a permutation
+#[derive(Default, Debug, Copy, Clone)]
+pub struct LmpSelector;
 
 impl MovedPointSelector for LmpSelector {
     fn moved_point(&mut self, p: &Permutation) -> usize {
@@ -18,12 +24,16 @@ impl MovedPointSelector for LmpSelector {
 }
 
 use std::collections::VecDeque;
-pub(crate) struct FixedBaseSelector {
+
+/// A selector that chooses elements in order from a common base i.e. [1,2,3,4]
+#[derive(Default)]
+pub struct FixedBaseSelector {
     base: VecDeque<usize>,
 }
 
 impl FixedBaseSelector {
-    pub(crate) fn new(base: &[usize]) -> Self {
+    /// Create from the given base
+    pub fn new(base: &[usize]) -> Self {
         FixedBaseSelector {
             base: base.iter().copied().collect(),
         }

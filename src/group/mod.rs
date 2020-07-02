@@ -4,6 +4,10 @@ pub mod random_perm;
 pub mod stabchain;
 pub mod utils;
 
+use self::stabchain::builder::DefaultStrategy;
+use self::stabchain::moved_point_selector::FixedBaseSelector;
+use crate::group::orbit::abstraction::TransversalResolver;
+use crate::group::stabchain::builder::Strategy;
 use crate::perm::export::CyclePermutation;
 use crate::perm::utils::order_n_permutation;
 use crate::perm::Permutation;
@@ -34,26 +38,38 @@ impl Group {
     }
 
     /// Computes the transversal from the group generators (use factored transversal instead for memory efficience)
-    pub fn transversal(&self, base: usize) -> orbit::transversal::Transversal {
-        orbit::transversal::Transversal::new(self, base)
+    pub fn transversal(&self, base: usize) -> impl orbit::transversal::Transversal {
+        orbit::transversal::SimpleTransversal::new(self, base)
     }
 
     /// Computes the factored transversal from the group generators
-    pub fn factored_transversal(
-        &self,
-        base: usize,
-    ) -> orbit::factored_transversal::FactoredTransversal {
-        orbit::factored_transversal::FactoredTransversal::new(self, base)
+    pub fn factored_transversal(&self, base: usize) -> impl orbit::transversal::Transversal {
+        orbit::transversal::FactoredTransversal::new(self, base)
     }
 
     /// Computes a stabilizer chain for this group
-    pub fn stabchain(&self) -> stabchain::Stabchain {
-        stabchain::Stabchain::new(self)
+    pub fn stabchain(&self) -> stabchain::Stabchain<impl TransversalResolver> {
+        use self::stabchain::moved_point_selector::DefaultSelector;
+        stabchain::Stabchain::new_with_strategy(
+            self,
+            DefaultStrategy::new(DefaultSelector::default()),
+        )
     }
 
     /// Computes a stabilizer chain for this group with a base
-    pub fn stabchain_base(&self, base: &[usize]) -> stabchain::Stabchain {
-        stabchain::Stabchain::new_with_base(self, base)
+    pub fn stabchain_base(&self, base: &[usize]) -> stabchain::Stabchain<impl TransversalResolver> {
+        stabchain::Stabchain::new_with_strategy(
+            self,
+            DefaultStrategy::new(FixedBaseSelector::new(base)),
+        )
+    }
+
+    /// Computes a stabilizer chain for this group with a strategy
+    pub fn stabchain_with_strategy<S: Strategy>(
+        &self,
+        strat: S,
+    ) -> stabchain::Stabchain<S::Transversal> {
+        stabchain::Stabchain::new_with_strategy(self, strat)
     }
 
     /// Bruteforce the elements to get all elements in the group
@@ -250,6 +266,7 @@ mod tests {
 
     #[test]
     fn orbit_vs_factored_orbit() {
+        use crate::group::orbit::transversal::Transversal;
         let g = Group::symmetric(10);
         assert_eq!(g.orbit(0), g.factored_transversal(0).orbit())
     }
