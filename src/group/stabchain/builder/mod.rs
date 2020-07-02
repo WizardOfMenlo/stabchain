@@ -7,6 +7,7 @@ use crate::group::Group;
 
 mod ift;
 mod naive;
+mod random;
 
 /// A builder is a datastructure to be used for constructing
 /// a stabilizer chain. While the ultimate record is the same for any kind of

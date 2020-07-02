@@ -1,5 +1,6 @@
-use super::{element_testing, MovedPointSelector, Stabchain, StabchainRecord};
-use crate::group::orbit::factored_transversal::representative_raw;
+use crate::group::orbit::abstraction::FactoredTransversalResolver;
+use crate::group::orbit::transversal::factored_transversal::representative_raw;
+use crate::group::stabchain::{element_testing, MovedPointSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{random_subproduct_full, random_subproduct_subset};
 use crate::group::Group;
 use crate::perm::Permutation;
@@ -16,7 +17,7 @@ const C: f32 = 10.0;
 
 pub(super) struct StabchainBuilderRandom<T: MovedPointSelector> {
     current_pos: usize,
-    chain: Vec<StabchainRecord>,
+    chain: Vec<StabchainRecord<FactoredTransversalResolver>>,
     selector: T,
     n: usize,
     base: Vec<usize>,
@@ -39,11 +40,11 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.current_pos == self.chain.len()
     }
 
-    fn current_chain(&self) -> impl Iterator<Item = &StabchainRecord> {
+    fn current_chain(&self) -> impl Iterator<Item = &StabchainRecord<FactoredTransversalResolver>> {
         self.chain.iter().skip(self.current_pos)
     }
 
-    pub(super) fn build(self) -> Stabchain {
+    pub(super) fn build(self) -> Stabchain<FactoredTransversalResolver> {
         Stabchain { chain: self.chain }
     }
 
@@ -57,11 +58,11 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .unwrap_or(0);
         let mut upper_bound = upper_bound;
         let moved_point = 0; //todo check if this is correct?
-        let record = StabchainRecord {
-            base: moved_point,
-            gens: group.clone(),
-            transversal: [(moved_point, Permutation::id())].iter().cloned().collect(),
-        };
+        let record = StabchainRecord::new(
+            moved_point,
+            group.clone(),
+            [(moved_point, Permutation::id())].iter().cloned().collect(),
+        );
         self.base.push(moved_point);
         self.chain[self.current_pos] = record;
         for g in group.generators() {
@@ -148,14 +149,14 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                             .find(|&b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b)
                             .expect("This point should exist");
                         self.base.push(new_base_point);
-                        let record = StabchainRecord {
-                            base: new_base_point,
-                            gens: Group::new(&[]),
-                            transversal: [(new_base_point, Permutation::id())]
+                        let record = StabchainRecord::new(
+                            new_base_point,
+                            Group::new(&[]),
+                            [(new_base_point, Permutation::id())]
                                 .iter()
                                 .cloned()
                                 .collect(),
-                        };
+                        );
                         self.chain.push(record);
                     }
                     //Evaluate h as a permutation.
@@ -290,14 +291,14 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                             .find(|&b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b)
                             .expect("This point should exist");
                         self.base.push(new_base_point);
-                        let record = StabchainRecord {
-                            base: new_base_point,
-                            gens: Group::new(&[]),
-                            transversal: [(new_base_point, Permutation::id())]
+                        let record = StabchainRecord::new(
+                            new_base_point,
+                            Group::new(&[]),
+                            [(new_base_point, Permutation::id())]
                                 .iter()
                                 .cloned()
                                 .collect(),
-                        };
+                        );
                         self.chain.push(record);
                     }
                     //Evaluate h as a permutation.
