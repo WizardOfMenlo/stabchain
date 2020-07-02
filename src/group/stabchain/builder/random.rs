@@ -283,7 +283,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 let mut b_dash = 0..self.n;
                 //Check if any points in base union base_dash are fixed by the permutation h.
                 //TODO should only be union of base and b_dash. Won't affect things, just wasted effort.
-                if b_dash.any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b) {
+                if b_dash.any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b) {
                     //Check if h fixes all points of B, then add it as a base point.
                     if !self
                         .base
