@@ -197,6 +197,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .expect("Should be non empty");
         let coset_representative = representative_raw(&record.transversal, record.base, *point)
             .expect("Should be in the orbit");
+        debug_assert!(coset_representative.apply(record.base) == *point);
         //Generate a random subword.
         let gens = self
             .current_chain()
