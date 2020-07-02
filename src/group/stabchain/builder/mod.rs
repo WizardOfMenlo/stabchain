@@ -27,7 +27,7 @@ pub trait Strategy {
 }
 
 /// The strategy that is to be used by default
-pub type DefaultStrategy<M> = IFTBuilderStrategy<M>;
+pub type DefaultStrategy<M> = NaiveBuilderStrategy<M>;
 
 /// Schreir Sims with unfactored transversal. Faster than the
 /// factored transversal version, yet more memory intensive
