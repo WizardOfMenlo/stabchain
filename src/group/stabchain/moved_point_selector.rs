@@ -24,7 +24,7 @@ impl MovedPointSelector for LmpSelector {
 use std::collections::VecDeque;
 
 /// A selector that chooses elements in order from a common base i.e. [1,2,3,4]
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct FixedBaseSelector {
     base: VecDeque<usize>,
 }
@@ -43,6 +43,16 @@ impl MovedPointSelector for FixedBaseSelector {
         self.base
             .pop_front()
             .expect("Base was shorter than expected")
+    }
+}
+
+use std::iter::FromIterator;
+
+impl FromIterator<usize> for FixedBaseSelector {
+    fn from_iter<T: IntoIterator<Item = usize>>(iter: T) -> Self {
+        FixedBaseSelector {
+            base: iter.into_iter().collect(),
+        }
     }
 }
 

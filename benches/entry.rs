@@ -8,7 +8,7 @@ use group::orbit::{
     factored_transversal::factored_transversal_impl, orbit_impl, transversal::transversal_impl,
 };
 
-use group::stabilizer_chain::stabchain;
+use group::stabilizer_chain::{selector::selector, stabchain};
 
 use perm::permutation;
 
@@ -18,5 +18,6 @@ criterion_main!(
     orbit_impl,
     transversal_impl,
     factored_transversal_impl,
-    stabchain
+    stabchain,
+    selector
 );

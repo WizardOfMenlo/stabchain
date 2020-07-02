@@ -99,6 +99,7 @@ mod tests {
 
     #[test]
     fn book_example() {
+        use super::super::moved_point_selector::FixedBaseSelector;
         use crate::perm::export::CyclePermutation;
 
         let g = Group::new(&[
@@ -106,7 +107,7 @@ mod tests {
             CyclePermutation::single_cycle(&[2, 3, 4]).into(),
         ]);
 
-        let chain = g.stabchain_base(&[0, 1]);
+        let chain = g.stabchain_with_selector(FixedBaseSelector::new(&[0, 1]));
 
         let perm = CyclePermutation::from_vec(vec![vec![1, 2], vec![3, 4]]).into();
 
@@ -131,6 +132,7 @@ mod tests {
 
     #[test]
     fn book_example_complete_test() {
+        use super::super::moved_point_selector::FixedBaseSelector;
         use crate::perm::export::CyclePermutation;
 
         let g = Group::new(&[
@@ -138,7 +140,7 @@ mod tests {
             CyclePermutation::single_cycle(&[2, 3, 4]).into(),
         ]);
 
-        let chain = g.stabchain_base(&[0, 1]);
+        let chain = g.stabchain_with_selector(FixedBaseSelector::new(&[0, 1]));
 
         let elements = g.bruteforce_elements();
         for el in elements {
