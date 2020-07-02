@@ -1,5 +1,8 @@
 use super::MovedPointSelector;
 use super::Stabchain;
+use crate::group::orbit::abstraction::{
+    FactoredTransversalResolver, SimpleTransversalResolver, TransversalResolver,
+};
 use crate::group::Group;
 
 mod ift;
@@ -8,15 +11,18 @@ mod naive;
 /// A builder is a datastructure to be used for constructing
 /// a stabilizer chain. While the ultimate record is the same for any kind of
 /// chain, there are some very real differences in performance that can occur
-pub trait Builder {
+pub trait Builder<V> {
     fn set_generators(&mut self, gens: &Group);
-    fn build(self) -> Stabchain;
+    fn build(self) -> Stabchain<V>;
 }
 
 /// A strategy is a lightweight struct that allows to
 /// (hopefully at compile time plz compiler) select which builder to use
 pub trait Strategy {
-    type BuilderT: Builder;
+    type BuilderT: Builder<Self::Transversal>;
+
+    // Note, typically Transversal = BuilderT::Transversal (need unstable)
+    type Transversal: TransversalResolver;
     fn make_builder(self) -> Self::BuilderT;
 }
 
@@ -38,6 +44,7 @@ impl<M> Strategy for NaiveBuilderStrategy<M>
 where
     M: MovedPointSelector,
 {
+    type Transversal = SimpleTransversalResolver;
     type BuilderT = naive::StabchainBuilderNaive<M>;
 
     fn make_builder(self) -> Self::BuilderT {
@@ -60,6 +67,7 @@ impl<M> Strategy for IFTBuilderStrategy<M>
 where
     M: MovedPointSelector,
 {
+    type Transversal = FactoredTransversalResolver;
     type BuilderT = ift::StabchainBuilderIFT<M>;
 
     fn make_builder(self) -> Self::BuilderT {

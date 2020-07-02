@@ -1,8 +1,15 @@
 use super::StabchainRecord;
+use crate::group::orbit::abstraction::TransversalResolver;
 use crate::perm::Permutation;
 
 /// Given a stabilizer chain, computes whether the given element is in the group
-pub fn is_in_group<'a>(it: impl IntoIterator<Item = &'a StabchainRecord>, p: &Permutation) -> bool {
+pub fn is_in_group<'a, V>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
+    p: &Permutation,
+) -> bool
+where
+    V: 'a + TransversalResolver,
+{
     // Early exit
     if p.is_id() {
         return true;
@@ -17,7 +24,10 @@ pub fn is_in_group<'a>(it: impl IntoIterator<Item = &'a StabchainRecord>, p: &Pe
             return false;
         }
 
-        let representative = record.transversal().representative(application).unwrap();
+        let representative = record
+            .resolver()
+            .representative(&record.transversal, base, application)
+            .unwrap();
         g = g.divide(&representative);
     }
 
@@ -26,10 +36,13 @@ pub fn is_in_group<'a>(it: impl IntoIterator<Item = &'a StabchainRecord>, p: &Pe
 
 /// Given a stabilizer chain, computes a list of coset representatives of the given element if it is in the group
 /// So that p == s_m s_m-1 ... s_1
-pub fn coset_representative<'a>(
-    it: impl IntoIterator<Item = &'a StabchainRecord>,
+pub fn coset_representative<'a, V>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
     p: &Permutation,
-) -> Option<Vec<Permutation>> {
+) -> Option<Vec<Permutation>>
+where
+    V: 'a + TransversalResolver,
+{
     // Early exit
     if p.is_id() {
         // The empty product is the identity
@@ -46,7 +59,10 @@ pub fn coset_representative<'a>(
             return None;
         }
 
-        let representative = record.transversal().representative(application).unwrap();
+        let representative = record
+            .resolver()
+            .representative(&record.transversal, base, application)
+            .unwrap();
         res.push(representative.clone());
         g = g.divide(&representative);
     }
