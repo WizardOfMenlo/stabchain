@@ -49,6 +49,10 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     fn construct_strong_generating_set(&mut self, group: &Group, upper_bound: usize) {
+        //Edge case for trivial group.
+        if group.generators().is_empty() {
+            return;
+        }
         //Find the largest moved point of any generator, i.e find which size of the symmetric group the generators are from.
         self.n = group
             .generators
@@ -64,7 +68,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             [(moved_point, Permutation::id())].iter().cloned().collect(),
         );
         self.base.push(moved_point);
-        self.chain[self.current_pos] = record;
+        self.chain.push(record);
         for g in group.generators() {
             // If g has a non trivial residue
             if !element_testing::is_in_group(self.current_chain(), &g) {
@@ -325,5 +329,63 @@ where
 
     fn build(self) -> Stabchain<FactoredTransversalResolver> {
         Stabchain { chain: self.chain }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::group::orbit::abstraction::TransversalResolver;
+    use crate::group::orbit::transversal::Transversal;
+    use crate::group::stabchain::moved_point_selector::FmpSelector;
+    fn check_well_formed_chain<V: TransversalResolver>(s: &Stabchain<V>) {
+        let mut previous = None;
+        for record in s.chain.iter() {
+            let gens = record.group();
+            let transversal = record.transversal();
+
+            // Check the computed transversal, and the one computed from generators agree
+            // We do not directly check the transversal since representatives are not unique
+            assert_eq!(transversal.orbit(), gens.orbit(record.base));
+
+            for elem in transversal.orbit().iter().copied() {
+                assert_eq!(
+                    elem,
+                    transversal
+                        .representative(elem)
+                        .unwrap()
+                        .apply(record.base())
+                );
+            }
+
+            // Check that everything is stabilized correctly
+            if !previous.is_none() {
+                let stabilized = previous.unwrap();
+                assert_eq!(gens.orbit(stabilized).len(), 1);
+            }
+
+            previous = Some(record.base);
+        }
+    }
+
+    #[test]
+    fn trivial_chain() {
+        let g = Group::trivial();
+        let mut builder = StabchainBuilderRandom::new(FmpSelector);
+        builder.construct_strong_generating_set(&g, 10);
+        let chain = builder.build();
+        println!("{}", &chain);
+        check_well_formed_chain(&chain);
+        assert!(chain.is_empty());
+    }
+
+    #[test]
+    fn symmetric_chain() {
+        let g = Group::symmetric(4);
+        let mut builder = StabchainBuilderRandom::new(FmpSelector);
+        builder.construct_strong_generating_set(&g, 10);
+        let chain = builder.build();
+        check_well_formed_chain(&chain);
+        assert_eq!(24, chain.order())
     }
 }
