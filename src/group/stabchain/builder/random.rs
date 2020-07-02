@@ -15,7 +15,7 @@ const C: f32 = 10.0;
 
 // Helper struct, used to build the stabilizer chain
 
-pub(super) struct StabchainBuilderRandom<T: MovedPointSelector> {
+pub struct StabchainBuilderRandom<T: MovedPointSelector> {
     current_pos: usize,
     chain: Vec<StabchainRecord<FactoredTransversalResolver>>,
     selector: T,
@@ -25,7 +25,7 @@ pub(super) struct StabchainBuilderRandom<T: MovedPointSelector> {
 }
 #[allow(dead_code)] //TODO remove
 impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
-    pub(super) fn new(selector: T) -> Self {
+    pub fn new(selector: T) -> Self {
         StabchainBuilderRandom {
             current_pos: 0,
             chain: Vec::new(),
