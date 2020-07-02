@@ -314,3 +314,16 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         }
     }
 }
+
+impl<M> super::Builder<FactoredTransversalResolver> for StabchainBuilderRandom<M>
+where
+    M: MovedPointSelector,
+{
+    fn set_generators(&mut self, gens: &Group) {
+        self.construct_strong_generating_set(gens, 50); //TODO update upper bound
+    }
+
+    fn build(self) -> Stabchain<FactoredTransversalResolver> {
+        Stabchain { chain: self.chain }
+    }
+}
