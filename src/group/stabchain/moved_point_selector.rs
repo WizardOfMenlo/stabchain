@@ -7,7 +7,12 @@ pub trait MovedPointSelector {
     fn moved_point(&mut self, p: &Permutation) -> usize;
 }
 
-#[derive(Default)]
+/// The default type of moved point selector. Should be a good choice
+/// in most cases, yet not a silver bullet
+pub type DefaultSelector = LmpSelector;
+
+/// A selector that always chooses the biggest moved point in a permutation
+#[derive(Default, Debug, Copy, Clone)]
 pub struct LmpSelector;
 
 impl MovedPointSelector for LmpSelector {
@@ -17,13 +22,16 @@ impl MovedPointSelector for LmpSelector {
 }
 
 use std::collections::VecDeque;
+
+/// A selector that chooses elements in order from a common base i.e. [1,2,3,4]
 #[derive(Default)]
 pub struct FixedBaseSelector {
     base: VecDeque<usize>,
 }
 
 impl FixedBaseSelector {
-    pub(crate) fn new(base: &[usize]) -> Self {
+    /// Create from the given base
+    pub fn new(base: &[usize]) -> Self {
         FixedBaseSelector {
             base: base.iter().copied().collect(),
         }

@@ -1,18 +1,16 @@
-use super::Group;
+use super::skeleton::TransversalSkeleton;
+use crate::group::orbit::transversal::Transversal;
+use crate::group::Group;
 use crate::perm::Permutation;
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
+use crate::group::orbit::abstraction::FactoredTransversalResolver;
+
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
 /// Contains the base of this traversal, and a factored traversal of the orbit.
-#[derive(Debug)]
-pub struct FactoredTransversal {
-    // Base point of the orbit
-    base: usize,
-    // The factored traversal/Schrier vector of the orbit.
-    pub(super) transversal: HashMap<usize, Permutation>,
-}
+pub type FactoredTransversal = TransversalSkeleton<FactoredTransversalResolver>;
 
 pub(crate) fn representative_raw<S: std::hash::BuildHasher>(
     transversal: &HashMap<usize, Permutation, S>,
@@ -37,93 +35,30 @@ pub(crate) fn representative_raw<S: std::hash::BuildHasher>(
     }
 }
 
-#[allow(clippy::len_without_is_empty)]
 impl FactoredTransversal {
     /// Given a group, construct the factored transversal
     ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::transversal::FactoredTransversal;
     /// use stabchain::group::Group;
     /// let fc = FactoredTransversal::new(&Group::symmetric(10), 1);
     ///```
     pub fn new(g: &Group, base: usize) -> Self {
-        FactoredTransversal {
+        FactoredTransversal::from_raw(
             base,
-            transversal: factored_transversal(g, base),
-        }
-    }
-
-    pub(crate) fn from_raw(base: usize, transversal: HashMap<usize, Permutation>) -> Self {
-        FactoredTransversal { base, transversal }
+            factored_transversal(g, base),
+            FactoredTransversalResolver,
+        )
     }
 
     /// Given a set of generating elements and element, construct the factored transversal.
     /// Note, this algorithm does not use methods to optimize depth of three, see Seress2003 Section 4.4.
     ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
+    /// use stabchain::group::orbit::transversal::FactoredTransversal;
     /// use stabchain::perm::Permutation;
     /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
     ///```
     pub fn from_generators(base: usize, gens: &[Permutation]) -> Self {
         FactoredTransversal::new(&Group::new(gens), base)
-    }
-
-    /// Calculate a representative of the given element in the orbit, or None if this element isn't in the orbit.
-    ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
-    /// use stabchain::perm::Permutation;
-    /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0, 2])]);
-    /// assert_eq!(1, fc.representative(1).unwrap().apply(0));
-    /// assert_eq!(None, fc.representative(2));
-    ///```
-    pub fn representative(&self, point: usize) -> Option<Permutation> {
-        representative_raw(&self.transversal, self.base, point)
-    }
-
-    /// Get the base element of the Factored Transversal.
-    ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
-    /// use stabchain::perm::Permutation;
-    /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
-    /// assert_eq!(0, fc.base());
-    ///```
-    pub fn base(&self) -> usize {
-        self.base
-    }
-
-    /// Get the orbit size.
-    ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
-    /// use stabchain::perm::Permutation;
-    /// let fc = FactoredTransversal::from_generators(0, &[Permutation::from(vec![1, 0])]);
-    /// assert_eq!(2, fc.len());
-    ///```
-    pub fn len(&self) -> usize {
-        self.transversal.len()
-    }
-
-    /// Test if an element is in the orbit.
-    ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
-    /// use stabchain::perm::Permutation;
-    /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
-    /// assert_eq!(1, fc.base());
-    /// assert!(fc.in_orbit(1));
-    ///```
-    pub fn in_orbit(&self, pos: usize) -> bool {
-        self.transversal.contains_key(&pos)
-    }
-
-    /// Gets the orbits
-    ///```
-    /// use stabchain::group::orbit::factored_transversal::FactoredTransversal;
-    /// use stabchain::perm::Permutation;
-    /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
-    /// assert_eq!(1, fc.base());
-    /// let orbit = fc.orbit();
-    /// assert_eq!(orbit.len(), 2);
-    /// ```
-    pub fn orbit(&self) -> super::Orbit {
-        self.into()
     }
 }
 
@@ -136,7 +71,7 @@ impl fmt::Display for FactoredTransversal {
             self.base() + 1,
         )?;
 
-        for (orbit, repr) in &self.transversal {
+        for (orbit, repr) in self.raw_elements() {
             write!(f, "({}, {}) ", orbit + 1, repr)?
         }
 
@@ -205,7 +140,7 @@ pub fn factored_transversal_complete_opt(g: &Group, base: usize) -> HashMap<usiz
 
 #[cfg(test)]
 mod tests {
-    use super::FactoredTransversal;
+    use super::{FactoredTransversal, Transversal};
     use crate::perm::Permutation;
 
     #[test]
@@ -213,7 +148,7 @@ mod tests {
     /// Each orbit should be a singleton, as the generators don't move any points.
     fn id_transveral() {
         let fc = FactoredTransversal::from_generators(3, &[]);
-        assert_eq!(fc.base, 3);
+        assert_eq!(fc.base(), 3);
         assert!(fc.in_orbit(3));
         assert!(!fc.in_orbit(2));
         assert!(!fc.in_orbit(1));

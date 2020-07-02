@@ -1,6 +1,10 @@
 use crate::group::Group;
 use crate::perm::Permutation;
 
+use super::skeleton::TransversalSkeleton;
+use super::Transversal;
+use crate::group::orbit::abstraction::SimpleTransversalResolver;
+
 use std::collections::{HashMap, VecDeque};
 
 /// Transversal using the naive algorithm
@@ -8,51 +12,17 @@ use std::collections::{HashMap, VecDeque};
 /// memory intensive. In applications please use FactoredTransversal
 /// (After some testing, it seems that it is also slower computationally,
 /// so don't use unless wanting some pain)
-#[derive(Debug, PartialEq)]
-pub struct Transversal {
-    base: usize,
-    pub(super) transversal: HashMap<usize, Permutation>,
-}
+pub type SimpleTransversal = TransversalSkeleton<SimpleTransversalResolver>;
 
-#[allow(clippy::len_without_is_empty)]
-impl Transversal {
+impl SimpleTransversal {
     /// Create from the group
     pub fn new(g: &Group, base: usize) -> Self {
-        Self::from_raw(base, transversal(g, base))
-    }
-
-    pub(crate) fn from_raw(base: usize, transversal: HashMap<usize, Permutation>) -> Self {
-        Transversal { base, transversal }
-    }
-
-    /// Get the base of the transversal
-    pub fn base(&self) -> usize {
-        self.base
-    }
-
-    /// Get the orbit from the transversal
-    pub fn orbit(&self) -> super::Orbit {
-        self.into()
-    }
-
-    /// Get the computed representative
-    pub fn representative(&self, delta: usize) -> Option<Permutation> {
-        self.transversal.get(&delta).cloned()
-    }
-
-    /// Get the size of the orbit
-    pub fn len(&self) -> usize {
-        self.transversal.len()
-    }
-
-    /// Checks if element is in the orbit
-    pub fn in_orbit(&self, delta: usize) -> bool {
-        self.transversal.contains_key(&delta)
+        Self::from_raw(base, transversal(g, base), SimpleTransversalResolver)
     }
 }
 
 use std::fmt;
-impl fmt::Display for Transversal {
+impl fmt::Display for SimpleTransversal {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -60,7 +30,7 @@ impl fmt::Display for Transversal {
             self.base() + 1,
         )?;
 
-        for (orbit, repr) in &self.transversal {
+        for (orbit, repr) in self.raw_elements() {
             write!(f, "({}, {}) ", orbit + 1, repr)?
         }
 
@@ -147,8 +117,8 @@ mod tests {
     #[test]
     fn id_transveral() {
         let g = Group::trivial();
-        let fc = Transversal::new(&g, 3);
-        assert_eq!(fc.base, 3);
+        let fc = SimpleTransversal::new(&g, 3);
+        assert_eq!(fc.base(), 3);
         assert!(fc.in_orbit(3));
         assert!(!fc.in_orbit(2));
         assert!(!fc.in_orbit(1));
@@ -159,7 +129,7 @@ mod tests {
     #[test]
     fn id_representatives() {
         let g = Group::trivial();
-        let fc = Transversal::new(&g, 3);
+        let fc = SimpleTransversal::new(&g, 3);
         assert_eq!(Permutation::id(), fc.representative(3).unwrap());
         assert_eq!(None, fc.representative(2))
     }
@@ -169,7 +139,7 @@ mod tests {
     fn small_fc() {
         let perm = Permutation::from_vec(vec![0, 3, 2, 1]);
         let g = Group::new(&[perm]);
-        let fc = Transversal::new(&g, 1);
+        let fc = SimpleTransversal::new(&g, 1);
         assert_eq!(fc.base(), 1);
         assert!(fc.in_orbit(1));
         assert!(fc.in_orbit(3));
@@ -184,7 +154,7 @@ mod tests {
     fn full_cycle() {
         let perm = Permutation::from_vec(vec![1, 2, 3, 0]);
         let g = Group::new(&[perm]);
-        let fc = Transversal::new(&g, 3);
+        let fc = SimpleTransversal::new(&g, 3);
         for i in 0_usize..=3 {
             assert!(fc.in_orbit(i));
             assert_eq!(i, fc.representative(i).unwrap().apply(3));

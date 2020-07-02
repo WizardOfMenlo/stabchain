@@ -110,8 +110,6 @@ mod tests {
     #[test]
     /// Test that elements generated are in the subgroup for multiple generators.
     fn closure_larger_disjoint() {
-        // Do once we have a better subgroup test.
-        use crate::group::stabchain::Stabchain;
         use crate::group::Group;
         use crate::perm::export::CyclePermutation;
         let g = Group::new(&[
@@ -121,7 +119,7 @@ mod tests {
         ]);
         let mut rand_perm = RandPerm::from_generators(10, g.generators(), 50);
         // dbg!(&rand_perm);
-        let chain = Stabchain::new(&g);
+        let chain = g.stabchain();
         println!("{}", chain);
         for _ in 0..100 {
             let perm = rand_perm.random_permutation();
@@ -134,12 +132,10 @@ mod tests {
     #[test]
     ///Test that random elements from the symmetric group are included. This is ignored as it is slow.
     fn closure_larger_symmetric() {
-        // Do once we have a better subgroup test.
-        use crate::group::stabchain::Stabchain;
         use crate::group::Group;
         let g = Group::symmetric(20);
         let mut rand_perm = RandPerm::from_generators(10, g.generators(), 1000);
-        let chain = Stabchain::new(&g);
+        let chain = g.stabchain();
         for _ in 0..100 {
             let perm = rand_perm.random_permutation();
             assert!(chain.in_group(&perm));

@@ -1,45 +1,74 @@
 use super::MovedPointSelector;
 use super::Stabchain;
+use crate::group::orbit::abstraction::{
+    FactoredTransversalResolver, SimpleTransversalResolver, TransversalResolver,
+};
 use crate::group::Group;
 
 mod ift;
 mod naive;
 
-pub trait Builder {
+/// A builder is a datastructure to be used for constructing
+/// a stabilizer chain. While the ultimate record is the same for any kind of
+/// chain, there are some very real differences in performance that can occur
+pub trait Builder<V> {
     fn set_generators(&mut self, gens: &Group);
-    fn build(self) -> Stabchain;
+    fn build(self) -> Stabchain<V>;
 }
 
-pub trait BuilderStrategy<M: MovedPointSelector> {
-    type BuilderT: Builder;
+/// A strategy is a lightweight struct that allows to
+/// (hopefully at compile time plz compiler) select which builder to use
+pub trait Strategy {
+    type BuilderT: Builder<Self::Transversal>;
 
-    fn make_builder(&self, selector: M) -> Self::BuilderT;
+    // Note, typically Transversal = BuilderT::Transversal (need unstable)
+    type Transversal: TransversalResolver;
+    fn make_builder(self) -> Self::BuilderT;
 }
 
-#[derive(Default)]
-pub struct NaiveBuilderStrategy<M>(std::marker::PhantomData<M>);
+/// The strategy that is to be used by default
+pub type DefaultStrategy<M> = IFTBuilderStrategy<M>;
 
-impl<M> BuilderStrategy<M> for NaiveBuilderStrategy<M>
-where
-    M: MovedPointSelector,
-{
-    type BuilderT = naive::StabchainBuilderNaive<M>;
+/// Schreir Sims with unfactored transversal. Faster than the
+/// factored transversal version, yet more memory intensive
+pub struct NaiveBuilderStrategy<M>(M);
 
-    fn make_builder(&self, selector: M) -> Self::BuilderT {
-        naive::StabchainBuilderNaive::new(selector)
+impl<M> NaiveBuilderStrategy<M> {
+    pub fn new(m: M) -> Self {
+        NaiveBuilderStrategy(m)
     }
 }
 
-#[derive(Default)]
-pub struct IFTBuilderStrategy<M>(std::marker::PhantomData<M>);
-
-impl<M> BuilderStrategy<M> for IFTBuilderStrategy<M>
+impl<M> Strategy for NaiveBuilderStrategy<M>
 where
     M: MovedPointSelector,
 {
+    type Transversal = SimpleTransversalResolver;
+    type BuilderT = naive::StabchainBuilderNaive<M>;
+
+    fn make_builder(self) -> Self::BuilderT {
+        naive::StabchainBuilderNaive::new(self.0)
+    }
+}
+
+/// Schreir Sims with factored transversal. Much more memory friendly,
+/// yet much slower
+pub struct IFTBuilderStrategy<M>(M);
+
+impl<M> IFTBuilderStrategy<M> {
+    pub fn new(m: M) -> Self {
+        IFTBuilderStrategy(m)
+    }
+}
+
+impl<M> Strategy for IFTBuilderStrategy<M>
+where
+    M: MovedPointSelector,
+{
+    type Transversal = FactoredTransversalResolver;
     type BuilderT = ift::StabchainBuilderIFT<M>;
 
-    fn make_builder(&self, selector: M) -> Self::BuilderT {
-        ift::StabchainBuilderIFT::new(selector)
+    fn make_builder(self) -> Self::BuilderT {
+        ift::StabchainBuilderIFT::new(self.0)
     }
 }
