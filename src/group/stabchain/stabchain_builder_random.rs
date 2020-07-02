@@ -92,13 +92,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             }
             //Perform the strong generator test ceil(log(log(n))) times, resetting if there is any failure.
             for _ in 0..(passes_required) {
-                // Perform the strong generator test, resetting if we have failure.
-                if !self.strong_generating_test() {
-                    upper_bound *= 2;
-                    //Reset the iterator back to the start.
-                    iter = orig_iter.clone();
-                    break;
-                }
+                // Perform the strong generator test
+                self.strong_generating_test();
             }
         }
     }
@@ -267,7 +262,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.chain[self.current_pos] = record;
     }
 
-    fn strong_generating_test(&mut self) -> bool {
+    fn strong_generating_test(&mut self) {
         for i in 0..self.chain.len() {
             let random_generations: usize = 64
                 * self
@@ -316,6 +311,5 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 }
             }
         }
-        true
     }
 }
