@@ -2,6 +2,7 @@ pub mod abstraction;
 pub mod transversal;
 
 use crate::group::Group;
+use crate::perm::Permutation;
 use std::collections::{HashSet, VecDeque};
 
 /// w^G = { w^g | g \in G }

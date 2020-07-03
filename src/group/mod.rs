@@ -11,23 +11,23 @@ use crate::group::stabchain::builder::Strategy;
 use crate::group::stabchain::moved_point_selector::MovedPointSelector;
 use crate::perm::export::CyclePermutation;
 use crate::perm::utils::order_n_permutation;
-use crate::perm::Permutation;
+use crate::perm::{DefaultPermutation, Permutation};
 
 use std::iter::FromIterator;
 
 #[derive(Debug, Clone)]
 pub struct Group {
-    generators: Vec<Permutation>,
+    generators: Vec<DefaultPermutation>,
 }
 
 impl Group {
     /// Instantiate the group from some generators
-    pub fn new(generators: &[Permutation]) -> Self {
+    pub fn new(generators: &[DefaultPermutation]) -> Self {
         Self::from_iter(generators.iter().cloned())
     }
 
     /// Get a reference to the generators of the group
-    pub fn generators(&self) -> &[Permutation] {
+    pub fn generators(&self) -> &[DefaultPermutation] {
         &self.generators[..]
     }
 
@@ -83,7 +83,7 @@ impl Group {
 
     /// Bruteforce the elements to get all elements in the group
     /// Unless time is a very cheap commodity, do not do on large groups
-    pub fn bruteforce_elements(&self) -> Vec<Permutation> {
+    pub fn bruteforce_elements(&self) -> Vec<DefaultPermutation> {
         brute_force::group_elements(self)
     }
 
@@ -98,7 +98,7 @@ impl Group {
     }
 
     /// Conjugate the generators by this permutation
-    pub fn conjugate_gens(&self, p: &Permutation) -> Self {
+    pub fn conjugate_gens(&self, p: &DefaultPermutation) -> Self {
         Group::from_iter(
             self.generators()
                 .iter()
@@ -208,7 +208,7 @@ impl Group {
                 l[i + (j - 1) * x] = (i + 1) + (j - 1) * y;
                 l[(i + 1) + (j - 1) * x] = i + (j - 1) * y;
             }
-            perms.push(Permutation::from_vec(l));
+            perms.push(DefaultPermutation::from_vec(l));
         }
 
         for j in 1..y {
@@ -217,15 +217,15 @@ impl Group {
                 l[i + j * x] = i + (j - 1) * x;
                 l[i + (j - 1) * x] = i + j * x;
             }
-            perms.push(Permutation::from_vec(l));
+            perms.push(DefaultPermutation::from_vec(l));
         }
 
         Group::new(&perms[..])
     }
 }
 
-impl FromIterator<Permutation> for Group {
-    fn from_iter<T: IntoIterator<Item = Permutation>>(iter: T) -> Group {
+impl FromIterator<DefaultPermutation> for Group {
+    fn from_iter<T: IntoIterator<Item = DefaultPermutation>>(iter: T) -> Group {
         let v = iter.into_iter().filter(|p| !p.is_id()).collect();
         Group { generators: v }
     }
@@ -291,10 +291,10 @@ mod tests {
     #[test]
     fn test_product() {
         use crate::perm::export::CyclePermutation;
-        use crate::perm::Permutation;
+        use crate::perm::DefaultPermutation;
         use std::collections::HashSet;
 
-        let perm: Permutation = CyclePermutation::single_cycle(&[1, 2, 3]).into();
+        let perm: DefaultPermutation = CyclePermutation::single_cycle(&[1, 2, 3]).into();
 
         let g = Group::new(&[perm.clone()]);
         let prod = Group::product(&g, &g);

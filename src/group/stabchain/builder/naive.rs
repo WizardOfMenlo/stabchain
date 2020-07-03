@@ -2,7 +2,7 @@ use super::{MovedPointSelector, Stabchain};
 use crate::group::orbit::abstraction::SimpleTransversalResolver;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
-use crate::perm::Permutation;
+use crate::perm::{DefaultPermutation, Permutation};
 use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
@@ -35,14 +35,14 @@ impl<T> StabchainBuilderNaive<T>
 where
     T: MovedPointSelector,
 {
-    fn extend_lower_level(&mut self, p: Permutation) {
+    fn extend_lower_level(&mut self, p: DefaultPermutation) {
         self.current_pos += 1;
         self.extend_inner(p);
         self.current_pos -= 1;
     }
 
     #[allow(clippy::map_entry)]
-    fn extend_inner(&mut self, p: Permutation) {
+    fn extend_inner(&mut self, p: DefaultPermutation) {
         // Note that id always in group
         if element_testing::is_in_group(self.current_chain(), &p) {
             return;
@@ -54,7 +54,10 @@ where
             let mut record = StabchainRecord::new(
                 moved_point,
                 Group::new(&[p.clone()]),
-                [(moved_point, Permutation::id())].iter().cloned().collect(),
+                [(moved_point, DefaultPermutation::id())]
+                    .iter()
+                    .cloned()
+                    .collect(),
             );
 
             let mut next_orbit_point = p.apply(moved_point);

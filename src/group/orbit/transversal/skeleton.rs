@@ -1,6 +1,6 @@
 use super::Transversal;
 use crate::group::orbit::abstraction::TransversalResolver;
-use crate::perm::Permutation;
+use crate::perm::DefaultPermutation;
 
 use std::collections::HashMap;
 
@@ -8,14 +8,14 @@ use std::collections::HashMap;
 #[derive(Debug)]
 pub struct TransversalSkeleton<R> {
     base: usize,
-    transversal: HashMap<usize, Permutation>,
+    transversal: HashMap<usize, DefaultPermutation>,
     resolver: R,
 }
 
 impl<R> TransversalSkeleton<R> {
     pub(crate) fn from_raw(
         base: usize,
-        transversal: HashMap<usize, Permutation>,
+        transversal: HashMap<usize, DefaultPermutation>,
         resolver: R,
     ) -> Self {
         TransversalSkeleton {
@@ -25,7 +25,7 @@ impl<R> TransversalSkeleton<R> {
         }
     }
 
-    pub(crate) fn raw_elements(&self) -> impl Iterator<Item = (&usize, &Permutation)> {
+    pub(crate) fn raw_elements(&self) -> impl Iterator<Item = (&usize, &DefaultPermutation)> {
         self.transversal.iter()
     }
 }
@@ -45,7 +45,7 @@ where
     }
 
     /// Get the computed representative
-    fn representative(&self, delta: usize) -> Option<Permutation> {
+    fn representative(&self, delta: usize) -> Option<DefaultPermutation> {
         self.resolver
             .representative(&self.transversal, self.base, delta)
     }

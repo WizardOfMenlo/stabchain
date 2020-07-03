@@ -1,7 +1,7 @@
 use super::skeleton::TransversalSkeleton;
 use crate::group::orbit::transversal::Transversal;
 use crate::group::Group;
-use crate::perm::Permutation;
+use crate::perm::{DefaultPermutation, Permutation};
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
@@ -13,16 +13,16 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 pub type FactoredTransversal = TransversalSkeleton<FactoredTransversalResolver>;
 
 pub(crate) fn representative_raw<S: std::hash::BuildHasher>(
-    transversal: &HashMap<usize, Permutation, S>,
+    transversal: &HashMap<usize, DefaultPermutation, S>,
     base: usize,
     point: usize,
-) -> Option<Permutation> {
+) -> Option<DefaultPermutation> {
     // Check if the element is in the orbit.
     if !transversal.contains_key(&point) {
         None
     } else {
         let mut orbit_point = point;
-        let mut rep = Permutation::id();
+        let mut rep = DefaultPermutation::id();
         // Move along the orbit till we reach a representative that the base moves to the point.
         while orbit_point != base {
             let g_inv = transversal.get(&orbit_point).unwrap();
@@ -54,10 +54,10 @@ impl FactoredTransversal {
     /// Note, this algorithm does not use methods to optimize depth of three, see Seress2003 Section 4.4.
     ///```
     /// use stabchain::group::orbit::transversal::FactoredTransversal;
-    /// use stabchain::perm::Permutation;
-    /// let fc = FactoredTransversal::from_generators(1, &[Permutation::from(vec![1, 0])]);
+    /// use stabchain::perm::*;
+    /// let fc = FactoredTransversal::from_generators(1, &[DefaultPermutation::from(vec![1, 0])]);
     ///```
-    pub fn from_generators(base: usize, gens: &[Permutation]) -> Self {
+    pub fn from_generators(base: usize, gens: &[DefaultPermutation]) -> Self {
         FactoredTransversal::new(&Group::new(gens), base)
     }
 }
@@ -80,10 +80,10 @@ impl fmt::Display for FactoredTransversal {
 }
 
 /// Computes the factored transversal for a Group
-pub fn factored_transversal(g: &Group, base: usize) -> HashMap<usize, Permutation> {
+pub fn factored_transversal(g: &Group, base: usize) -> HashMap<usize, DefaultPermutation> {
     let gens = g.generators();
     let mut transversal = HashMap::new();
-    let id = Permutation::id();
+    let id = DefaultPermutation::id();
     transversal.insert(base, id);
     // Orbit elements that have not been used yet.
     let mut to_traverse = VecDeque::new();
@@ -107,11 +107,14 @@ pub fn factored_transversal(g: &Group, base: usize) -> HashMap<usize, Permutatio
 }
 
 /// Computes the factored transversal for a Group. Use optmization on complete orbits
-pub fn factored_transversal_complete_opt(g: &Group, base: usize) -> HashMap<usize, Permutation> {
+pub fn factored_transversal_complete_opt(
+    g: &Group,
+    base: usize,
+) -> HashMap<usize, DefaultPermutation> {
     let maximal_orbit_size = g.symmetric_super_order();
     let gens = g.generators();
     let mut transversal = HashMap::new();
-    let id = Permutation::id();
+    let id = DefaultPermutation::id();
     transversal.insert(base, id);
     // Orbit elements that have not been used yet.
     let mut to_traverse = VecDeque::new();
@@ -141,7 +144,7 @@ pub fn factored_transversal_complete_opt(g: &Group, base: usize) -> HashMap<usiz
 #[cfg(test)]
 mod tests {
     use super::{FactoredTransversal, Transversal};
-    use crate::perm::Permutation;
+    use crate::perm::{DefaultPermutation, Permutation};
 
     #[test]
     /// Test the Factored Traversal of an empty set of generators.
@@ -162,7 +165,7 @@ mod tests {
     fn id_representatives() {
         let fc = FactoredTransversal::from_generators(3, &[]);
         // The orbit for the base point should be 1.
-        assert_eq!(Permutation::id(), fc.representative(3).unwrap());
+        assert_eq!(DefaultPermutation::id(), fc.representative(3).unwrap());
         // The orbit will only contain the base element, as the group generated is the identity
         assert_eq!(None, fc.representative(2))
     }
@@ -171,7 +174,7 @@ mod tests {
     /// Test with a small permutation as the only generator.
     fn small_fc() {
         // This permutation is equivalent to (1, 3)
-        let perm = Permutation::from_vec(vec![0, 3, 2, 1]);
+        let perm = DefaultPermutation::from_vec(vec![0, 3, 2, 1]);
         let fc = FactoredTransversal::from_generators(1, &[perm]);
         assert_eq!(fc.base(), 1);
         // As the permutation is (1, 3), only 1 and 3 should be in the orbit of 1.
@@ -187,7 +190,7 @@ mod tests {
     /// Test with a permutation of 4 points that is a 4-cycle.
     fn full_cycle() {
         // This permutation is equivalent to (1, 2, 3, 4)
-        let perm = Permutation::from_vec(vec![1, 2, 3, 0]);
+        let perm = DefaultPermutation::from_vec(vec![1, 2, 3, 0]);
         let fc = FactoredTransversal::from_generators(3, &[perm]);
         // Every element should be in the orbit, and it's representative should move the base to that point.
         for i in 0_usize..=3 {
@@ -202,7 +205,7 @@ mod tests {
     fn multiple_generators() {
         use crate::perm::export::CyclePermutation;
         // Cycle notation is used for conveninece, but we do need to switch to 0 indexed for assertions.
-        let gens: Vec<Permutation> = vec![
+        let gens: Vec<DefaultPermutation> = vec![
             CyclePermutation::from_vec(vec![vec![1, 6, 4, 3], vec![2, 7, 5]]).into(),
             CyclePermutation::from_vec(vec![vec![1, 4], vec![2, 6, 3]]).into(),
         ];
@@ -222,7 +225,7 @@ mod tests {
     fn multiple_generators_non_full_orbit() {
         use crate::perm::export::CyclePermutation;
         // Cycle notation is used for conveninece, but we do need to switch to 0 indexed for assertions.
-        let gens: Vec<Permutation> = vec![
+        let gens: Vec<DefaultPermutation> = vec![
             CyclePermutation::single_cycle(&[1, 2, 6]).into(),
             CyclePermutation::single_cycle(&[3, 5, 7]).into(),
         ];

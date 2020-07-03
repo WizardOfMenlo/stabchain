@@ -4,7 +4,7 @@ pub mod moved_point_selector;
 
 use crate::group::orbit::abstraction::TransversalResolver;
 use crate::group::Group;
-use crate::perm::Permutation;
+use crate::perm::*;
 use builder::{Builder, Strategy};
 use moved_point_selector::MovedPointSelector;
 
@@ -35,27 +35,27 @@ where
     }
 
     /// Is the element in the group?
-    pub fn in_group(&self, g: &Permutation) -> bool {
+    pub fn in_group(&self, g: &DefaultPermutation) -> bool {
         self.in_subgroup(g, 0)
     }
 
     /// Check membership at the subgroup
-    pub fn in_subgroup(&self, g: &Permutation, layer: usize) -> bool {
+    pub fn in_subgroup(&self, g: &DefaultPermutation, layer: usize) -> bool {
         element_testing::is_in_group(self.get_chain_at_layer(layer), g)
     }
 
     /// Get representatives that multiply to g
     /// TODO: If there is something useful to do with these, make a struct for Vec<Permutation>
-    pub fn coset_representatives(&self, g: &Permutation) -> Option<Vec<Permutation>> {
+    pub fn coset_representatives(&self, g: &DefaultPermutation) -> Option<Vec<DefaultPermutation>> {
         self.coset_representatives_in_subgroup(g, 0)
     }
 
     /// Get representatives that multiply to g
     pub fn coset_representatives_in_subgroup(
         &self,
-        g: &Permutation,
+        g: &DefaultPermutation,
         layer: usize,
-    ) -> Option<Vec<Permutation>> {
+    ) -> Option<Vec<DefaultPermutation>> {
         element_testing::coset_representative(self.get_chain_at_layer(layer), g)
     }
 
@@ -113,7 +113,7 @@ impl<V> IntoIterator for Stabchain<V> {
 pub struct StabchainRecord<V> {
     base: usize,
     gens: Group,
-    transversal: HashMap<usize, Permutation>,
+    transversal: HashMap<usize, DefaultPermutation>,
     resolver: V,
 }
 
@@ -133,7 +133,11 @@ impl<V> StabchainRecord<V>
 where
     V: TransversalResolver,
 {
-    pub(crate) fn new(base: usize, gens: Group, transversal: HashMap<usize, Permutation>) -> Self {
+    pub(crate) fn new(
+        base: usize,
+        gens: Group,
+        transversal: HashMap<usize, DefaultPermutation>,
+    ) -> Self {
         StabchainRecord {
             base,
             gens,

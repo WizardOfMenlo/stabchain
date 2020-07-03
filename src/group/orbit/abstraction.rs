@@ -1,4 +1,4 @@
-use crate::perm::Permutation;
+use crate::perm::DefaultPermutation;
 use std::collections::HashMap;
 
 /// A trait encapsulating the different ways in which a transversal can access a representative
@@ -8,15 +8,15 @@ pub trait TransversalResolver: Default {
     /// Compute the representative
     fn representative(
         &self,
-        map: &HashMap<usize, Permutation>,
+        map: &HashMap<usize, DefaultPermutation>,
         base: usize,
         point: usize,
-    ) -> Option<Permutation>;
+    ) -> Option<DefaultPermutation>;
 
     /// Convert into a full blown transversal
     fn into_transversal(
         &self,
-        map: HashMap<usize, Permutation>,
+        map: HashMap<usize, DefaultPermutation>,
         base: usize,
     ) -> Self::AssociatedTransversal;
 }
@@ -30,16 +30,16 @@ impl TransversalResolver for SimpleTransversalResolver {
 
     fn representative(
         &self,
-        map: &HashMap<usize, Permutation>,
+        map: &HashMap<usize, DefaultPermutation>,
         _: usize,
         point: usize,
-    ) -> Option<Permutation> {
+    ) -> Option<DefaultPermutation> {
         map.get(&point).cloned()
     }
 
     fn into_transversal(
         &self,
-        map: HashMap<usize, Permutation>,
+        map: HashMap<usize, DefaultPermutation>,
         base: usize,
     ) -> Self::AssociatedTransversal {
         super::transversal::SimpleTransversal::from_raw(base, map, SimpleTransversalResolver)
@@ -55,17 +55,17 @@ impl TransversalResolver for FactoredTransversalResolver {
 
     fn representative(
         &self,
-        map: &HashMap<usize, Permutation>,
+        map: &HashMap<usize, DefaultPermutation>,
         base: usize,
         point: usize,
-    ) -> Option<Permutation> {
+    ) -> Option<DefaultPermutation> {
         super::transversal::factored_transversal::representative_raw(map, base, point)
     }
 
     // Note that no validation is actually done here
     fn into_transversal(
         &self,
-        map: HashMap<usize, Permutation>,
+        map: HashMap<usize, DefaultPermutation>,
         base: usize,
     ) -> Self::AssociatedTransversal {
         super::transversal::FactoredTransversal::from_raw(base, map, FactoredTransversalResolver)

@@ -1,32 +1,31 @@
-use super::super::Permutation;
 use super::PermBuilder;
+use crate::perm::Permutation;
 
 #[derive(Debug, Clone)]
-pub struct Pow<Perm>
-where
-    Perm: PermBuilder,
-{
+pub struct Pow<Perm> {
     perm: Perm,
     power: isize,
 }
 
-impl<Perm> Pow<Perm>
-where
-    Perm: PermBuilder,
-{
+impl<Perm> Pow<Perm> {
     pub(crate) fn new(perm: Perm, power: isize) -> Self {
         Pow { perm, power }
     }
 
     // TODO: This is not really the conjugate I just wanted a nice name
-    fn conj(&self) -> Pow<Permutation> {
+    fn conj<P>(&self) -> Pow<P>
+    where
+        P: Permutation,
+        Perm: PermBuilder<P>,
+    {
         Pow::new(self.perm.build_inv(), self.power.abs())
     }
 }
 
-impl<Perm> PermBuilder for Pow<Perm>
+impl<P, Perm> PermBuilder<P> for Pow<Perm>
 where
-    Perm: PermBuilder,
+    P: Permutation + PermBuilder<P>,
+    Perm: PermBuilder<P>,
 {
     fn build_apply(&self, mut x: usize) -> usize {
         if self.power < 0 {
@@ -40,13 +39,13 @@ where
         x
     }
 
-    fn collapse(&self) -> Permutation {
+    fn collapse(&self) -> P {
         if self.power < 0 {
             return self.conj().collapse();
         }
 
         if self.power == 0 {
-            return Permutation::id();
+            return P::id();
         }
 
         pow(self.perm.collapse(), self.power as usize)
@@ -55,9 +54,9 @@ where
 
 // Recursive helper function, uses repeated exponentiation
 // to perform exponentiation to the n in O(log n) steps
-fn pow(perm: Permutation, n: usize) -> Permutation {
+fn pow<P: Permutation + Clone>(perm: P, n: usize) -> P {
     if n == 0 {
-        return Permutation::id();
+        return P::id();
     }
 
     if n == 1 {
@@ -75,11 +74,11 @@ fn pow(perm: Permutation, n: usize) -> Permutation {
 
 #[cfg(test)]
 mod tests {
-    use crate::perm::{PermBuilder, Permutation};
+    use crate::perm::{builder::PermBuilder, DefaultPermutation, Permutation};
     #[test]
     fn simple_exponentiation() {
-        let perm = Permutation::from_vec(vec![1, 2, 3, 4, 5, 0]);
-        let mut counter = Permutation::id();
+        let perm = DefaultPermutation::from_vec(vec![1, 2, 3, 4, 5, 0]);
+        let mut counter = DefaultPermutation::id();
         for i in 0..6 {
             assert_eq!(counter, perm.build_pow(i).collapse());
             counter = counter.multiply(&perm);
@@ -88,21 +87,21 @@ mod tests {
 
     #[test]
     fn simple_inv() {
-        let perm = Permutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
+        let perm = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
         assert_eq!(perm.inv(), perm.build_pow(-1).collapse());
     }
 
     #[test]
     fn inv_exponentiation() {
-        let perm = Permutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
+        let perm = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
         assert_eq!(perm.inv(), perm.build_pow(-1).collapse());
     }
 
     #[test]
     fn multiple_inv_exponentiation() {
-        let perm = Permutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
+        let perm = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
         let inv = perm.inv();
-        let mut counter = Permutation::id();
+        let mut counter = DefaultPermutation::id();
         for i in 0..6 {
             assert_eq!(counter, perm.build_pow(-i).collapse());
             counter = counter.multiply(&inv);
@@ -112,7 +111,7 @@ mod tests {
     #[test]
     fn application_positive() {
         use crate::perm::builder::join::MultiJoin;
-        let perm = Permutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
+        let perm = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
         let lazy_pow = perm.build_pow(4);
         let lazy_mult = MultiJoin::new(std::iter::repeat(perm.clone()).take(4));
         let full = perm.multiply(&perm).multiply(&perm).multiply(&perm);
@@ -126,7 +125,7 @@ mod tests {
     #[test]
     fn application_negative() {
         use crate::perm::builder::join::MultiJoin;
-        let perm_inv = Permutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
+        let perm_inv = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
         let perm = perm_inv.inv();
         let lazy_pow = perm_inv.build_pow(-4);
         let lazy_mult = MultiJoin::new(std::iter::repeat(perm.clone()).take(4));

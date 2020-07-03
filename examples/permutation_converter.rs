@@ -1,4 +1,4 @@
-use stabchain::perm::Permutation;
+use stabchain::perm::DefaultPermutation;
 use std::io;
 use std::io::prelude::*;
 
@@ -11,7 +11,7 @@ fn main() {
             .map(|s| s.parse::<usize>().unwrap())
             .collect();
 
-        let perm = Permutation::from_vec(images);
+        let perm = DefaultPermutation::from_vec(images);
         println!("{}", perm);
     }
 }

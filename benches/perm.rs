@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, BenchmarkId, Criterion};
 
 use stabchain::perm::utils::random_permutation;
-use stabchain::perm::Permutation;
+use stabchain::perm::DefaultPermutation;
 
 const RANGE_OF_VALUES: [usize; 7] = [8, 16, 32, 64, 128, 256, 512];
 
@@ -81,7 +81,7 @@ fn exponentiation_small_exponent(c: &mut Criterion) {
 
 /// Benchmark the check of an identity, although this should be constant due to it being an empty check.
 fn identity_check(c: &mut Criterion) {
-    let id = Permutation::id();
+    let id = DefaultPermutation::id();
     c.bench_function("permutation__is_id", |b| b.iter(|| id.is_id()));
 }
 

@@ -1,5 +1,5 @@
 use super::Group;
-use crate::perm::Permutation;
+use crate::perm::{DefaultPermutation, Permutation};
 
 use std::collections::{HashSet, VecDeque};
 use std::iter::FromIterator;
@@ -9,7 +9,7 @@ use std::iter::FromIterator;
 // Since Permutation has RefCell it could theorically mess up the ordering. However, since the hash is dependant only
 // on the fixed part is will not in practice
 #[allow(clippy::mutable_key_type)]
-pub fn group_elements(g: &Group) -> Vec<Permutation> {
+pub fn group_elements(g: &Group) -> Vec<DefaultPermutation> {
     let gens = g.generators();
     let mut res = HashSet::new();
     // Get everything that is not the identity
@@ -28,7 +28,7 @@ pub fn group_elements(g: &Group) -> Vec<Permutation> {
         }
     }
 
-    res.insert(Permutation::id());
+    res.insert(DefaultPermutation::id());
     res.into_iter().collect()
 }
 

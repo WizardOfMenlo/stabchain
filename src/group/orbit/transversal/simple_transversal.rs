@@ -1,5 +1,5 @@
 use crate::group::Group;
-use crate::perm::Permutation;
+use crate::perm::{DefaultPermutation, Permutation};
 
 use super::skeleton::TransversalSkeleton;
 use super::Transversal;
@@ -43,13 +43,13 @@ impl fmt::Display for SimpleTransversal {
 
 // Needed since entry requires &mut
 #[allow(clippy::map_entry)]
-pub fn transversal(g: &Group, base: usize) -> HashMap<usize, Permutation> {
+pub fn transversal(g: &Group, base: usize) -> HashMap<usize, DefaultPermutation> {
     // Get the generatos
     let gens = &g.generators[..];
     let mut transversal = HashMap::new();
 
     // Init the transversal
-    transversal.insert(base, Permutation::id());
+    transversal.insert(base, DefaultPermutation::id());
 
     // We use this to store elements to expand
     let mut to_traverse = VecDeque::new();
@@ -75,14 +75,14 @@ pub fn transversal(g: &Group, base: usize) -> HashMap<usize, Permutation> {
 /// Optimized version of transversal which does less work on complete groups
 // Needed since entry requires &mut
 #[allow(clippy::map_entry)]
-pub fn transversal_complete_opt(g: &Group, base: usize) -> HashMap<usize, Permutation> {
+pub fn transversal_complete_opt(g: &Group, base: usize) -> HashMap<usize, DefaultPermutation> {
     // Get the generatos
     let gens = &g.generators[..];
     let maximal_orbit_size = g.symmetric_super_order();
     let mut transversal = HashMap::new();
 
     // Init the transversal
-    transversal.insert(base, Permutation::id());
+    transversal.insert(base, DefaultPermutation::id());
 
     // We use this to store elements to expand
     let mut to_traverse = VecDeque::new();
@@ -112,7 +112,7 @@ pub fn transversal_complete_opt(g: &Group, base: usize) -> HashMap<usize, Permut
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::perm::Permutation;
+    use crate::perm::DefaultPermutation;
 
     #[test]
     fn id_transveral() {
@@ -130,14 +130,14 @@ mod tests {
     fn id_representatives() {
         let g = Group::trivial();
         let fc = SimpleTransversal::new(&g, 3);
-        assert_eq!(Permutation::id(), fc.representative(3).unwrap());
+        assert_eq!(DefaultPermutation::id(), fc.representative(3).unwrap());
         assert_eq!(None, fc.representative(2))
     }
 
     #[test]
     /// Test with a small permutation as the only generator.
     fn small_fc() {
-        let perm = Permutation::from_vec(vec![0, 3, 2, 1]);
+        let perm = DefaultPermutation::from_vec(vec![0, 3, 2, 1]);
         let g = Group::new(&[perm]);
         let fc = SimpleTransversal::new(&g, 1);
         assert_eq!(fc.base(), 1);
@@ -152,7 +152,7 @@ mod tests {
     #[test]
     /// Test with a permutation of 4 points that is a 4-cycle.
     fn full_cycle() {
-        let perm = Permutation::from_vec(vec![1, 2, 3, 0]);
+        let perm = DefaultPermutation::from_vec(vec![1, 2, 3, 0]);
         let g = Group::new(&[perm]);
         let fc = SimpleTransversal::new(&g, 3);
         for i in 0_usize..=3 {
