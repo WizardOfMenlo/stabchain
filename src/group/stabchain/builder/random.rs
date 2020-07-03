@@ -124,12 +124,12 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         //Repeat until we have a certain number of random schrier generators result in trivial residues.
         while trivial_residues < trivial_residues_required {
             //TODO move 64 to constant
-            let random_generations: usize = 64
+            let random_generations = 64.0
                 * self
                     .current_chain()
-                    .map(|record| record.transversal.len())
-                    .sum::<usize>();
-            for _ in 0..random_generations {
+                    .map(|record| (record.transversal.len() as f64).ln())
+                    .sum::<f64>();
+            for _ in 0..random_generations as i32 {
                 let h = self.random_schrier_generator();
                 //Get the coset representation of h.
                 let h_as_words = residue_as_words(self.current_chain(), &h);
@@ -282,12 +282,13 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         //Current position should be 0
         debug_assert!(self.current_pos == 0);
         for i in 0..self.chain.len() {
-            let random_generations: usize = 64
+            //TODO see if a better bound can be achieved.
+            let random_generations = 64.0
                 * self
                     .current_chain()
-                    .map(|record| record.transversal.len())
-                    .sum::<usize>();
-            for _ in 0..random_generations {
+                    .map(|record| (record.transversal.len() as f64).ln())
+                    .sum::<f64>();
+            for _ in 0..random_generations as i32 {
                 let h = self.random_schrier_generator();
                 let h_as_words = residue_as_words(self.current_chain(), &h);
                 //TODO change to not evaluate all n points.
