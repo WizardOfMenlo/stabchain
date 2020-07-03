@@ -148,7 +148,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .base
                         .clone()
                         .into_iter()
-                        .any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b)
+                        .all(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b)
                     {
                         //Search for a new base point that h moves.
                         let new_base_point = b_dash
@@ -156,6 +156,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                             .find(|&b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b)
                             .expect("This point should exist");
                         self.base.push(new_base_point);
+                        dbg!(&self.base);
                         let record = StabchainRecord::new(
                             new_base_point,
                             Group::new(&[]),
@@ -298,7 +299,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .base
                         .clone()
                         .into_iter()
-                        .any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b)
+                        .all(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b)
                     {
                         //Search for a new base point that h moves.
                         let new_base_point = b_dash
