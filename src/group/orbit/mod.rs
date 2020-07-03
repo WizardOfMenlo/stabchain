@@ -15,7 +15,7 @@ pub struct Orbit {
 #[allow(clippy::len_without_is_empty)]
 impl Orbit {
     /// Build an orbit from a group
-    pub fn new(g: &Group, w: usize) -> Self {
+    pub fn new<P: Permutation>(g: &Group<P>, w: usize) -> Self {
         Self::from_raw(w, orbit(g, w))
     }
 
@@ -64,7 +64,7 @@ impl fmt::Display for Orbit {
 }
 
 /// Algorithm to compute orbit from a group
-pub fn orbit(g: &Group, w: usize) -> HashSet<usize> {
+pub fn orbit<P: Permutation>(g: &Group<P>, w: usize) -> HashSet<usize> {
     let gens = g.generators();
 
     // Orbit are the ones that have been acted on by the generators
@@ -92,7 +92,7 @@ pub fn orbit(g: &Group, w: usize) -> HashSet<usize> {
 
 /// Algorithm to compute orbit from a group. This variant optimizes by checking
 /// if the orbit is complete before doing more work
-pub fn orbit_complete_opt(g: &Group, w: usize) -> HashSet<usize> {
+pub fn orbit_complete_opt<P: Permutation>(g: &Group<P>, w: usize) -> HashSet<usize> {
     let maximal_orbit_size = g.symmetric_super_order();
     let gens = g.generators();
 

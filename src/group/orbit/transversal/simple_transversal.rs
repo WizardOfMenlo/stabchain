@@ -12,17 +12,23 @@ use std::collections::{HashMap, VecDeque};
 /// memory intensive. In applications please use FactoredTransversal
 /// (After some testing, it seems that it is also slower computationally,
 /// so don't use unless wanting some pain)
-pub type SimpleTransversal = TransversalSkeleton<SimpleTransversalResolver>;
+pub type SimpleTransversal<P> = TransversalSkeleton<P, SimpleTransversalResolver>;
 
-impl SimpleTransversal {
+impl<P> SimpleTransversal<P>
+where
+    P: Permutation,
+{
     /// Create from the group
-    pub fn new(g: &Group, base: usize) -> Self {
+    pub fn new(g: &Group<P>, base: usize) -> Self {
         Self::from_raw(base, transversal(g, base), SimpleTransversalResolver)
     }
 }
 
 use std::fmt;
-impl fmt::Display for SimpleTransversal {
+impl<P> fmt::Display for SimpleTransversal<P>
+where
+    P: fmt::Display + Permutation,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -43,13 +49,16 @@ impl fmt::Display for SimpleTransversal {
 
 // Needed since entry requires &mut
 #[allow(clippy::map_entry)]
-pub fn transversal(g: &Group, base: usize) -> HashMap<usize, DefaultPermutation> {
+pub fn transversal<P>(g: &Group<P>, base: usize) -> HashMap<usize, P>
+where
+    P: Permutation,
+{
     // Get the generatos
     let gens = &g.generators[..];
     let mut transversal = HashMap::new();
 
     // Init the transversal
-    transversal.insert(base, DefaultPermutation::id());
+    transversal.insert(base, P::id());
 
     // We use this to store elements to expand
     let mut to_traverse = VecDeque::new();

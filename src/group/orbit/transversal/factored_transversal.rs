@@ -10,19 +10,23 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
 /// Contains the base of this traversal, and a factored traversal of the orbit.
-pub type FactoredTransversal = TransversalSkeleton<FactoredTransversalResolver>;
+pub type FactoredTransversal<P> = TransversalSkeleton<P, FactoredTransversalResolver>;
 
-pub(crate) fn representative_raw<S: std::hash::BuildHasher>(
-    transversal: &HashMap<usize, DefaultPermutation, S>,
+pub(crate) fn representative_raw<P, S>(
+    transversal: &HashMap<usize, P, S>,
     base: usize,
     point: usize,
-) -> Option<DefaultPermutation> {
+) -> Option<P>
+where
+    P: Permutation,
+    S: std::hash::BuildHasher,
+{
     // Check if the element is in the orbit.
     if !transversal.contains_key(&point) {
         None
     } else {
         let mut orbit_point = point;
-        let mut rep = DefaultPermutation::id();
+        let mut rep = P::id();
         // Move along the orbit till we reach a representative that the base moves to the point.
         while orbit_point != base {
             let g_inv = transversal.get(&orbit_point).unwrap();
@@ -35,14 +39,17 @@ pub(crate) fn representative_raw<S: std::hash::BuildHasher>(
     }
 }
 
-impl FactoredTransversal {
+impl<P> FactoredTransversal<P>
+where
+    P: Permutation,
+{
     /// Given a group, construct the factored transversal
     ///```
     /// use stabchain::group::orbit::transversal::FactoredTransversal;
     /// use stabchain::group::Group;
     /// let fc = FactoredTransversal::new(&Group::symmetric(10), 1);
     ///```
-    pub fn new(g: &Group, base: usize) -> Self {
+    pub fn new(g: &Group<P>, base: usize) -> Self {
         FactoredTransversal::from_raw(
             base,
             factored_transversal(g, base),
@@ -57,13 +64,16 @@ impl FactoredTransversal {
     /// use stabchain::perm::*;
     /// let fc = FactoredTransversal::from_generators(1, &[DefaultPermutation::from(vec![1, 0])]);
     ///```
-    pub fn from_generators(base: usize, gens: &[DefaultPermutation]) -> Self {
+    pub fn from_generators(base: usize, gens: &[P]) -> Self {
         FactoredTransversal::new(&Group::new(gens), base)
     }
 }
 
 use std::fmt;
-impl fmt::Display for FactoredTransversal {
+impl<P> fmt::Display for FactoredTransversal<P>
+where
+    P: fmt::Display + Permutation,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -80,10 +90,13 @@ impl fmt::Display for FactoredTransversal {
 }
 
 /// Computes the factored transversal for a Group
-pub fn factored_transversal(g: &Group, base: usize) -> HashMap<usize, DefaultPermutation> {
+pub fn factored_transversal<P>(g: &Group<P>, base: usize) -> HashMap<usize, P>
+where
+    P: Permutation,
+{
     let gens = g.generators();
     let mut transversal = HashMap::new();
-    let id = DefaultPermutation::id();
+    let id = P::id();
     transversal.insert(base, id);
     // Orbit elements that have not been used yet.
     let mut to_traverse = VecDeque::new();
@@ -150,7 +163,7 @@ mod tests {
     /// Test the Factored Traversal of an empty set of generators.
     /// Each orbit should be a singleton, as the generators don't move any points.
     fn id_transveral() {
-        let fc = FactoredTransversal::from_generators(3, &[]);
+        let fc = FactoredTransversal::<DefaultPermutation>::from_generators(3, &[]);
         assert_eq!(fc.base(), 3);
         assert!(fc.in_orbit(3));
         assert!(!fc.in_orbit(2));

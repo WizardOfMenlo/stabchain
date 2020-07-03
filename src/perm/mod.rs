@@ -9,10 +9,11 @@ pub mod impls;
 pub mod utils;
 
 use impls::standard::StandardPermutation;
+use std::hash::Hash;
 
 pub type DefaultPermutation = StandardPermutation;
 
-pub trait Permutation {
+pub trait Permutation: Clone + Eq + Hash {
     fn from_images(images: &[usize]) -> Self;
 
     fn id() -> Self;
@@ -26,6 +27,8 @@ pub trait Permutation {
     fn multiply(&self, other: &Self) -> Self;
 
     fn pow(&self, pow: isize) -> Self;
+
+    fn shift(&self, pos: usize) -> Self;
 
     fn order(&self) -> usize;
 

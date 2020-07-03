@@ -1,23 +1,18 @@
 use super::Transversal;
 use crate::group::orbit::abstraction::TransversalResolver;
-use crate::perm::DefaultPermutation;
 
 use std::collections::HashMap;
 
 /// Struct that avoids code duplication
 #[derive(Debug)]
-pub struct TransversalSkeleton<R> {
+pub struct TransversalSkeleton<P, R> {
     base: usize,
-    transversal: HashMap<usize, DefaultPermutation>,
+    transversal: HashMap<usize, P>,
     resolver: R,
 }
 
-impl<R> TransversalSkeleton<R> {
-    pub(crate) fn from_raw(
-        base: usize,
-        transversal: HashMap<usize, DefaultPermutation>,
-        resolver: R,
-    ) -> Self {
+impl<P, R> TransversalSkeleton<P, R> {
+    pub(crate) fn from_raw(base: usize, transversal: HashMap<usize, P>, resolver: R) -> Self {
         TransversalSkeleton {
             base,
             transversal,
@@ -25,14 +20,14 @@ impl<R> TransversalSkeleton<R> {
         }
     }
 
-    pub(crate) fn raw_elements(&self) -> impl Iterator<Item = (&usize, &DefaultPermutation)> {
+    pub(crate) fn raw_elements(&self) -> impl Iterator<Item = (&usize, &P)> {
         self.transversal.iter()
     }
 }
 
-impl<R> Transversal for TransversalSkeleton<R>
+impl<P, R> Transversal<P> for TransversalSkeleton<P, R>
 where
-    R: TransversalResolver,
+    R: TransversalResolver<P>,
 {
     /// Get the base of the transversal
     fn base(&self) -> usize {
@@ -45,7 +40,7 @@ where
     }
 
     /// Get the computed representative
-    fn representative(&self, delta: usize) -> Option<DefaultPermutation> {
+    fn representative(&self, delta: usize) -> Option<P> {
         self.resolver
             .representative(&self.transversal, self.base, delta)
     }

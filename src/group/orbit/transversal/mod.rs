@@ -1,5 +1,3 @@
-use crate::perm::DefaultPermutation;
-
 pub mod factored_transversal;
 pub mod simple_transversal;
 pub mod skeleton;
@@ -8,9 +6,9 @@ pub use factored_transversal::FactoredTransversal;
 pub use simple_transversal::SimpleTransversal;
 
 #[allow(clippy::len_without_is_empty)]
-pub trait Transversal {
+pub trait Transversal<P> {
     /// Calculate a representative of the given element in the orbit, or None if this element isn't in the orbit.
-    fn representative(&self, point: usize) -> Option<DefaultPermutation>;
+    fn representative(&self, point: usize) -> Option<P>;
 
     /// Get the base element of the Transversal.
     fn base(&self) -> usize;

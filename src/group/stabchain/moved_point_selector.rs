@@ -1,10 +1,10 @@
-use crate::perm::{DefaultPermutation, Permutation};
+use crate::perm::Permutation;
 
 /// A very small trait, used to seamlessly switch between
 /// an automatic base repr, and one which uses a precomputed one
-pub trait MovedPointSelector {
+pub trait MovedPointSelector<P> {
     /// Contract, should never be called with id
-    fn moved_point(&mut self, p: &DefaultPermutation) -> usize;
+    fn moved_point(&mut self, p: &P) -> usize;
 }
 
 /// The default type of moved point selector. Should be a good choice
@@ -15,8 +15,11 @@ pub type DefaultSelector = LmpSelector;
 #[derive(Default, Debug, Copy, Clone)]
 pub struct LmpSelector;
 
-impl MovedPointSelector for LmpSelector {
-    fn moved_point(&mut self, p: &DefaultPermutation) -> usize {
+impl<P> MovedPointSelector<P> for LmpSelector
+where
+    P: Permutation,
+{
+    fn moved_point(&mut self, p: &P) -> usize {
         p.lmp().expect("Should never be id")
     }
 }
@@ -38,8 +41,11 @@ impl FixedBaseSelector {
     }
 }
 
-impl MovedPointSelector for FixedBaseSelector {
-    fn moved_point(&mut self, _: &DefaultPermutation) -> usize {
+impl<P> MovedPointSelector<P> for FixedBaseSelector
+where
+    P: Permutation,
+{
+    fn moved_point(&mut self, _: &P) -> usize {
         self.base
             .pop_front()
             .expect("Base was shorter than expected")
@@ -59,6 +65,7 @@ impl FromIterator<usize> for FixedBaseSelector {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::perm::DefaultPermutation;
 
     #[test]
     fn lmp_test() {

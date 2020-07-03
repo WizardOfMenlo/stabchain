@@ -1,5 +1,5 @@
 use super::ClassicalPermutation;
-use crate::perm::DefaultPermutation;
+use crate::perm::*;
 use serde::{Deserialize, Serialize};
 
 use std::fmt;
@@ -57,6 +57,11 @@ impl CyclePermutation {
 
     pub fn cycles(&self) -> &[Vec<usize>] {
         &self.cycles[..]
+    }
+
+    pub fn into_perm<P: Permutation>(self) -> P {
+        let int: DefaultPermutation = self.into();
+        P::from_images(int.as_vec())
     }
 }
 

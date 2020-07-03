@@ -4,6 +4,7 @@ use crate::group::orbit::abstraction::{
     FactoredTransversalResolver, SimpleTransversalResolver, TransversalResolver,
 };
 use crate::group::Group;
+use crate::perm::Permutation;
 
 mod ift;
 mod naive;
@@ -11,18 +12,18 @@ mod naive;
 /// A builder is a datastructure to be used for constructing
 /// a stabilizer chain. While the ultimate record is the same for any kind of
 /// chain, there are some very real differences in performance that can occur
-pub trait Builder<V> {
-    fn set_generators(&mut self, gens: &Group);
-    fn build(self) -> Stabchain<V>;
+pub trait Builder<P, V> {
+    fn set_generators(&mut self, gens: &Group<P>);
+    fn build(self) -> Stabchain<P, V>;
 }
 
 /// A strategy is a lightweight struct that allows to
 /// (hopefully at compile time plz compiler) select which builder to use
-pub trait Strategy {
-    type BuilderT: Builder<Self::Transversal>;
+pub trait Strategy<P> {
+    type BuilderT: Builder<P, Self::Transversal>;
 
     // Note, typically Transversal = BuilderT::Transversal (need unstable)
-    type Transversal: TransversalResolver;
+    type Transversal: TransversalResolver<P>;
     fn make_builder(self) -> Self::BuilderT;
 }
 
@@ -40,12 +41,13 @@ impl<M> NaiveBuilderStrategy<M> {
     }
 }
 
-impl<M> Strategy for NaiveBuilderStrategy<M>
+impl<P, M> Strategy<P> for NaiveBuilderStrategy<M>
 where
-    M: MovedPointSelector,
+    P: Permutation,
+    M: MovedPointSelector<P>,
 {
     type Transversal = SimpleTransversalResolver;
-    type BuilderT = naive::StabchainBuilderNaive<M>;
+    type BuilderT = naive::StabchainBuilderNaive<P, M>;
 
     fn make_builder(self) -> Self::BuilderT {
         naive::StabchainBuilderNaive::new(self.0)
@@ -63,12 +65,13 @@ impl<M> IFTBuilderStrategy<M> {
     }
 }
 
-impl<M> Strategy for IFTBuilderStrategy<M>
+impl<P, M> Strategy<P> for IFTBuilderStrategy<M>
 where
-    M: MovedPointSelector,
+    P: Permutation,
+    M: MovedPointSelector<P>,
 {
     type Transversal = FactoredTransversalResolver;
-    type BuilderT = ift::StabchainBuilderIFT<M>;
+    type BuilderT = ift::StabchainBuilderIFT<P, M>;
 
     fn make_builder(self) -> Self::BuilderT {
         ift::StabchainBuilderIFT::new(self.0)

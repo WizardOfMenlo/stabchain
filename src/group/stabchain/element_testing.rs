@@ -1,14 +1,12 @@
 use super::StabchainRecord;
 use crate::group::orbit::abstraction::TransversalResolver;
-use crate::perm::{DefaultPermutation, Permutation};
+use crate::perm::Permutation;
 
 /// Given a stabilizer chain, computes whether the given element is in the group
-pub fn is_in_group<'a, V>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
-    p: &DefaultPermutation,
-) -> bool
+pub fn is_in_group<'a, P, V>(it: impl IntoIterator<Item = &'a StabchainRecord<P, V>>, p: &P) -> bool
 where
-    V: 'a + TransversalResolver,
+    P: 'a + Permutation,
+    V: 'a + TransversalResolver<P>,
 {
     // Early exit
     if p.is_id() {
@@ -36,12 +34,13 @@ where
 
 /// Given a stabilizer chain, computes a list of coset representatives of the given element if it is in the group
 /// So that p == s_m s_m-1 ... s_1
-pub fn coset_representative<'a, V>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
-    p: &DefaultPermutation,
-) -> Option<Vec<DefaultPermutation>>
+pub fn coset_representative<'a, P, V>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V>>,
+    p: &P,
+) -> Option<Vec<P>>
 where
-    V: 'a + TransversalResolver,
+    P: 'a + Permutation,
+    V: 'a + TransversalResolver<P>,
 {
     // Early exit
     if p.is_id() {
@@ -78,6 +77,7 @@ where
 mod tests {
     use super::*;
     use crate::group::Group;
+    use crate::perm::DefaultPermutation;
 
     #[test]
     fn id_test() {
@@ -109,7 +109,8 @@ mod tests {
 
         let chain = g.stabchain_with_selector(FixedBaseSelector::new(&[0, 1]));
 
-        let perm = CyclePermutation::from_vec(vec![vec![1, 2], vec![3, 4]]).into();
+        let perm: DefaultPermutation =
+            CyclePermutation::from_vec(vec![vec![1, 2], vec![3, 4]]).into();
 
         assert!(is_in_group(chain.iter(), &perm));
     }
@@ -135,7 +136,7 @@ mod tests {
         use super::super::moved_point_selector::FixedBaseSelector;
         use crate::perm::export::CyclePermutation;
 
-        let g = Group::new(&[
+        let g = Group::<DefaultPermutation>::new(&[
             CyclePermutation::single_cycle(&[1, 2, 3]).into(),
             CyclePermutation::single_cycle(&[2, 3, 4]).into(),
         ]);

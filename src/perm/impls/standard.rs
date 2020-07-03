@@ -18,17 +18,6 @@ pub struct StandardPermutation {
 }
 
 impl StandardPermutation {
-    pub fn shift(&self, k: usize) -> StandardPermutation {
-        if self.is_id() {
-            return StandardPermutation::id();
-        }
-
-        let mut images: Vec<_> = (0..k).collect();
-        let new_images = self.vals.iter().map(|i| i + k);
-        images.extend(new_images);
-        StandardPermutation::from_vec_unchecked(images)
-    }
-
     pub fn as_vec(&self) -> &[usize] {
         &self.vals[..]
     }
@@ -144,6 +133,17 @@ impl Permutation for StandardPermutation {
         } else {
             Some(self.vals.len() - 1)
         }
+    }
+
+    fn shift(&self, k: usize) -> Self {
+        if self.is_id() {
+            return StandardPermutation::id();
+        }
+
+        let mut images: Vec<_> = (0..k).collect();
+        let new_images = self.vals.iter().map(|i| i + k);
+        images.extend(new_images);
+        StandardPermutation::from_vec_unchecked(images)
     }
 }
 

@@ -4,7 +4,8 @@ use rand::seq::SliceRandom;
 
 /// Use this to generate a random permutation on n points
 /// ```
-/// let perm = stabchain::perm::utils::random_permutation(100);
+/// use stabchain::perm::*;
+/// let perm = stabchain::perm::utils::random_permutation::<DefaultPermutation>(100);
 /// ```
 pub fn random_permutation<P: Permutation>(n: usize) -> P {
     let mut rng = rand::thread_rng();

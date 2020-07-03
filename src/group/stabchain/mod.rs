@@ -11,18 +11,19 @@ use moved_point_selector::MovedPointSelector;
 use std::collections::HashMap;
 
 #[derive(Debug)]
-pub struct Stabchain<V> {
-    chain: Vec<StabchainRecord<V>>,
+pub struct Stabchain<P, V> {
+    chain: Vec<StabchainRecord<P, V>>,
 }
 
-impl<V> Stabchain<V>
+impl<P, V> Stabchain<P, V>
 where
-    V: TransversalResolver,
+    P: Permutation,
+    V: TransversalResolver<P>,
 {
     /// Creates a stabilizer chain, using a selected strategy.
-    pub fn new_with_strategy<S, B: Builder<V>>(g: &Group, build_strategy: S) -> Self
+    pub fn new_with_strategy<S, B: Builder<P, V>>(g: &Group<P>, build_strategy: S) -> Self
     where
-        S: Strategy<Transversal = V, BuilderT = B>,
+        S: Strategy<P, Transversal = V, BuilderT = B>,
     {
         let mut builder = build_strategy.make_builder();
         builder.set_generators(g);
@@ -30,32 +31,28 @@ where
     }
 
     // Utility to get the chain
-    fn get_chain_at_layer(&self, n: usize) -> impl Iterator<Item = &StabchainRecord<V>> {
+    fn get_chain_at_layer(&self, n: usize) -> impl Iterator<Item = &StabchainRecord<P, V>> {
         self.chain.iter().skip(n)
     }
 
     /// Is the element in the group?
-    pub fn in_group(&self, g: &DefaultPermutation) -> bool {
+    pub fn in_group(&self, g: &P) -> bool {
         self.in_subgroup(g, 0)
     }
 
     /// Check membership at the subgroup
-    pub fn in_subgroup(&self, g: &DefaultPermutation, layer: usize) -> bool {
+    pub fn in_subgroup(&self, g: &P, layer: usize) -> bool {
         element_testing::is_in_group(self.get_chain_at_layer(layer), g)
     }
 
     /// Get representatives that multiply to g
     /// TODO: If there is something useful to do with these, make a struct for Vec<Permutation>
-    pub fn coset_representatives(&self, g: &DefaultPermutation) -> Option<Vec<DefaultPermutation>> {
+    pub fn coset_representatives(&self, g: &P) -> Option<Vec<P>> {
         self.coset_representatives_in_subgroup(g, 0)
     }
 
     /// Get representatives that multiply to g
-    pub fn coset_representatives_in_subgroup(
-        &self,
-        g: &DefaultPermutation,
-        layer: usize,
-    ) -> Option<Vec<DefaultPermutation>> {
+    pub fn coset_representatives_in_subgroup(&self, g: &P, layer: usize) -> Option<Vec<P>> {
         element_testing::coset_representative(self.get_chain_at_layer(layer), g)
     }
 
@@ -89,18 +86,18 @@ where
     }
 
     /// Get G^(n)
-    pub fn layer(&self, n: usize) -> Option<&StabchainRecord<V>> {
+    pub fn layer(&self, n: usize) -> Option<&StabchainRecord<P, V>> {
         self.chain.get(n)
     }
 
     /// Get an iterator over the records
-    pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord<V>> {
+    pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord<P, V>> {
         self.chain.iter()
     }
 }
 
-impl<V> IntoIterator for Stabchain<V> {
-    type Item = StabchainRecord<V>;
+impl<P, V> IntoIterator for Stabchain<P, V> {
+    type Item = StabchainRecord<P, V>;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -110,16 +107,16 @@ impl<V> IntoIterator for Stabchain<V> {
 
 /// All the information stored in a layer of the stabilizer chain
 #[derive(Debug, Clone)]
-pub struct StabchainRecord<V> {
+pub struct StabchainRecord<P, V> {
     base: usize,
-    gens: Group,
-    transversal: HashMap<usize, DefaultPermutation>,
+    gens: Group<P>,
+    transversal: HashMap<usize, P>,
     resolver: V,
 }
 
-impl<V> StabchainRecord<V> {
+impl<P, V> StabchainRecord<P, V> {
     /// Get the associated group
-    pub fn group(&self) -> &Group {
+    pub fn group(&self) -> &Group<P> {
         &self.gens
     }
 
@@ -129,15 +126,12 @@ impl<V> StabchainRecord<V> {
     }
 }
 
-impl<V> StabchainRecord<V>
+impl<P, V> StabchainRecord<P, V>
 where
-    V: TransversalResolver,
+    P: Permutation,
+    V: TransversalResolver<P>,
 {
-    pub(crate) fn new(
-        base: usize,
-        gens: Group,
-        transversal: HashMap<usize, DefaultPermutation>,
-    ) -> Self {
+    pub(crate) fn new(base: usize, gens: Group<P>, transversal: HashMap<usize, P>) -> Self {
         StabchainRecord {
             base,
             gens,
@@ -160,9 +154,10 @@ where
 
 use std::fmt;
 
-impl<V> fmt::Display for Stabchain<V>
+impl<P, V> fmt::Display for Stabchain<P, V>
 where
-    V: TransversalResolver,
+    P: fmt::Display + Permutation,
+    V: TransversalResolver<P>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[Stabchain: ")?;
@@ -173,7 +168,10 @@ where
     }
 }
 
-impl<V> fmt::Display for StabchainRecord<V> {
+impl<P, V> fmt::Display for StabchainRecord<P, V>
+where
+    P: fmt::Display + Permutation,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[base := {}, {}]", self.base() + 1, self.group())
     }
@@ -184,7 +182,7 @@ mod tests {
     use super::*;
     use crate::group::orbit::transversal::Transversal;
 
-    fn check_well_formed_chain<V: TransversalResolver>(s: &Stabchain<V>) {
+    fn check_well_formed_chain<P: Permutation, V: TransversalResolver<P>>(s: &Stabchain<P, V>) {
         let mut previous = None;
         for record in s.chain.iter() {
             let gens = record.group();
@@ -271,7 +269,7 @@ mod tests {
     fn single_non_trivial_layer() {
         use crate::perm::export::CyclePermutation;
 
-        let g = Group::new(&[CyclePermutation::single_cycle(&[1, 2]).into()]);
+        let g = Group::<DefaultPermutation>::new(&[CyclePermutation::single_cycle(&[1, 2]).into()]);
         let chain = g.stabchain();
         check_well_formed_chain(&chain);
     }

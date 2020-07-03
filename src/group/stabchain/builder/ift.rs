@@ -3,18 +3,18 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::factored_transversal::representative_raw;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
-use crate::perm::{DefaultPermutation, Permutation};
+use crate::perm::Permutation;
 use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
 // Helper struct, used to build the stabilizer chain
-pub struct StabchainBuilderIFT<T> {
+pub struct StabchainBuilderIFT<P, T> {
     current_pos: usize,
-    chain: Vec<StabchainRecord<FactoredTransversalResolver>>,
+    chain: Vec<StabchainRecord<P, FactoredTransversalResolver>>,
     selector: T,
 }
 
-impl<T> StabchainBuilderIFT<T> {
+impl<P, T> StabchainBuilderIFT<P, T> {
     pub(super) fn new(selector: T) -> Self {
         StabchainBuilderIFT {
             current_pos: 0,
@@ -27,23 +27,26 @@ impl<T> StabchainBuilderIFT<T> {
         self.current_pos == self.chain.len()
     }
 
-    fn current_chain(&self) -> impl Iterator<Item = &StabchainRecord<FactoredTransversalResolver>> {
+    fn current_chain(
+        &self,
+    ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver>> {
         self.chain.iter().skip(self.current_pos)
     }
 }
 
-impl<T> StabchainBuilderIFT<T>
+impl<P, T> StabchainBuilderIFT<P, T>
 where
-    T: MovedPointSelector,
+    P: Permutation,
+    T: MovedPointSelector<P>,
 {
-    fn extend_lower_level(&mut self, p: DefaultPermutation) {
+    fn extend_lower_level(&mut self, p: P) {
         self.current_pos += 1;
         self.extend_inner(p);
         self.current_pos -= 1;
     }
 
     #[allow(clippy::map_entry)]
-    fn extend_inner(&mut self, p: DefaultPermutation) {
+    fn extend_inner(&mut self, p: P) {
         // Note that id always in group
         if element_testing::is_in_group(self.current_chain(), &p) {
             return;
@@ -55,10 +58,7 @@ where
             let mut record = StabchainRecord::new(
                 moved_point,
                 Group::new(&[p.clone()]),
-                [(moved_point, DefaultPermutation::id())]
-                    .iter()
-                    .cloned()
-                    .collect(),
+                [(moved_point, P::id())].iter().cloned().collect(),
             );
 
             let mut next_orbit_point = p.apply(moved_point);
@@ -147,18 +147,19 @@ where
     }
 }
 
-impl<M> super::Builder<FactoredTransversalResolver> for StabchainBuilderIFT<M>
+impl<P, M> super::Builder<P, FactoredTransversalResolver> for StabchainBuilderIFT<P, M>
 where
-    M: MovedPointSelector,
+    P: Permutation,
+    M: MovedPointSelector<P>,
 {
-    fn set_generators(&mut self, gens: &Group) {
+    fn set_generators(&mut self, gens: &Group<P>) {
         for gen in gens.generators() {
             self.current_pos = 0;
             self.extend_inner(gen.clone());
         }
     }
 
-    fn build(self) -> Stabchain<FactoredTransversalResolver> {
+    fn build(self) -> Stabchain<P, FactoredTransversalResolver> {
         Stabchain { chain: self.chain }
     }
 }
