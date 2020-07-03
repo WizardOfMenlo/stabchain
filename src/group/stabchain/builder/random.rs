@@ -1,6 +1,7 @@
 use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::factored_transversal::representative_raw;
-use crate::group::stabchain::{element_testing, MovedPointSelector, Stabchain, StabchainRecord};
+use crate::group::stabchain::element_testing::{is_in_group, residue_as_words};
+use crate::group::stabchain::{MovedPointSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{random_subproduct_full, random_subproduct_subset};
 use crate::group::Group;
 use crate::perm::Permutation;
@@ -72,7 +73,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.chain.push(record);
         for g in group.generators() {
             // If g has a non trivial residue
-            if !element_testing::is_in_group(self.current_chain(), &g) {
+            if !is_in_group(self.current_chain(), &g) {
                 let j = self.selector.moved_point(&g);
                 //Evaluate points less than j.
                 for i in (0..=j).rev() {
@@ -131,8 +132,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             for _ in 0..random_generations {
                 let h = self.random_schrier_generator();
                 //Get the coset representation of h.
-                let h_as_words = element_testing::coset_representative(self.current_chain(), &h)
-                    .unwrap_or(vec![h.clone()]);
+                let h_as_words = residue_as_words(self.current_chain(), &h);
                 let b_dash = (0..self.n).choose_multiple(&mut self.rng, subset_size);
                 //Check if any points in base union base_dash are fixed by the permutation h.
                 //TODO should only be union of base and b_dash. Won't affect things, just wasted effort.
@@ -217,8 +217,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         };
         let uw = coset_representative.multiply(&subword);
         //Get the residue of coset_representative*subword
-        let residue_as_words = element_testing::coset_representative(self.current_chain(), &uw)
-            .unwrap_or(vec![uw.clone()]);
+        let residue_as_words = residue_as_words(self.current_chain(), &uw);
         //Take it's inverse as a word, i.e reverse the order and replace each entry with the inverse.
         let residue_inverse_as_word = residue_as_words.iter().map(|p| p.inv()).rev();
         //Combine everything together as a single permutation.
@@ -288,8 +287,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     .sum::<usize>();
             for _ in 0..random_generations {
                 let h = self.random_schrier_generator();
-                let h_as_words = element_testing::coset_representative(self.current_chain(), &h)
-                    .unwrap_or(vec![h.clone()]);
+                let h_as_words = residue_as_words(self.current_chain(), &h);
                 //TODO change to not evaluate all n points.
                 let mut b_dash = 0..self.n;
                 //Check if any points in base union base_dash are fixed by the permutation h.
