@@ -144,7 +144,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     .any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b)
                 {
                     //Check if h fixes all points of B, then add it as a base point.
-                    if !self
+                    if self
                         .base
                         .clone()
                         .into_iter()
@@ -155,6 +155,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                             .into_iter()
                             .find(|&b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b)
                             .expect("This point should exist");
+                        debug_assert!(!self.base.contains(&new_base_point));
                         self.base.push(new_base_point);
                         dbg!(&self.base);
                         let record = StabchainRecord::new(
