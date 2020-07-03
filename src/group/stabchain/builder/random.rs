@@ -394,8 +394,6 @@ mod tests {
         assert!(chain.is_empty());
     }
 
-    //Doesn't pass, so don't run on push
-    #[ignore]
     #[test]
     fn symmetric_chain() {
         let g = Group::symmetric(4);
