@@ -1,7 +1,7 @@
 use criterion::{black_box, criterion_group, BenchmarkId, Criterion};
 
 use stabchain::perm::utils::random_permutation;
-use stabchain::perm::DefaultPermutation;
+use stabchain::perm::*;
 
 const RANGE_OF_VALUES: [usize; 7] = [8, 16, 32, 64, 128, 256, 512];
 
