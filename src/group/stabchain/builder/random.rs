@@ -121,7 +121,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             self.n,
             upper_bound * (upper_bound as f32).ln().floor() as usize,
         );
-        //
+        //Repeat until we have a certain number of random schrier generators result in trivial residues.
         while trivial_residues < trivial_residues_required {
             //TODO move 64 to constant
             let random_generations: usize = 64
@@ -175,7 +175,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     //h should not be the identity, as it moves a point of the base.
                     debug_assert!(!h.is_id());
                     let j_dash = self.selector.moved_point(&h);
-                    for k in (layer..=j_dash).rev() {
+                    for k in (layer + 1..=j_dash).rev() {
                         self.complete_stabchain_subgroup(h.clone(), k, upper_bound);
                     }
                 } else {
@@ -325,7 +325,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .iter()
                         .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
                     let i_dash = self.selector.moved_point(&h);
-                    for k in (i..=i_dash).rev() {
+                    for k in (i + 1..=i_dash).rev() {
                         self.complete_stabchain_subgroup(h.clone(), k, self.n);
                     }
                 }
