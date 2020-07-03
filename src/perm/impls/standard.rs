@@ -67,6 +67,10 @@ impl StandardPermutation {
 }
 
 impl Permutation for StandardPermutation {
+    fn from_images(images: &[usize]) -> Self {
+        Self::from_vec(images.into())
+    }
+
     fn id() -> Self {
         Self {
             vals: Rc::new(Vec::new()),

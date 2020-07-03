@@ -8,9 +8,13 @@ pub mod export;
 pub mod impls;
 pub mod utils;
 
-pub type DefaultPermutation = impls::standard::StandardPermutation;
+use impls::standard::StandardPermutation;
+
+pub type DefaultPermutation = StandardPermutation;
 
 pub trait Permutation {
+    fn from_images(images: &[usize]) -> Self;
+
     fn id() -> Self;
 
     fn is_id(&self) -> bool;
