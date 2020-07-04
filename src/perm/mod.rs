@@ -3,6 +3,7 @@
 //! This crate implements permutations on integers
 
 pub mod algos;
+pub mod application;
 pub mod builder;
 pub mod export;
 pub mod impls;
@@ -34,4 +35,11 @@ pub trait Permutation: Clone + Eq + Hash {
 
     fn divide(&self, other: &Self) -> Self;
     fn lmp(&self) -> Option<usize>;
+}
+
+pub trait ApplicationStrategy<P> {
+    type Input;
+    type Output;
+
+    fn apply(&self, p: P, input: Self::Input) -> Self::Output;
 }
