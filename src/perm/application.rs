@@ -1,43 +1,47 @@
 use super::*;
 
-struct SimpleApplication<P>(std::marker::PhantomData<P>);
+#[derive(Debug)]
+pub struct SimpleApplication<P>(std::marker::PhantomData<P>);
+
+impl<P> Default for SimpleApplication<P> {
+    fn default() -> Self {
+        SimpleApplication(std::marker::PhantomData::default())
+    }
+}
 
 impl<P> ApplicationStrategy<P> for SimpleApplication<P>
 where
     P: Permutation,
 {
-    type Input = usize;
-    type Output = usize;
+    type OrbitT = usize;
 
-    fn apply(&self, p: P, input: Self::Input) -> Self::Output {
+    fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT {
         p.apply(input)
     }
 }
 
-struct ConjugationStrategy<P>(std::marker::PhantomData<P>);
+pub struct ConjugationStrategy<P>(std::marker::PhantomData<P>);
 
 impl<P> ApplicationStrategy<P> for ConjugationStrategy<P>
 where
     P: Permutation,
 {
-    type Input = P;
-    type Output = P;
+    type OrbitT = P;
 
-    fn apply(&self, p: P, input: Self::Input) -> Self::Output {
+    fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT {
         p.inv().multiply(&input).multiply(&p)
     }
 }
 
-struct MultiplicationApplicationStrategy<P>(std::marker::PhantomData<P>);
+pub struct MultiplicationApplicationStrategy<P>(std::marker::PhantomData<P>);
 
 impl<P> ApplicationStrategy<P> for MultiplicationApplicationStrategy<P>
 where
     P: Permutation,
 {
-    type Input = P;
-    type Output = P;
+    type OrbitT = P;
 
-    fn apply(&self, p: P, input: Self::Input) -> Self::Output {
+    fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT {
         p.multiply(&input)
     }
 }

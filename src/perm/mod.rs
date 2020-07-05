@@ -38,8 +38,7 @@ pub trait Permutation: Clone + Eq + Hash {
 }
 
 pub trait ApplicationStrategy<P> {
-    type Input;
-    type Output;
+    type OrbitT;
 
-    fn apply(&self, p: P, input: Self::Input) -> Self::Output;
+    fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT;
 }
