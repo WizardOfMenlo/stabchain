@@ -22,7 +22,6 @@ where
     }
 }
 
-#[allow(clippy::len_without_is_empty)]
 impl Orbit {
     /// Build an orbit from a group
     pub fn new<P: Permutation>(g: &Group<P>, w: usize) -> Self {
@@ -42,6 +41,8 @@ where
         Self::from_raw(w.clone(), orbit(g, w, strat))
     }
 }
+
+#[allow(clippy::len_without_is_empty)]
 impl<OrbitT> Orbit<OrbitT>
 where
     OrbitT: std::hash::Hash + Eq,
