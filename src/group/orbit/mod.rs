@@ -2,8 +2,8 @@ pub mod abstraction;
 pub mod transversal;
 
 use crate::group::Group;
-use crate::perm::application::SimpleApplication;
-use crate::perm::{ApplicationStrategy, Permutation};
+use crate::perm::actions::SimpleApplication;
+use crate::perm::{ActionStrategy, Permutation};
 use std::collections::{HashSet, VecDeque};
 
 /// w^G = { w^g | g \in G }
@@ -28,11 +28,11 @@ impl<OrbitT> Orbit<OrbitT>
 where
     OrbitT: std::hash::Hash + Eq + Clone,
 {
-    pub fn new_with_strategy<P: Permutation, A: ApplicationStrategy<P, OrbitT = OrbitT>>(
-        g: &Group<P>,
-        w: OrbitT,
-        strat: A,
-    ) -> Self {
+    pub fn new_with_strategy<P, A>(g: &Group<P>, w: OrbitT, strat: A) -> Self
+    where
+        P: Permutation,
+        A: ActionStrategy<P, OrbitT = OrbitT>,
+    {
         Self::from_raw(w.clone(), orbit(g, w, strat))
     }
 }
@@ -88,7 +88,7 @@ impl fmt::Display for Orbit {
 pub fn orbit<P, A>(g: &Group<P>, w: A::OrbitT, strat: A) -> HashSet<A::OrbitT>
 where
     P: Permutation,
-    A: ApplicationStrategy<P>,
+    A: ActionStrategy<P>,
     A::OrbitT: std::hash::Hash + Eq + Clone,
 {
     let gens = g.generators();
@@ -118,13 +118,18 @@ where
 
 /// Algorithm to compute orbit from a group. This variant optimizes by checking
 /// if the orbit is complete before doing more work
-pub fn orbit_complete_opt<P: Permutation>(g: &Group<P>, w: usize) -> HashSet<usize> {
+pub fn orbit_complete_opt<P, A>(g: &Group<P>, w: A::OrbitT, strat: A) -> HashSet<A::OrbitT>
+where
+    P: Permutation,
+    A: ActionStrategy<P>,
+    A::OrbitT: std::hash::Hash + Eq + Clone,
+{
     let maximal_orbit_size = g.symmetric_super_order();
     let gens = g.generators();
 
     // Orbit are the ones that have been acted on by the generators
     let mut orbit = HashSet::new();
-    orbit.insert(w);
+    orbit.insert(w.clone());
 
     // To traverse are those still to be expanded
     let mut to_traverse = VecDeque::new();
@@ -135,8 +140,8 @@ pub fn orbit_complete_opt<P: Permutation>(g: &Group<P>, w: usize) -> HashSet<usi
         let delta = to_traverse.pop_front().unwrap();
         for g in gens {
             // Apply generator and insert
-            let gamma = g.apply(delta);
-            if orbit.insert(gamma) {
+            let gamma = strat.apply(g, delta.clone());
+            if orbit.insert(gamma.clone()) {
                 to_traverse.push_back(gamma);
             }
 

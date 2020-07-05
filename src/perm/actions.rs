@@ -9,7 +9,7 @@ impl<P> Default for SimpleApplication<P> {
     }
 }
 
-impl<P> ApplicationStrategy<P> for SimpleApplication<P>
+impl<P> ActionStrategy<P> for SimpleApplication<P>
 where
     P: Permutation,
 {
@@ -22,7 +22,7 @@ where
 
 pub struct ConjugationStrategy<P>(std::marker::PhantomData<P>);
 
-impl<P> ApplicationStrategy<P> for ConjugationStrategy<P>
+impl<P> ActionStrategy<P> for ConjugationStrategy<P>
 where
     P: Permutation,
 {
@@ -35,7 +35,7 @@ where
 
 pub struct MultiplicationApplicationStrategy<P>(std::marker::PhantomData<P>);
 
-impl<P> ApplicationStrategy<P> for MultiplicationApplicationStrategy<P>
+impl<P> ActionStrategy<P> for MultiplicationApplicationStrategy<P>
 where
     P: Permutation,
 {

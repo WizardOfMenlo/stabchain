@@ -2,8 +2,8 @@
 //!
 //! This crate implements permutations on integers
 
+pub mod actions;
 pub mod algos;
-pub mod application;
 pub mod builder;
 pub mod export;
 pub mod impls;
@@ -37,7 +37,7 @@ pub trait Permutation: Clone + Eq + Hash {
     fn lmp(&self) -> Option<usize>;
 }
 
-pub trait ApplicationStrategy<P> {
+pub trait ActionStrategy<P> {
     type OrbitT;
 
     fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT;
