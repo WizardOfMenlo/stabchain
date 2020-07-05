@@ -3,14 +3,27 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::factored_transversal::representative_raw;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
+use crate::perm::actions::SimpleApplication;
 use crate::perm::Permutation;
 use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
+pub(crate) fn representative_raw_simple<P, S>(
+    transversal: &HashMap<usize, P, S>,
+    base: usize,
+    point: usize,
+) -> Option<P>
+where
+    P: Permutation,
+    S: std::hash::BuildHasher,
+{
+    representative_raw(transversal, base, point, SimpleApplication::default())
+}
+
 // Helper struct, used to build the stabilizer chain
 pub struct StabchainBuilderIFT<P, T> {
     current_pos: usize,
-    chain: Vec<StabchainRecord<P, FactoredTransversalResolver>>,
+    chain: Vec<StabchainRecord<P, FactoredTransversalResolver<SimpleApplication<P>>>>,
     selector: T,
 }
 
@@ -29,7 +42,8 @@ impl<P, T> StabchainBuilderIFT<P, T> {
 
     fn current_chain(
         &self,
-    ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver>> {
+    ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<SimpleApplication<P>>>>
+    {
         self.chain.iter().skip(self.current_pos)
     }
 }
@@ -82,16 +96,19 @@ where
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
             let orbit_element_repr =
-                representative_raw(&record.transversal, record.base, orbit_element).unwrap();
+                representative_raw_simple(&record.transversal, record.base, orbit_element).unwrap();
             let new_image = p.apply(orbit_element);
 
             // If we already saw the element
             if record.transversal.contains_key(&new_image)
                 || new_transversal.contains_key(&new_image)
             {
-                let image_repr = representative_raw(&record.transversal, record.base, new_image)
-                    .or_else(|| representative_raw(&new_transversal, record.base, new_image))
-                    .unwrap();
+                let image_repr =
+                    representative_raw_simple(&record.transversal, record.base, new_image)
+                        .or_else(|| {
+                            representative_raw_simple(&new_transversal, record.base, new_image)
+                        })
+                        .unwrap();
 
                 let new_perm = orbit_element_repr.multiply(&p).multiply(&image_repr.inv());
                 self.extend_lower_level(new_perm);
@@ -111,7 +128,7 @@ where
             // Get the pair
             let orbit_element = to_check.pop_back().unwrap();
             let orbit_element_repr =
-                representative_raw(&record.transversal, record.base, orbit_element).unwrap();
+                representative_raw_simple(&record.transversal, record.base, orbit_element).unwrap();
 
             // For each generator (and p)
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
@@ -121,7 +138,8 @@ where
                 if record.transversal.contains_key(&new_image) {
                     // Get the representative
                     let image_repr =
-                        representative_raw(&record.transversal, record.base, new_image).unwrap();
+                        representative_raw_simple(&record.transversal, record.base, new_image)
+                            .unwrap();
 
                     // Extend lower level
                     let new_perm = orbit_element_repr
@@ -147,7 +165,8 @@ where
     }
 }
 
-impl<P, M> super::Builder<P, FactoredTransversalResolver> for StabchainBuilderIFT<P, M>
+impl<P, M> super::Builder<P, FactoredTransversalResolver<SimpleApplication<P>>>
+    for StabchainBuilderIFT<P, M>
 where
     P: Permutation,
     M: MovedPointSelector<P>,
@@ -159,7 +178,7 @@ where
         }
     }
 
-    fn build(self) -> Stabchain<P, FactoredTransversalResolver> {
+    fn build(self) -> Stabchain<P, FactoredTransversalResolver<SimpleApplication<P>>> {
         Stabchain { chain: self.chain }
     }
 }

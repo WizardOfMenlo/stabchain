@@ -1,7 +1,8 @@
 use super::skeleton::TransversalSkeleton;
 use crate::group::orbit::transversal::Transversal;
 use crate::group::Group;
-use crate::perm::{DefaultPermutation, Permutation};
+use crate::perm::actions::SimpleApplication;
+use crate::perm::{ActionStrategy, Permutation};
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
@@ -10,16 +11,20 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
 /// Contains the base of this traversal, and a factored traversal of the orbit.
-pub type FactoredTransversal<P> = TransversalSkeleton<P, FactoredTransversalResolver>;
+pub type FactoredTransversal<P, A: ActionStrategy<P> = SimpleApplication<P>> =
+    TransversalSkeleton<P, FactoredTransversalResolver<A>, A::OrbitT>;
 
-pub(crate) fn representative_raw<P, S>(
-    transversal: &HashMap<usize, P, S>,
-    base: usize,
-    point: usize,
+pub(crate) fn representative_raw<P, S, A>(
+    transversal: &HashMap<A::OrbitT, P, S>,
+    base: A::OrbitT,
+    point: A::OrbitT,
+    strat: A,
 ) -> Option<P>
 where
     P: Permutation,
     S: std::hash::BuildHasher,
+    A: ActionStrategy<P>,
+    A::OrbitT: std::hash::Hash + Eq,
 {
     // Check if the element is in the orbit.
     if !transversal.contains_key(&point) {
@@ -31,7 +36,7 @@ where
         while orbit_point != base {
             let g_inv = transversal.get(&orbit_point).unwrap();
             rep = rep.multiply(g_inv);
-            orbit_point = g_inv.apply(orbit_point);
+            orbit_point = strat.apply(g_inv, orbit_point);
         }
         // Invert at the end, as the inverses are used.
         // If we want fgh, then we can instead do (h^-1, g^-1, f^-1)^-1.
@@ -50,11 +55,7 @@ where
     /// let fc = FactoredTransversal::new(&Group::symmetric(10), 1);
     ///```
     pub fn new(g: &Group<P>, base: usize) -> Self {
-        FactoredTransversal::from_raw(
-            base,
-            factored_transversal(g, base),
-            FactoredTransversalResolver,
-        )
+        Self::new_with_strategy(g, base, SimpleApplication::default())
     }
 
     /// Given a set of generating elements and element, construct the factored transversal.
@@ -66,6 +67,21 @@ where
     ///```
     pub fn from_generators(base: usize, gens: &[P]) -> Self {
         FactoredTransversal::new(&Group::new(gens), base)
+    }
+}
+
+impl<P, A> FactoredTransversal<P, A>
+where
+    P: Permutation,
+    A: ActionStrategy<P>,
+    A::OrbitT: std::hash::Hash + Eq + Clone,
+{
+    pub fn new_with_strategy(g: &Group<P>, base: A::OrbitT, strat: A) -> Self {
+        FactoredTransversal::from_raw(
+            base.clone(),
+            factored_transversal(g, base, &strat),
+            FactoredTransversalResolver(strat),
+        )
     }
 }
 
@@ -90,14 +106,16 @@ where
 }
 
 /// Computes the factored transversal for a Group
-pub fn factored_transversal<P>(g: &Group<P>, base: usize) -> HashMap<usize, P>
+pub fn factored_transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: &A) -> HashMap<A::OrbitT, P>
 where
     P: Permutation,
+    A: ActionStrategy<P>,
+    A::OrbitT: std::hash::Hash + Eq + Clone,
 {
     let gens = g.generators();
     let mut transversal = HashMap::new();
     let id = P::id();
-    transversal.insert(base, id);
+    transversal.insert(base.clone(), id);
     // Orbit elements that have not been used yet.
     let mut to_traverse = VecDeque::new();
     to_traverse.push_back(base);
@@ -106,10 +124,10 @@ where
         //Take an unused element.
         let delta = to_traverse.pop_front().unwrap();
         for g in gens {
-            let point = g.apply(delta);
+            let point = strat.apply(g, delta.clone());
 
             // If the orbit doensn't contain this value, then add it to the factored transversal.
-            transversal.entry(point).or_insert_with(|| {
+            transversal.entry(point.clone()).or_insert_with(|| {
                 to_traverse.push_back(point);
                 g.inv()
             });
@@ -120,15 +138,21 @@ where
 }
 
 /// Computes the factored transversal for a Group. Use optmization on complete orbits
-pub fn factored_transversal_complete_opt(
-    g: &Group,
-    base: usize,
-) -> HashMap<usize, DefaultPermutation> {
+pub fn factored_transversal_complete_opt<P, A>(
+    g: &Group<P>,
+    base: A::OrbitT,
+    strat: &A,
+) -> HashMap<A::OrbitT, P>
+where
+    P: Permutation,
+    A: ActionStrategy<P>,
+    A::OrbitT: std::hash::Hash + Eq + Clone,
+{
     let maximal_orbit_size = g.symmetric_super_order();
     let gens = g.generators();
     let mut transversal = HashMap::new();
-    let id = DefaultPermutation::id();
-    transversal.insert(base, id);
+    let id = P::id();
+    transversal.insert(base.clone(), id);
     // Orbit elements that have not been used yet.
     let mut to_traverse = VecDeque::new();
     to_traverse.push_back(base);
@@ -137,10 +161,10 @@ pub fn factored_transversal_complete_opt(
         //Take an unused element.
         let delta = to_traverse.pop_front().unwrap();
         for g in gens {
-            let point = g.apply(delta);
+            let point = strat.apply(g, delta.clone());
 
             // If the orbit doensn't contain this value, then add it to the factored transversal.
-            transversal.entry(point).or_insert_with(|| {
+            transversal.entry(point.clone()).or_insert_with(|| {
                 to_traverse.push_back(point);
                 g.inv()
             });

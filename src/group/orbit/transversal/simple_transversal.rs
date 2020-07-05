@@ -1,5 +1,6 @@
 use crate::group::Group;
-use crate::perm::{DefaultPermutation, Permutation};
+use crate::perm::actions::SimpleApplication;
+use crate::perm::{ActionStrategy, Permutation};
 
 use super::skeleton::TransversalSkeleton;
 use super::Transversal;
@@ -12,7 +13,8 @@ use std::collections::{HashMap, VecDeque};
 /// memory intensive. In applications please use FactoredTransversal
 /// (After some testing, it seems that it is also slower computationally,
 /// so don't use unless wanting some pain)
-pub type SimpleTransversal<P> = TransversalSkeleton<P, SimpleTransversalResolver>;
+pub type SimpleTransversal<P, OrbitT = usize> =
+    TransversalSkeleton<P, SimpleTransversalResolver, OrbitT>;
 
 impl<P> SimpleTransversal<P>
 where
@@ -20,10 +22,34 @@ where
 {
     /// Create from the group
     pub fn new(g: &Group<P>, base: usize) -> Self {
-        Self::from_raw(base, transversal(g, base), SimpleTransversalResolver)
+        Self::from_raw(
+            base,
+            transversal(g, base, SimpleApplication::default()),
+            SimpleTransversalResolver,
+        )
     }
 }
 
+impl<P, OrbitT> SimpleTransversal<P, OrbitT>
+where
+    P: Permutation,
+    OrbitT: std::hash::Hash + Eq + Clone,
+{
+    /// Create from the group
+    pub fn new_with_strategy<A>(g: &Group<P>, base: OrbitT, strategy: A) -> Self
+    where
+        A: ActionStrategy<P, OrbitT = OrbitT>,
+    {
+        Self::from_raw(
+            base.clone(),
+            transversal(g, base, strategy),
+            SimpleTransversalResolver,
+        )
+    }
+}
+
+// Note, here I would like to have a specialized impl for the usize impl (as I want to add 1) and fallback to
+// the normal impl otherwise
 use std::fmt;
 impl<P> fmt::Display for SimpleTransversal<P>
 where
@@ -49,16 +75,18 @@ where
 
 // Needed since entry requires &mut
 #[allow(clippy::map_entry)]
-pub fn transversal<P>(g: &Group<P>, base: usize) -> HashMap<usize, P>
+pub fn transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: A) -> HashMap<A::OrbitT, P>
 where
     P: Permutation,
+    A: ActionStrategy<P>,
+    A::OrbitT: std::hash::Hash + Eq + Clone,
 {
     // Get the generatos
     let gens = &g.generators[..];
     let mut transversal = HashMap::new();
 
     // Init the transversal
-    transversal.insert(base, P::id());
+    transversal.insert(base.clone(), P::id());
 
     // We use this to store elements to expand
     let mut to_traverse = VecDeque::new();
@@ -68,10 +96,10 @@ where
     while !to_traverse.is_empty() {
         let delta = to_traverse.pop_front().unwrap();
         for g in gens {
-            let gamma = g.apply(delta);
+            let gamma = strat.apply(g, delta.clone());
 
             if !transversal.contains_key(&gamma) {
-                to_traverse.push_back(gamma);
+                to_traverse.push_back(gamma.clone());
                 let delta_repr = transversal.get(&delta).cloned().unwrap();
                 transversal.insert(gamma, delta_repr.multiply(g));
             }
@@ -84,14 +112,23 @@ where
 /// Optimized version of transversal which does less work on complete groups
 // Needed since entry requires &mut
 #[allow(clippy::map_entry)]
-pub fn transversal_complete_opt(g: &Group, base: usize) -> HashMap<usize, DefaultPermutation> {
+pub fn transversal_complete_opt<P, A>(
+    g: &Group<P>,
+    base: A::OrbitT,
+    strat: A,
+) -> HashMap<A::OrbitT, P>
+where
+    P: Permutation,
+    A: ActionStrategy<P>,
+    A::OrbitT: std::hash::Hash + Eq + Clone,
+{
     // Get the generatos
     let gens = &g.generators[..];
     let maximal_orbit_size = g.symmetric_super_order();
     let mut transversal = HashMap::new();
 
     // Init the transversal
-    transversal.insert(base, DefaultPermutation::id());
+    transversal.insert(base.clone(), P::id());
 
     // We use this to store elements to expand
     let mut to_traverse = VecDeque::new();
@@ -101,10 +138,10 @@ pub fn transversal_complete_opt(g: &Group, base: usize) -> HashMap<usize, Defaul
     while !to_traverse.is_empty() {
         let delta = to_traverse.pop_front().unwrap();
         for g in gens {
-            let gamma = g.apply(delta);
+            let gamma = strat.apply(g, delta.clone());
 
             if !transversal.contains_key(&gamma) {
-                to_traverse.push_back(gamma);
+                to_traverse.push_back(gamma.clone());
                 let delta_repr = transversal.get(&delta).cloned().unwrap();
                 transversal.insert(gamma, delta_repr.multiply(g));
             }

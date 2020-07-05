@@ -37,7 +37,7 @@ pub trait Permutation: Clone + Eq + Hash {
     fn lmp(&self) -> Option<usize>;
 }
 
-pub trait ActionStrategy<P> {
+pub trait ActionStrategy<P>: Clone {
     type OrbitT;
 
     fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT;

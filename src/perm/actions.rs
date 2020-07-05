@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SimpleApplication<P>(std::marker::PhantomData<P>);
 
 impl<P> Default for SimpleApplication<P> {
@@ -20,6 +20,7 @@ where
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct ConjugationStrategy<P>(std::marker::PhantomData<P>);
 
 impl<P> ActionStrategy<P> for ConjugationStrategy<P>
@@ -33,6 +34,7 @@ where
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct MultiplicationApplicationStrategy<P>(std::marker::PhantomData<P>);
 
 impl<P> ActionStrategy<P> for MultiplicationApplicationStrategy<P>

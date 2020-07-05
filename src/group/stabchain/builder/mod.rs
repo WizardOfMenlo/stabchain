@@ -4,6 +4,7 @@ use crate::group::orbit::abstraction::{
     FactoredTransversalResolver, SimpleTransversalResolver, TransversalResolver,
 };
 use crate::group::Group;
+use crate::perm::actions::SimpleApplication;
 use crate::perm::Permutation;
 
 mod ift;
@@ -70,7 +71,7 @@ where
     P: Permutation,
     M: MovedPointSelector<P>,
 {
-    type Transversal = FactoredTransversalResolver;
+    type Transversal = FactoredTransversalResolver<SimpleApplication<P>>;
     type BuilderT = ift::StabchainBuilderIFT<P, M>;
 
     fn make_builder(self) -> Self::BuilderT {

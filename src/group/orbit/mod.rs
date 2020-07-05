@@ -7,13 +7,19 @@ use crate::perm::{ActionStrategy, Permutation};
 use std::collections::{HashSet, VecDeque};
 
 /// w^G = { w^g | g \in G }
-#[derive(Debug, PartialEq)]
-pub struct Orbit<OrbitT = usize>
+#[derive(Debug)]
+pub struct Orbit<OrbitT = usize> {
+    base: OrbitT,
+    orbit: HashSet<OrbitT>,
+}
+
+impl<OrbitT> PartialEq for Orbit<OrbitT>
 where
     OrbitT: std::hash::Hash + Eq,
 {
-    base: OrbitT,
-    orbit: HashSet<OrbitT>,
+    fn eq(&self, other: &Self) -> bool {
+        self.base == other.base && self.orbit == other.orbit
+    }
 }
 
 #[allow(clippy::len_without_is_empty)]
