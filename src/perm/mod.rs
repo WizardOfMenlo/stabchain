@@ -38,6 +38,7 @@ pub trait Permutation: Clone + Eq + Hash {
 }
 
 pub trait ActionStrategy<P>: Clone {
+    // TODO: Orbit : Hash + Eq + Clone is very useful
     type OrbitT;
 
     fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT;
