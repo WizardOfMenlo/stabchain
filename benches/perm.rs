@@ -1,5 +1,8 @@
 use criterion::{black_box, criterion_group, BenchmarkId, Criterion};
 
+use std::iter::FromIterator;
+
+use stabchain::perm::builder::PermBuilder;
 use stabchain::perm::utils::random_permutation;
 use stabchain::perm::*;
 
@@ -52,9 +55,8 @@ fn exponentiation(c: &mut Criterion) {
         });
         group.bench_with_input(BenchmarkId::new("multijoin", i), &i, |b, i| {
             use stabchain::perm::builder::join::MultiJoin;
-            use stabchain::perm::builder::PermBuilder;
             let perm = random_permutation::<DefaultPermutation>(*i);
-            let join = MultiJoin::new(std::iter::repeat(perm).take(i / 2));
+            let join = MultiJoin::from_iter(std::iter::repeat(perm).take(i / 2));
             b.iter(|| join.collapse())
         });
     }
@@ -70,9 +72,8 @@ fn exponentiation_small_exponent(c: &mut Criterion) {
         });
         group.bench_with_input(BenchmarkId::new("multijoin", i), &i, |b, i| {
             use stabchain::perm::builder::join::MultiJoin;
-            use stabchain::perm::builder::PermBuilder;
             let perm = random_permutation::<DefaultPermutation>(1024);
-            let join = MultiJoin::new(std::iter::repeat(perm).take(*i));
+            let join = MultiJoin::from_iter(std::iter::repeat(perm).take(*i));
             b.iter(|| join.collapse())
         });
     }
