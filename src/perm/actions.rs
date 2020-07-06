@@ -1,5 +1,6 @@
 use super::*;
 
+/// Fallback to application by application
 #[derive(Debug, Clone)]
 pub struct SimpleApplication<P>(std::marker::PhantomData<P>);
 
@@ -20,6 +21,7 @@ where
     }
 }
 
+/// Action is on permutation, and it is done by conjugation (p^-1 a p)
 #[derive(Debug, Clone)]
 pub struct ConjugationStrategy<P>(std::marker::PhantomData<P>);
 
@@ -34,6 +36,7 @@ where
     }
 }
 
+/// Action is by permutation multiplication
 #[derive(Debug, Clone)]
 pub struct MultiplicationApplicationStrategy<P>(std::marker::PhantomData<P>);
 

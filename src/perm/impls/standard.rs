@@ -123,10 +123,6 @@ impl Permutation for StandardPermutation {
         CyclePermutation::from(self.clone()).order()
     }
 
-    fn divide(&self, other: &StandardPermutation) -> Self {
-        self.build_divide(other).collapse()
-    }
-
     fn lmp(&self) -> Option<usize> {
         if self.vals.is_empty() {
             None
