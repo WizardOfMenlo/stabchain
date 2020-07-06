@@ -3,12 +3,10 @@ use crate::group::orbit::abstraction::TransversalResolver;
 use crate::perm::Permutation;
 
 /// Given a stabilizer chain, computes whether the given element is in the group
-pub fn is_in_group<'a, V>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
-    p: &Permutation,
-) -> bool
+pub fn is_in_group<'a, P, V>(it: impl IntoIterator<Item = &'a StabchainRecord<P, V>>, p: &P) -> bool
 where
-    V: 'a + TransversalResolver,
+    P: 'a + Permutation,
+    V: 'a + TransversalResolver<P>,
 {
     // Early exit
     if p.is_id() {
@@ -36,12 +34,13 @@ where
 
 /// Given a stabilizer chain, computes a list of coset representatives of the given element if it is in the group
 /// So that p == s_m s_m-1 ... s_1
-pub fn coset_representative<'a, V>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
-    p: &Permutation,
-) -> Option<Vec<Permutation>>
+pub fn coset_representative<'a, P, V>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V>>,
+    p: &P,
+) -> Option<Vec<P>>
 where
-    V: 'a + TransversalResolver,
+    P: 'a + Permutation,
+    V: 'a + TransversalResolver<P>,
 {
     // Early exit
     if p.is_id() {
@@ -78,12 +77,13 @@ where
 mod tests {
     use super::*;
     use crate::group::Group;
+    use crate::perm::DefaultPermutation;
 
     #[test]
     fn id_test() {
         let g = Group::trivial();
         let stab = g.stabchain();
-        assert!(is_in_group(stab.iter(), &Permutation::id()));
+        assert!(is_in_group(stab.iter(), &DefaultPermutation::id()));
     }
 
     #[test]
@@ -109,7 +109,8 @@ mod tests {
 
         let chain = g.stabchain_with_selector(FixedBaseSelector::new(&[0, 1]));
 
-        let perm = CyclePermutation::from_vec(vec![vec![1, 2], vec![3, 4]]).into();
+        let perm: DefaultPermutation =
+            CyclePermutation::from_vec(vec![vec![1, 2], vec![3, 4]]).into();
 
         assert!(is_in_group(chain.iter(), &perm));
     }
@@ -135,7 +136,7 @@ mod tests {
         use super::super::moved_point_selector::FixedBaseSelector;
         use crate::perm::export::CyclePermutation;
 
-        let g = Group::new(&[
+        let g = Group::<DefaultPermutation>::new(&[
             CyclePermutation::single_cycle(&[1, 2, 3]).into(),
             CyclePermutation::single_cycle(&[2, 3, 4]).into(),
         ]);
@@ -154,7 +155,7 @@ mod tests {
 
         let g = Group::symmetric(5);
         let stab = g.stabchain();
-        assert!(is_in_group(stab.iter(), &Permutation::id()));
+        assert!(is_in_group(stab.iter(), &DefaultPermutation::id()));
 
         for _ in 0..50 {
             let perm = random_permutation(5);
@@ -216,10 +217,13 @@ mod tests {
     fn trivial_repr() {
         let g = Group::trivial();
         let stab = g.stabchain();
-        let repr = coset_representative(stab.iter(), &Permutation::id());
+        let repr = coset_representative(stab.iter(), &DefaultPermutation::id());
         assert!(repr.is_some());
         assert_eq!(repr.unwrap().len(), 0);
-        assert!(coset_representative(stab.iter(), &Permutation::from_vec(vec![1, 2, 0])).is_none());
+        assert!(
+            coset_representative(stab.iter(), &DefaultPermutation::from_vec(vec![1, 2, 0]))
+                .is_none()
+        );
     }
 
     #[test]
@@ -233,7 +237,7 @@ mod tests {
         assert!(repr.is_some());
         let mut repr = repr.unwrap();
         assert_eq!(repr.len(), stab.len());
-        let mut acc = Permutation::id();
+        let mut acc = DefaultPermutation::id();
         while !repr.is_empty() {
             let elem = repr.pop().unwrap();
             acc = acc.multiply(&elem);

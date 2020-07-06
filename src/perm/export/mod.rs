@@ -1,7 +1,7 @@
 mod classic;
 mod cycles;
 
-use super::Permutation;
+use super::DefaultPermutation;
 use serde::{Deserialize, Serialize};
 
 pub use classic::ClassicalPermutation;
@@ -11,8 +11,8 @@ pub use cycles::CyclePermutation;
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ExportablePermutation(Vec<usize>);
 
-impl From<Permutation> for ExportablePermutation {
-    fn from(perm: Permutation) -> Self {
+impl From<DefaultPermutation> for ExportablePermutation {
+    fn from(perm: DefaultPermutation) -> Self {
         ClassicalPermutation::from(perm).into()
     }
 }
