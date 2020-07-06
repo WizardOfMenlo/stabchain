@@ -219,7 +219,7 @@ where
     pub fn conjugate_gens(&self, p: &P) -> Self {
         use crate::perm::actions::ConjugationStrategy;
         let c = ConjugationStrategy::default();
-        self.clone().map(|g| c.apply(p, g.clone()))
+        self.clone().map(|g| c.apply(p, g))
     }
 
     /// Computes the direct product of two groups
