@@ -9,8 +9,7 @@ pub trait PermBuilder<P: Permutation>: Clone {
     /// Computes f(x)
     fn build_apply(&self, x: usize) -> usize;
 
-    /// TODO: What is more efficient (a * b)^-1 or (b^-1 * a^-1)? If the latter join can benefit from a
-    /// ad hominem implementation
+    /// Make the inverse out of this
     fn build_inv(&self) -> P {
         self.collapse().inv()
     }

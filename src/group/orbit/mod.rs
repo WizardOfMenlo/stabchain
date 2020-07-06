@@ -113,8 +113,9 @@ where
         for g in gens {
             // Apply generator and insert
             let gamma = strat.apply(g, delta.clone());
-            // TODO: Here we can probably turn the unconditional copy into a conditional one using contains_key
-            if orbit.insert(gamma.clone()) {
+
+            if !orbit.contains(&gamma) {
+                orbit.insert(gamma.clone());
                 to_traverse.push_back(gamma);
             }
         }
