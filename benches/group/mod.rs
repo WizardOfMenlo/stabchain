@@ -1,3 +1,4 @@
+pub mod bruteforce_elements;
 pub mod orbit;
 pub mod stabilizer_chain;
 

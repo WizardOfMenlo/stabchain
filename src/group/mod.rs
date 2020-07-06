@@ -193,10 +193,16 @@ where
         stabchain::Stabchain::new_with_strategy(self, DefaultStrategy::new(selector))
     }
 
-    /// Bruteforce the elements to get all elements in the group
+    /// Bruteforce the elements to get all elements in the group using an orbit strategy
     /// Unless time is a very cheap commodity, do not do on large groups
     pub fn bruteforce_elements(&self) -> Vec<P> {
-        brute_force::group_elements(self)
+        self.orbit_of_action(
+            P::id(),
+            crate::perm::actions::MultiplicationApplicationStrategy::default(),
+        )
+        .iter()
+        .cloned()
+        .collect()
     }
 
     /// Computes the smallest n s.t. G <= S_n
