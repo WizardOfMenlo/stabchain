@@ -1,5 +1,6 @@
 use super::PermBuilder;
 use crate::perm::Permutation;
+use std::iter::FromIterator;
 
 #[derive(Debug, Clone)]
 pub struct Join<First, Second> {
@@ -36,11 +37,10 @@ pub struct MultiJoin<P> {
     args: Vec<P>,
 }
 
-impl<P> MultiJoin<P> {
-    // TODO: This should be from_iter
-    pub fn new(it: impl IntoIterator<Item = P>) -> Self {
+impl<P> FromIterator<P> for MultiJoin<P> {
+    fn from_iter<T: IntoIterator<Item = P>>(iter: T) -> Self {
         MultiJoin {
-            args: it.into_iter().collect(),
+            args: iter.into_iter().collect(),
         }
     }
 }
@@ -83,7 +83,7 @@ mod tests {
         let cycle = DefaultPermutation::from_vec(vec![1, 2, 0]);
         let cycle2 = DefaultPermutation::from_vec(vec![2, 0, 1]);
         let direct = cycle.multiply(&cycle).multiply(&cycle2);
-        let lazy = MultiJoin::new(vec![cycle.clone(), cycle, cycle2]);
+        let lazy = MultiJoin::from_iter(vec![cycle.clone(), cycle, cycle2]);
         assert_eq!(direct, lazy.collapse())
     }
 
@@ -105,7 +105,7 @@ mod tests {
         let cycle2 = DefaultPermutation::from_vec(vec![2, 0, 1]);
         let cycle3 = DefaultPermutation::from_vec(vec![0, 3, 1, 2]);
         let direct = cycle.multiply(&cycle2).multiply(&cycle3);
-        let lazy = MultiJoin::new(vec![cycle, cycle2, cycle3]);
+        let lazy = MultiJoin::from_iter(vec![cycle, cycle2, cycle3]);
 
         for i in 0..3 {
             assert_eq!(direct.apply(i), lazy.build_apply(i))

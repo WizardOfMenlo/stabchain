@@ -75,6 +75,7 @@ fn pow<P: Permutation + Clone>(perm: P, n: usize) -> P {
 #[cfg(test)]
 mod tests {
     use crate::perm::{builder::PermBuilder, DefaultPermutation, Permutation};
+    use std::iter::FromIterator;
     #[test]
     fn simple_exponentiation() {
         let perm = DefaultPermutation::from_vec(vec![1, 2, 3, 4, 5, 0]);
@@ -113,7 +114,7 @@ mod tests {
         use crate::perm::builder::join::MultiJoin;
         let perm = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
         let lazy_pow = perm.build_pow(4);
-        let lazy_mult = MultiJoin::new(std::iter::repeat(perm.clone()).take(4));
+        let lazy_mult = MultiJoin::from_iter(std::iter::repeat(perm.clone()).take(4));
         let full = perm.multiply(&perm).multiply(&perm).multiply(&perm);
 
         for i in 0..5 {
@@ -128,7 +129,7 @@ mod tests {
         let perm_inv = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
         let perm = perm_inv.inv();
         let lazy_pow = perm_inv.build_pow(-4);
-        let lazy_mult = MultiJoin::new(std::iter::repeat(perm.clone()).take(4));
+        let lazy_mult = MultiJoin::from_iter(std::iter::repeat(perm.clone()).take(4));
         let full = perm.multiply(&perm).multiply(&perm).multiply(&perm);
 
         for i in 0..5 {
