@@ -79,7 +79,6 @@ pub fn transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: A) -> HashMap<A::
 where
     P: Permutation,
     A: ActionStrategy<P>,
-    A::OrbitT: std::hash::Hash + Eq + Clone,
 {
     // Get the generatos
     let gens = &g.generators[..];
@@ -120,7 +119,6 @@ pub fn transversal_complete_opt<P, A>(
 where
     P: Permutation,
     A: ActionStrategy<P>,
-    A::OrbitT: std::hash::Hash + Eq + Clone,
 {
     // Get the generatos
     let gens = &g.generators[..];

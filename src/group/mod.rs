@@ -23,7 +23,6 @@ pub struct Group<P = DefaultPermutation> {
 impl Group {
     /// Generates the trivial group, which only contains the identity
     pub fn trivial() -> Self {
-        // TODO: Should we include the identity here?
         Group::new(&[])
     }
 

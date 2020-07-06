@@ -96,7 +96,6 @@ pub fn orbit<P, A>(g: &Group<P>, w: A::OrbitT, strat: A) -> HashSet<A::OrbitT>
 where
     P: Permutation,
     A: ActionStrategy<P>,
-    A::OrbitT: std::hash::Hash + Eq + Clone,
 {
     let gens = g.generators();
 
@@ -130,7 +129,6 @@ pub fn orbit_complete_opt<P, A>(g: &Group<P>, w: A::OrbitT, strat: A) -> HashSet
 where
     P: Permutation,
     A: ActionStrategy<P>,
-    A::OrbitT: std::hash::Hash + Eq + Clone,
 {
     let maximal_orbit_size = g.symmetric_super_order();
     let gens = g.generators();

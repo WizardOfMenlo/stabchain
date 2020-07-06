@@ -24,7 +24,6 @@ where
     P: Permutation,
     S: std::hash::BuildHasher,
     A: ActionStrategy<P>,
-    A::OrbitT: std::hash::Hash + Eq,
 {
     // Check if the element is in the orbit.
     if !transversal.contains_key(&point) {
@@ -74,7 +73,6 @@ impl<P, A> FactoredTransversal<P, A>
 where
     P: Permutation,
     A: ActionStrategy<P>,
-    A::OrbitT: std::hash::Hash + Eq + Clone,
 {
     pub fn new_with_strategy(g: &Group<P>, base: A::OrbitT, strat: A) -> Self {
         FactoredTransversal::from_raw(
@@ -110,7 +108,6 @@ pub fn factored_transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: &A) -> H
 where
     P: Permutation,
     A: ActionStrategy<P>,
-    A::OrbitT: std::hash::Hash + Eq + Clone,
 {
     let gens = g.generators();
     let mut transversal = HashMap::new();
@@ -146,7 +143,6 @@ pub fn factored_transversal_complete_opt<P, A>(
 where
     P: Permutation,
     A: ActionStrategy<P>,
-    A::OrbitT: std::hash::Hash + Eq + Clone,
 {
     let maximal_orbit_size = g.symmetric_super_order();
     let gens = g.generators();
