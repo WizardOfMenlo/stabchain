@@ -115,14 +115,46 @@ where
         orbit::Orbit::new(self, base)
     }
 
+    /// Computes the orbit of a particular action
+    pub fn orbit_of_action<A>(&self, base: A::OrbitT, strat: A) -> orbit::Orbit<A::OrbitT>
+    where
+        A: ActionStrategy<P>,
+    {
+        orbit::Orbit::new_with_strategy(self, base, strat)
+    }
+
     /// Computes the transversal from the group generators (use factored transversal instead for memory efficience)
     pub fn transversal(&self, base: usize) -> impl orbit::transversal::Transversal<P> {
         orbit::transversal::SimpleTransversal::new(self, base)
     }
 
+    /// Compute the transversal w.r.t. to a given action
+    pub fn transversal_of_action<A>(
+        &self,
+        base: A::OrbitT,
+        strat: A,
+    ) -> impl orbit::transversal::Transversal<P, A::OrbitT>
+    where
+        A: ActionStrategy<P>,
+    {
+        orbit::transversal::SimpleTransversal::new_with_strategy(self, base, strat)
+    }
+
     /// Computes the factored transversal from the group generators
     pub fn factored_transversal(&self, base: usize) -> impl orbit::transversal::Transversal<P> {
         orbit::transversal::FactoredTransversal::new(self, base)
+    }
+
+    /// Compute the factored transversal w.r.t. to a given action
+    pub fn factored_transversal_of_action<A>(
+        &self,
+        base: A::OrbitT,
+        strat: A,
+    ) -> impl orbit::transversal::Transversal<P, A::OrbitT>
+    where
+        A: ActionStrategy<P>,
+    {
+        orbit::transversal::FactoredTransversal::new_with_strategy(self, base, strat)
     }
 
     /// Computes a stabilizer chain for this group
@@ -179,11 +211,9 @@ where
 
     /// Conjugate the generators by this permutation
     pub fn conjugate_gens(&self, p: &P) -> Self {
-        Group::from_iter(
-            self.generators()
-                .iter()
-                .map(|g| p.inv().multiply(g).multiply(p)),
-        )
+        use crate::perm::actions::ConjugationStrategy;
+        let c = ConjugationStrategy::default();
+        self.clone().map(|g| c.apply(p, g.clone()))
     }
 
     /// Computes the direct product of two groups
@@ -206,6 +236,7 @@ where
         Group::from_iter(it)
     }
 
+    /// Used particularly to switch a group representation to any which uses a different permutation type
     pub fn map<F, T>(self, func: F) -> Group<T>
     where
         F: FnMut(P) -> T,
