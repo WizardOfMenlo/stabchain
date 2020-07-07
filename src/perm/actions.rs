@@ -25,6 +25,12 @@ where
 #[derive(Debug, Clone)]
 pub struct ConjugationStrategy<P>(std::marker::PhantomData<P>);
 
+impl<P> Default for ConjugationStrategy<P> {
+    fn default() -> Self {
+        Self(std::marker::PhantomData::default())
+    }
+}
+
 impl<P> ActionStrategy<P> for ConjugationStrategy<P>
 where
     P: Permutation,
@@ -39,6 +45,12 @@ where
 /// Action is by permutation multiplication
 #[derive(Debug, Clone)]
 pub struct MultiplicationApplicationStrategy<P>(std::marker::PhantomData<P>);
+
+impl<P> Default for MultiplicationApplicationStrategy<P> {
+    fn default() -> Self {
+        Self(std::marker::PhantomData::default())
+    }
+}
 
 impl<P> ActionStrategy<P> for MultiplicationApplicationStrategy<P>
 where

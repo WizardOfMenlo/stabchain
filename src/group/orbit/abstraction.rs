@@ -48,7 +48,7 @@ impl<P, OrbitT, A> TransversalResolver<P, OrbitT> for FactoredTransversalResolve
 where
     P: Permutation,
     OrbitT: std::hash::Hash + Eq + Clone,
-    A: ActionStrategy<P, OrbitT = OrbitT> + Default,
+    A: ActionStrategy<P, OrbitT = OrbitT>,
 {
     type AssociatedTransversal = super::transversal::FactoredTransversal<P, A>;
 
