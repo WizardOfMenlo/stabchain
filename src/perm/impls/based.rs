@@ -172,7 +172,10 @@ impl From<StandardPermutation> for BasedPermutation {
 
 impl From<BasedPermutation> for StandardPermutation {
     fn from(perm: BasedPermutation) -> Self {
-        todo!("Needs some tought")
+        let images = (0..perm.base)
+            .chain(perm.perm.as_vec().iter().map(|i| i + perm.base))
+            .collect();
+        StandardPermutation::from_vec(images)
     }
 }
 
