@@ -1,6 +1,8 @@
 use super::export::CyclePermutation;
-use super::{DefaultPermutation, Permutation};
+use super::Permutation;
 use rand::seq::SliceRandom;
+
+use crate::perm::impls::standard::StandardPermutation;
 
 /// Use this to generate a random permutation on n points
 /// ```
@@ -19,7 +21,7 @@ pub fn order_n_permutation<P: Permutation>(start: usize, n: usize) -> P {
     assert!(n > 0);
     assert!(start > 0);
     let cycle = CyclePermutation::from_vec(vec![(start..(start + n)).collect()]);
-    let standard = DefaultPermutation::from(cycle);
+    let standard = StandardPermutation::from(cycle);
     let images = standard.as_vec();
     P::from_images(images)
 }
@@ -27,6 +29,7 @@ pub fn order_n_permutation<P: Permutation>(start: usize, n: usize) -> P {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::perm::DefaultPermutation;
 
     #[test]
     fn create_random() {

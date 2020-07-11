@@ -121,7 +121,6 @@ mod tests {
 
         let g = Group::symmetric(5);
         let chain = g.stabchain();
-        println!("{}", chain);
 
         assert!(is_in_group(
             chain.iter(),
@@ -215,7 +214,7 @@ mod tests {
         assert!(repr.is_some());
         assert_eq!(repr.unwrap().len(), 0);
         assert!(
-            coset_representative(stab.iter(), &DefaultPermutation::from_vec(vec![1, 2, 0]))
+            coset_representative(stab.iter(), &DefaultPermutation::from_images(&[1, 2, 0]))
                 .is_none()
         );
     }

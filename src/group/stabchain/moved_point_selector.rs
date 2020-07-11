@@ -69,14 +69,14 @@ mod tests {
 
     #[test]
     fn lmp_test() {
-        let p = DefaultPermutation::from_vec(vec![1, 2, 3, 0]);
+        let p = DefaultPermutation::from_images(&[1, 2, 3, 0]);
         let mut selector = LmpSelector;
         assert_eq!(selector.moved_point(&p), 3);
     }
 
     #[test]
     fn base_test() {
-        let p = DefaultPermutation::from_vec(vec![1, 2, 3, 0]);
+        let p = DefaultPermutation::from_images(&[1, 2, 3, 0]);
         let mut selector = FixedBaseSelector::new(&[0, 1, 2]);
         assert_eq!(selector.moved_point(&p), 0);
         assert_eq!(selector.moved_point(&p), 1);

@@ -181,7 +181,7 @@ mod tests {
     #[test]
     /// Test with a small permutation as the only generator.
     fn small_fc() {
-        let perm = DefaultPermutation::from_vec(vec![0, 3, 2, 1]);
+        let perm = DefaultPermutation::from_images(&[0, 3, 2, 1]);
         let g = Group::new(&[perm]);
         let fc = SimpleTransversal::new(&g, 1);
         assert_eq!(fc.base(), 1);
@@ -196,7 +196,7 @@ mod tests {
     #[test]
     /// Test with a permutation of 4 points that is a 4-cycle.
     fn full_cycle() {
-        let perm = DefaultPermutation::from_vec(vec![1, 2, 3, 0]);
+        let perm = DefaultPermutation::from_images(&[1, 2, 3, 0]);
         let g = Group::new(&[perm]);
         let fc = SimpleTransversal::new(&g, 3);
         for i in 0_usize..=3 {

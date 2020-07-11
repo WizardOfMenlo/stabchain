@@ -78,7 +78,7 @@ mod tests {
     use std::iter::FromIterator;
     #[test]
     fn simple_exponentiation() {
-        let perm = DefaultPermutation::from_vec(vec![1, 2, 3, 4, 5, 0]);
+        let perm = DefaultPermutation::from_images(&[1, 2, 3, 4, 5, 0]);
         let mut counter = DefaultPermutation::id();
         for i in 0..6 {
             assert_eq!(counter, perm.build_pow(i).collapse());
@@ -88,19 +88,19 @@ mod tests {
 
     #[test]
     fn simple_inv() {
-        let perm = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
+        let perm = DefaultPermutation::from_images(&[1, 3, 2, 4, 5, 0]);
         assert_eq!(perm.inv(), perm.build_pow(-1).collapse());
     }
 
     #[test]
     fn inv_exponentiation() {
-        let perm = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
+        let perm = DefaultPermutation::from_images(&[1, 3, 2, 4, 5, 0]);
         assert_eq!(perm.inv(), perm.build_pow(-1).collapse());
     }
 
     #[test]
     fn multiple_inv_exponentiation() {
-        let perm = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
+        let perm = DefaultPermutation::from_images(&[1, 3, 2, 4, 5, 0]);
         let inv = perm.inv();
         let mut counter = DefaultPermutation::id();
         for i in 0..6 {
@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn application_positive() {
         use crate::perm::builder::join::MultiJoin;
-        let perm = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
+        let perm = DefaultPermutation::from_images(&[1, 3, 2, 4, 5, 0]);
         let lazy_pow = perm.build_pow(4);
         let lazy_mult = MultiJoin::from_iter(std::iter::repeat(perm.clone()).take(4));
         let full = perm.multiply(&perm).multiply(&perm).multiply(&perm);
@@ -126,7 +126,7 @@ mod tests {
     #[test]
     fn application_negative() {
         use crate::perm::builder::join::MultiJoin;
-        let perm_inv = DefaultPermutation::from_vec(vec![1, 3, 2, 4, 5, 0]);
+        let perm_inv = DefaultPermutation::from_images(&[1, 3, 2, 4, 5, 0]);
         let perm = perm_inv.inv();
         let lazy_pow = perm_inv.build_pow(-4);
         let lazy_mult = MultiJoin::from_iter(std::iter::repeat(perm.clone()).take(4));

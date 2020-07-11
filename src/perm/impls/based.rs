@@ -164,6 +164,25 @@ impl PermBuilder<BasedPermutation> for BasedPermutation {
     }
 }
 
+impl From<StandardPermutation> for BasedPermutation {
+    fn from(perm: StandardPermutation) -> Self {
+        BasedPermutation::from_images(perm.as_vec())
+    }
+}
+
+impl From<BasedPermutation> for StandardPermutation {
+    fn from(perm: BasedPermutation) -> Self {
+        todo!("Needs some tought")
+    }
+}
+
+use std::fmt;
+impl fmt::Display for BasedPermutation {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", StandardPermutation::from(self.clone()))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
