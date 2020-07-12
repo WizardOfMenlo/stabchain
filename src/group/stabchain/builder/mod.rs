@@ -20,7 +20,7 @@ pub trait Builder<P, V> {
 
 /// A strategy is a lightweight struct that allows to
 /// (hopefully at compile time plz compiler) select which builder to use
-pub trait Strategy<P> {
+pub trait BuilderStrategy<P> {
     type BuilderT: Builder<P, Self::Transversal>;
 
     // Note, typically Transversal = BuilderT::Transversal (need unstable)
@@ -42,7 +42,7 @@ impl<M> NaiveBuilderStrategy<M> {
     }
 }
 
-impl<P, M> Strategy<P> for NaiveBuilderStrategy<M>
+impl<P, M> BuilderStrategy<P> for NaiveBuilderStrategy<M>
 where
     P: Permutation,
     M: MovedPointSelector<P>,
@@ -66,7 +66,7 @@ impl<M> IFTBuilderStrategy<M> {
     }
 }
 
-impl<P, M> Strategy<P> for IFTBuilderStrategy<M>
+impl<P, M> BuilderStrategy<P> for IFTBuilderStrategy<M>
 where
     P: Permutation,
     M: MovedPointSelector<P>,
