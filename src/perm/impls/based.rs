@@ -83,27 +83,25 @@ impl Permutation for BasedPermutation {
             other.clone()
         } else if other.is_id() {
             self.clone()
+        } else if self.base == other.base {
+            BasedPermutation {
+                perm: self.perm.multiply(&other.perm),
+                base: self.base,
+            }
+        } else if self.base < other.base {
+            BasedPermutation {
+                base: self.base,
+                perm: self
+                    .perm
+                    .multiply(&other.perm.shift(other.base - self.base)),
+            }
         } else {
-            if self.base == other.base {
-                BasedPermutation {
-                    perm: self.perm.multiply(&other.perm),
-                    base: self.base,
-                }
-            } else if self.base < other.base {
-                BasedPermutation {
-                    base: self.base,
-                    perm: self
-                        .perm
-                        .multiply(&other.perm.shift(other.base - self.base)),
-                }
-            } else {
-                BasedPermutation {
-                    base: other.base,
-                    perm: self
-                        .perm
-                        .shift(self.base - other.base)
-                        .multiply(&other.perm),
-                }
+            BasedPermutation {
+                base: other.base,
+                perm: self
+                    .perm
+                    .shift(self.base - other.base)
+                    .multiply(&other.perm),
             }
         };
 
