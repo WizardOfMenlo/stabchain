@@ -2,7 +2,7 @@ use super::skeleton::TransversalSkeleton;
 use crate::group::orbit::transversal::Transversal;
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
-use crate::perm::{ActionStrategy, Permutation};
+use crate::perm::{Action, Permutation};
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
@@ -12,7 +12,7 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
 /// Contains the base of this traversal, and a factored traversal of the orbit.
 pub type FactoredTransversal<P, A = SimpleApplication<P>> =
-    TransversalSkeleton<P, FactoredTransversalResolver<A>, <A as ActionStrategy<P>>::OrbitT>;
+    TransversalSkeleton<P, FactoredTransversalResolver<A>, <A as Action<P>>::OrbitT>;
 
 pub(crate) fn representative_raw<P, S, A>(
     transversal: &HashMap<A::OrbitT, P, S>,
@@ -23,7 +23,7 @@ pub(crate) fn representative_raw<P, S, A>(
 where
     P: Permutation,
     S: std::hash::BuildHasher,
-    A: ActionStrategy<P>,
+    A: Action<P>,
 {
     // Check if the element is in the orbit.
     if !transversal.contains_key(&point) {
@@ -72,7 +72,7 @@ where
 impl<P, A> FactoredTransversal<P, A>
 where
     P: Permutation,
-    A: ActionStrategy<P>,
+    A: Action<P>,
 {
     pub fn new_with_strategy(g: &Group<P>, base: A::OrbitT, strat: A) -> Self {
         FactoredTransversal::from_raw(
@@ -107,7 +107,7 @@ where
 pub fn factored_transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: &A) -> HashMap<A::OrbitT, P>
 where
     P: Permutation,
-    A: ActionStrategy<P>,
+    A: Action<P>,
 {
     let gens = g.generators();
     let mut transversal = HashMap::new();
@@ -142,7 +142,7 @@ pub fn factored_transversal_complete_opt<P, A>(
 ) -> HashMap<A::OrbitT, P>
 where
     P: Permutation,
-    A: ActionStrategy<P>,
+    A: Action<P>,
 {
     let maximal_orbit_size = g.symmetric_super_order();
     let gens = g.generators();

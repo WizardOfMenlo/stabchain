@@ -10,7 +10,7 @@ impl<P> Default for SimpleApplication<P> {
     }
 }
 
-impl<P> ActionStrategy<P> for SimpleApplication<P>
+impl<P> Action<P> for SimpleApplication<P>
 where
     P: Permutation,
 {
@@ -31,7 +31,7 @@ impl<P> Default for ConjugationStrategy<P> {
     }
 }
 
-impl<P> ActionStrategy<P> for ConjugationStrategy<P>
+impl<P> Action<P> for ConjugationStrategy<P>
 where
     P: Permutation,
 {
@@ -52,7 +52,7 @@ impl<P> Default for MultiplicationApplicationStrategy<P> {
     }
 }
 
-impl<P> ActionStrategy<P> for MultiplicationApplicationStrategy<P>
+impl<P> Action<P> for MultiplicationApplicationStrategy<P>
 where
     P: Permutation,
 {

@@ -3,7 +3,7 @@ pub mod transversal;
 
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
-use crate::perm::{ActionStrategy, Permutation};
+use crate::perm::{Action, Permutation};
 use std::collections::{HashSet, VecDeque};
 
 /// w^G = { w^g | g \in G }
@@ -36,7 +36,7 @@ where
     pub fn new_with_strategy<P, A>(g: &Group<P>, w: OrbitT, strat: A) -> Self
     where
         P: Permutation,
-        A: ActionStrategy<P, OrbitT = OrbitT>,
+        A: Action<P, OrbitT = OrbitT>,
     {
         Self::from_raw(w.clone(), orbit(g, w, strat))
     }
@@ -95,7 +95,7 @@ impl fmt::Display for Orbit {
 pub fn orbit<P, A>(g: &Group<P>, w: A::OrbitT, strat: A) -> HashSet<A::OrbitT>
 where
     P: Permutation,
-    A: ActionStrategy<P>,
+    A: Action<P>,
 {
     let gens = g.generators();
 
@@ -129,7 +129,7 @@ where
 pub fn orbit_complete_opt<P, A>(g: &Group<P>, w: A::OrbitT, strat: A) -> HashSet<A::OrbitT>
 where
     P: Permutation,
-    A: ActionStrategy<P>,
+    A: Action<P>,
 {
     let maximal_orbit_size = g.symmetric_super_order();
     let gens = g.generators();

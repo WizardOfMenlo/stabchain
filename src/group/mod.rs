@@ -118,7 +118,7 @@ where
     /// Computes the orbit of a particular action
     pub fn orbit_of_action<A>(&self, base: A::OrbitT, strat: A) -> orbit::Orbit<A::OrbitT>
     where
-        A: ActionStrategy<P>,
+        A: Action<P>,
     {
         orbit::Orbit::new_with_strategy(self, base, strat)
     }
@@ -135,7 +135,7 @@ where
         strat: A,
     ) -> impl orbit::transversal::Transversal<P, A::OrbitT>
     where
-        A: ActionStrategy<P>,
+        A: Action<P>,
     {
         orbit::transversal::SimpleTransversal::new_with_strategy(self, base, strat)
     }
@@ -152,7 +152,7 @@ where
         strat: A,
     ) -> impl orbit::transversal::Transversal<P, A::OrbitT>
     where
-        A: ActionStrategy<P>,
+        A: Action<P>,
     {
         orbit::transversal::FactoredTransversal::new_with_strategy(self, base, strat)
     }
