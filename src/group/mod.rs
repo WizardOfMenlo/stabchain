@@ -198,7 +198,7 @@ where
     pub fn bruteforce_elements(&self) -> Vec<P> {
         self.orbit_of_action(
             P::id(),
-            crate::perm::actions::MultiplicationApplicationStrategy::default(),
+            crate::perm::actions::MultiplicationAction::default(),
         )
         .iter()
         .cloned()
@@ -217,8 +217,8 @@ where
 
     /// Conjugate the generators by this permutation
     pub fn conjugate_gens(&self, p: &P) -> Self {
-        use crate::perm::actions::ConjugationStrategy;
-        let c = ConjugationStrategy::default();
+        use crate::perm::actions::ConjugationAction;
+        let c = ConjugationAction::default();
         self.clone().map(|g| c.apply(p, g))
     }
 
