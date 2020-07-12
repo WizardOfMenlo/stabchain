@@ -107,11 +107,16 @@ impl Permutation for BasedPermutation {
             }
         };
 
-        // Make sure no weird perms arise
         if result.perm.is_id() {
-            BasedPermutation::id()
-        } else {
-            result
+            return BasedPermutation::id();
+        }
+
+        let perm_images = result.perm.as_vec();
+        let new_based = Self::from_images(perm_images);
+
+        BasedPermutation {
+            base: result.base + new_based.base,
+            perm: new_based.perm,
         }
     }
 

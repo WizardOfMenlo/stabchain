@@ -62,7 +62,7 @@ where
     ///```
     /// use stabchain::group::orbit::transversal::FactoredTransversal;
     /// use stabchain::perm::*;
-    /// let fc = FactoredTransversal::from_generators(1, &[DefaultPermutation::from(vec![1, 0])]);
+    /// let fc = FactoredTransversal::from_generators(1, &[DefaultPermutation::from_images(&[1, 0])]);
     ///```
     pub fn from_generators(base: usize, gens: &[P]) -> Self {
         FactoredTransversal::new(&Group::new(gens), base)
