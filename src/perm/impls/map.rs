@@ -232,7 +232,7 @@ mod tests {
     /// Test inverse for the indentity.
     #[test]
     fn invert_perm_id() {
-        let id = StandardPermutation::id();
+        let id = MapPermutation::id();
         assert_eq!(id, id.inv());
         assert_eq!(id, id.inv().inv());
     }
