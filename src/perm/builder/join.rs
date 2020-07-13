@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn test_single_join() {
-        let cycle = DefaultPermutation::from_vec(vec![1, 2, 0]);
+        let cycle = DefaultPermutation::from_images(&[1, 2, 0]);
         assert_eq!(
             cycle.multiply(&cycle),
             cycle.build_multiply(&cycle).collapse()
@@ -80,8 +80,8 @@ mod tests {
 
     #[test]
     fn test_multi_join() {
-        let cycle = DefaultPermutation::from_vec(vec![1, 2, 0]);
-        let cycle2 = DefaultPermutation::from_vec(vec![2, 0, 1]);
+        let cycle = DefaultPermutation::from_images(&[1, 2, 0]);
+        let cycle2 = DefaultPermutation::from_images(&[2, 0, 1]);
         let direct = cycle.multiply(&cycle).multiply(&cycle2);
         let lazy = MultiJoin::from_iter(vec![cycle.clone(), cycle, cycle2]);
         assert_eq!(direct, lazy.collapse())
@@ -89,8 +89,8 @@ mod tests {
 
     #[test]
     fn test_application() {
-        let cycle = DefaultPermutation::from_vec(vec![1, 2, 0]);
-        let cycle2 = DefaultPermutation::from_vec(vec![2, 0, 1]);
+        let cycle = DefaultPermutation::from_images(&[1, 2, 0]);
+        let cycle2 = DefaultPermutation::from_images(&[2, 0, 1]);
         let direct = cycle.multiply(&cycle2);
         let lazy = cycle.build_multiply(&cycle2);
 
@@ -101,9 +101,9 @@ mod tests {
 
     #[test]
     fn test_multi_application() {
-        let cycle = DefaultPermutation::from_vec(vec![1, 2, 0]);
-        let cycle2 = DefaultPermutation::from_vec(vec![2, 0, 1]);
-        let cycle3 = DefaultPermutation::from_vec(vec![0, 3, 1, 2]);
+        let cycle = DefaultPermutation::from_images(&[1, 2, 0]);
+        let cycle2 = DefaultPermutation::from_images(&[2, 0, 1]);
+        let cycle3 = DefaultPermutation::from_images(&[0, 3, 1, 2]);
         let direct = cycle.multiply(&cycle2).multiply(&cycle3);
         let lazy = MultiJoin::from_iter(vec![cycle, cycle2, cycle3]);
 

@@ -62,7 +62,7 @@ where
     ///```
     /// use stabchain::group::orbit::transversal::FactoredTransversal;
     /// use stabchain::perm::*;
-    /// let fc = FactoredTransversal::from_generators(1, &[DefaultPermutation::from(vec![1, 0])]);
+    /// let fc = FactoredTransversal::from_generators(1, &[DefaultPermutation::from_images(&[1, 0])]);
     ///```
     pub fn from_generators(base: usize, gens: &[P]) -> Self {
         FactoredTransversal::new(&Group::new(gens), base)
@@ -207,7 +207,7 @@ mod tests {
     /// Test with a small permutation as the only generator.
     fn small_fc() {
         // This permutation is equivalent to (1, 3)
-        let perm = DefaultPermutation::from_vec(vec![0, 3, 2, 1]);
+        let perm = DefaultPermutation::from_images(&[0, 3, 2, 1]);
         let fc = FactoredTransversal::from_generators(1, &[perm]);
         assert_eq!(fc.base(), 1);
         // As the permutation is (1, 3), only 1 and 3 should be in the orbit of 1.
@@ -223,7 +223,7 @@ mod tests {
     /// Test with a permutation of 4 points that is a 4-cycle.
     fn full_cycle() {
         // This permutation is equivalent to (1, 2, 3, 4)
-        let perm = DefaultPermutation::from_vec(vec![1, 2, 3, 0]);
+        let perm = DefaultPermutation::from_images(&[1, 2, 3, 0]);
         let fc = FactoredTransversal::from_generators(3, &[perm]);
         // Every element should be in the orbit, and it's representative should move the base to that point.
         for i in 0_usize..=3 {

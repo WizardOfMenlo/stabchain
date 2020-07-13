@@ -9,12 +9,11 @@ pub mod export;
 pub mod impls;
 pub mod utils;
 
-use impls::standard::StandardPermutation;
 use std::hash::Hash;
 
 /// The DefaultPermutation type. It is the permutation that, trough our testing,
 /// seems to perform better
-pub type DefaultPermutation = StandardPermutation;
+pub type DefaultPermutation = impls::standard::StandardPermutation;
 
 /// A trait encapsulating what being a permutation is like (permutation on points ndr)
 pub trait Permutation: Clone + Eq + Hash {

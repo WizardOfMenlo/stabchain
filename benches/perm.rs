@@ -3,6 +3,7 @@ use criterion::{black_box, criterion_group, BenchmarkId, Criterion};
 use std::iter::FromIterator;
 
 use stabchain::perm::builder::PermBuilder;
+use stabchain::perm::impls::standard::StandardPermutation;
 use stabchain::perm::utils::random_permutation;
 use stabchain::perm::*;
 
@@ -26,12 +27,12 @@ fn inverse_of_product(c: &mut Criterion) {
     let mut group = c.benchmark_group("permutation__inv_prod");
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
-            let first = random_permutation::<DefaultPermutation>(*i);
+            let first = random_permutation::<StandardPermutation>(*i);
             let second = random_permutation(*i);
             b.iter(|| black_box(inv(&first.multiply(&second))))
         });
         group.bench_with_input(BenchmarkId::new("prod_of_inv", i), i, |b, i| {
-            let first = random_permutation::<DefaultPermutation>(*i);
+            let first = random_permutation::<StandardPermutation>(*i);
             let second = random_permutation(*i);
             b.iter(|| {
                 let first = inv(&first);

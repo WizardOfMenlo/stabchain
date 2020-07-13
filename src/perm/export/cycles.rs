@@ -1,5 +1,6 @@
 use super::ClassicalPermutation;
-use crate::perm::*;
+use crate::perm::impls::{based::BasedPermutation, standard::StandardPermutation};
+use crate::perm::Permutation;
 use serde::{Deserialize, Serialize};
 
 use std::fmt;
@@ -60,20 +61,27 @@ impl CyclePermutation {
     }
 
     pub fn into_perm<P: Permutation>(self) -> P {
-        let int: DefaultPermutation = self.into();
+        let int: StandardPermutation = self.into();
         P::from_images(int.as_vec())
     }
 }
 
-impl From<DefaultPermutation> for CyclePermutation {
-    fn from(perm: DefaultPermutation) -> Self {
+impl From<StandardPermutation> for CyclePermutation {
+    fn from(perm: StandardPermutation) -> Self {
         CyclePermutation::from(ClassicalPermutation::from(perm))
     }
 }
 
-impl From<CyclePermutation> for DefaultPermutation {
+impl From<CyclePermutation> for StandardPermutation {
     fn from(perm: CyclePermutation) -> Self {
         let int: ClassicalPermutation = perm.into();
+        int.into()
+    }
+}
+
+impl From<CyclePermutation> for BasedPermutation {
+    fn from(perm: CyclePermutation) -> Self {
+        let int: StandardPermutation = perm.into();
         int.into()
     }
 }
