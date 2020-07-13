@@ -11,7 +11,7 @@ pub struct MapPermutation {
 
 impl MapPermutation {
     pub fn from_vec(images: &[usize]) -> Self {
-        if images.len() == 0 {
+        if images.is_empty() {
             return MapPermutation::id();
         }
 
@@ -40,7 +40,7 @@ impl Permutation for MapPermutation {
     }
 
     fn is_id(&self) -> bool {
-        self.images.len() == 0
+        self.images.is_empty()
     }
 
     fn from_images(images: &[usize]) -> Self {

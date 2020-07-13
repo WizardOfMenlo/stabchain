@@ -82,7 +82,7 @@ where
 
     /// Is the chain empty (i.e. originary group was trivial)
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        self.chain.is_empty()
     }
 
     /// Get G^(n)
