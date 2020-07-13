@@ -30,17 +30,8 @@ impl StandardPermutation {
     }
 
     pub fn from_vec(vals: Vec<usize>) -> Self {
-        let mut copy = vals.clone();
-        let perm = StandardPermutation::from_vec_unchecked(vals);
-
-        copy.sort();
-        for i in copy.into_iter().enumerate() {
-            if i.0 != i.1 {
-                panic!("Invalid Representation");
-            }
-        }
-
-        perm
+        crate::perm::utils::validate_images(&vals[..]).unwrap();
+        StandardPermutation::from_vec_unchecked(vals)
     }
 
     pub(crate) fn from_vec_unchecked(mut vals: Vec<usize>) -> Self {

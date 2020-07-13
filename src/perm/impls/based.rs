@@ -56,18 +56,9 @@ impl Permutation for BasedPermutation {
         }
     }
 
-    fn from_images(vals: &[usize]) -> Self {
-        let mut copy: Vec<_> = vals.iter().collect();
-        let perm = BasedPermutation::from_vec_unchecked(vals);
-
-        copy.sort();
-        for i in copy.into_iter().enumerate() {
-            if i.0 != *i.1 {
-                panic!("Invalid Representation");
-            }
-        }
-
-        perm
+    fn from_images(images: &[usize]) -> Self {
+        crate::perm::utils::validate_images(images).unwrap();
+        BasedPermutation::from_vec_unchecked(images)
     }
 
     fn inv(&self) -> Self {

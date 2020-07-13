@@ -11,19 +11,7 @@ pub struct MapPermutation {
 
 impl MapPermutation {
     pub fn from_vec(images: &[usize]) -> Self {
-        if images.is_empty() {
-            return MapPermutation::id();
-        }
-
-        let counts: BTreeMap<_, _> = images
-            .iter()
-            .map(|i| (*i, images.iter().filter(|&j| i == j).count()))
-            .collect();
-
-        let max = counts.keys().max().copied().unwrap();
-        assert_eq!(counts.len(), max + 1, "Missing values");
-        assert!(counts.values().all(|c| *c == 1), "Duplicated Values");
-
+        crate::perm::utils::validate_images(images).unwrap();
         Self::from_vec_unchecked(images)
     }
 

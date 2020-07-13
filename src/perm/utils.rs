@@ -26,6 +26,39 @@ pub fn order_n_permutation<P: Permutation>(start: usize, n: usize) -> P {
     P::from_images(images)
 }
 
+#[derive(Debug)]
+pub enum ImageError {
+    DuplicatedImage,
+    MissingValue,
+}
+
+/// Check that an array is in the right format
+pub fn validate_images(images: &[usize]) -> Result<(), ImageError> {
+    // TODO: Use sort instead?
+
+    use std::collections::HashMap;
+    if images.is_empty() {
+        return Ok(());
+    }
+
+    // Build the counts from the images
+    let counts: HashMap<_, _> = images
+        .iter()
+        .map(|i| (*i, images.iter().filter(|&j| i == j).count()))
+        .collect();
+
+    let max = counts.keys().max().copied().unwrap();
+    if counts.len() != max + 1 {
+        return Err(ImageError::MissingValue);
+    }
+
+    if counts.values().any(|c| *c != 1) {
+        return Err(ImageError::DuplicatedImage);
+    }
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
