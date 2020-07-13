@@ -5,7 +5,7 @@ pub mod moved_point_selector;
 use crate::group::orbit::abstraction::TransversalResolver;
 use crate::group::Group;
 use crate::perm::*;
-use builder::{Builder, Strategy};
+use builder::{Builder, BuilderStrategy};
 use moved_point_selector::MovedPointSelector;
 
 use std::collections::HashMap;
@@ -23,7 +23,7 @@ where
     /// Creates a stabilizer chain, using a selected strategy.
     pub fn new_with_strategy<S, B: Builder<P, V>>(g: &Group<P>, build_strategy: S) -> Self
     where
-        S: Strategy<P, Transversal = V, BuilderT = B>,
+        S: BuilderStrategy<P, Transversal = V, BuilderT = B>,
     {
         let mut builder = build_strategy.make_builder();
         builder.set_generators(g);

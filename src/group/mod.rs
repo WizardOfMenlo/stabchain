@@ -7,7 +7,7 @@ pub mod utils;
 use self::stabchain::builder::DefaultStrategy;
 use self::stabchain::moved_point_selector::FixedBaseSelector;
 use crate::group::orbit::abstraction::TransversalResolver;
-use crate::group::stabchain::builder::Strategy;
+use crate::group::stabchain::builder::BuilderStrategy;
 use crate::group::stabchain::moved_point_selector::MovedPointSelector;
 use crate::perm::export::CyclePermutation;
 use crate::perm::utils::order_n_permutation;
@@ -118,7 +118,7 @@ where
     /// Computes the orbit of a particular action
     pub fn orbit_of_action<A>(&self, base: A::OrbitT, strat: A) -> orbit::Orbit<A::OrbitT>
     where
-        A: ActionStrategy<P>,
+        A: Action<P>,
     {
         orbit::Orbit::new_with_strategy(self, base, strat)
     }
@@ -135,7 +135,7 @@ where
         strat: A,
     ) -> impl orbit::transversal::Transversal<P, A::OrbitT>
     where
-        A: ActionStrategy<P>,
+        A: Action<P>,
     {
         orbit::transversal::SimpleTransversal::new_with_strategy(self, base, strat)
     }
@@ -152,7 +152,7 @@ where
         strat: A,
     ) -> impl orbit::transversal::Transversal<P, A::OrbitT>
     where
-        A: ActionStrategy<P>,
+        A: Action<P>,
     {
         orbit::transversal::FactoredTransversal::new_with_strategy(self, base, strat)
     }
@@ -178,7 +178,7 @@ where
     }
 
     /// Computes a stabilizer chain for this group with a strategy
-    pub fn stabchain_with_strategy<S: Strategy<P>>(
+    pub fn stabchain_with_strategy<S: BuilderStrategy<P>>(
         &self,
         strat: S,
     ) -> stabchain::Stabchain<P, S::Transversal> {
@@ -198,7 +198,7 @@ where
     pub fn bruteforce_elements(&self) -> Vec<P> {
         self.orbit_of_action(
             P::id(),
-            crate::perm::actions::MultiplicationApplicationStrategy::default(),
+            crate::perm::actions::MultiplicationAction::default(),
         )
         .iter()
         .cloned()
@@ -217,8 +217,8 @@ where
 
     /// Conjugate the generators by this permutation
     pub fn conjugate_gens(&self, p: &P) -> Self {
-        use crate::perm::actions::ConjugationStrategy;
-        let c = ConjugationStrategy::default();
+        use crate::perm::actions::ConjugationAction;
+        let c = ConjugationAction::default();
         self.clone().map(|g| c.apply(p, g))
     }
 

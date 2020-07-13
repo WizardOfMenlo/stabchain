@@ -1,6 +1,6 @@
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
-use crate::perm::{ActionStrategy, Permutation};
+use crate::perm::{Action, Permutation};
 
 use super::skeleton::TransversalSkeleton;
 use super::Transversal;
@@ -38,7 +38,7 @@ where
     /// Create from the group
     pub fn new_with_strategy<A>(g: &Group<P>, base: OrbitT, strategy: A) -> Self
     where
-        A: ActionStrategy<P, OrbitT = OrbitT>,
+        A: Action<P, OrbitT = OrbitT>,
     {
         Self::from_raw(
             base.clone(),
@@ -78,7 +78,7 @@ where
 pub fn transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: A) -> HashMap<A::OrbitT, P>
 where
     P: Permutation,
-    A: ActionStrategy<P>,
+    A: Action<P>,
 {
     // Get the generatos
     let gens = &g.generators[..];
@@ -118,7 +118,7 @@ pub fn transversal_complete_opt<P, A>(
 ) -> HashMap<A::OrbitT, P>
 where
     P: Permutation,
-    A: ActionStrategy<P>,
+    A: Action<P>,
 {
     // Get the generatos
     let gens = &g.generators[..];

@@ -53,7 +53,7 @@ pub trait Permutation: Clone + Eq + Hash {
 }
 
 /// Trait to select which action does the permutation induce
-pub trait ActionStrategy<P>: Default + Clone {
+pub trait Action<P>: Default + Clone {
     type OrbitT: Hash + Eq + Clone;
 
     fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT;

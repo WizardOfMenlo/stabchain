@@ -10,7 +10,7 @@ impl<P> Default for SimpleApplication<P> {
     }
 }
 
-impl<P> ActionStrategy<P> for SimpleApplication<P>
+impl<P> Action<P> for SimpleApplication<P>
 where
     P: Permutation,
 {
@@ -23,15 +23,15 @@ where
 
 /// Action is on permutation, and it is done by conjugation (p^-1 a p)
 #[derive(Debug, Clone)]
-pub struct ConjugationStrategy<P>(std::marker::PhantomData<P>);
+pub struct ConjugationAction<P>(std::marker::PhantomData<P>);
 
-impl<P> Default for ConjugationStrategy<P> {
+impl<P> Default for ConjugationAction<P> {
     fn default() -> Self {
         Self(std::marker::PhantomData::default())
     }
 }
 
-impl<P> ActionStrategy<P> for ConjugationStrategy<P>
+impl<P> Action<P> for ConjugationAction<P>
 where
     P: Permutation,
 {
@@ -44,15 +44,15 @@ where
 
 /// Action is by permutation multiplication
 #[derive(Debug, Clone)]
-pub struct MultiplicationApplicationStrategy<P>(std::marker::PhantomData<P>);
+pub struct MultiplicationAction<P>(std::marker::PhantomData<P>);
 
-impl<P> Default for MultiplicationApplicationStrategy<P> {
+impl<P> Default for MultiplicationAction<P> {
     fn default() -> Self {
         Self(std::marker::PhantomData::default())
     }
 }
 
-impl<P> ActionStrategy<P> for MultiplicationApplicationStrategy<P>
+impl<P> Action<P> for MultiplicationAction<P>
 where
     P: Permutation,
 {

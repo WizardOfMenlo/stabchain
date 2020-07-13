@@ -1,4 +1,4 @@
-use crate::perm::{ActionStrategy, Permutation};
+use crate::perm::{Action, Permutation};
 use std::collections::HashMap;
 
 /// A trait encapsulating the different ways in which a transversal can access a representative
@@ -48,7 +48,7 @@ impl<P, OrbitT, A> TransversalResolver<P, OrbitT> for FactoredTransversalResolve
 where
     P: Permutation,
     OrbitT: std::hash::Hash + Eq + Clone,
-    A: ActionStrategy<P, OrbitT = OrbitT>,
+    A: Action<P, OrbitT = OrbitT>,
 {
     type AssociatedTransversal = super::transversal::FactoredTransversal<P, A>;
 
