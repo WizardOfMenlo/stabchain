@@ -10,9 +10,12 @@ use rand::seq::{IteratorRandom, SliceRandom};
 use rand::thread_rng;
 use std::cmp::min;
 use std::collections::{HashMap, VecDeque};
-use std::iter::FromIterator;
+use std::iter::{repeat_with, FromIterator};
 
 const C: f32 = 10.0;
+// Cosntants for the Strong Generating Test.
+const C3: usize = 10;
+const C4: usize = 10;
 
 // Helper struct, used to build the stabilizer chain
 
@@ -275,6 +278,39 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         }
         // Store the updated record in the chain
         self.chain[self.current_pos] = record;
+    }
+
+    fn sgt(&mut self) {
+        //Sum of all "depths". In reality the transversal doesn't have a depth, so the upper bound of the
+        let t = self
+            .current_chain()
+            .map(|record| (record.transversal.len() as f64).log2())
+            .sum::<f64>()
+            .floor() as usize;
+        let record = &self.chain[self.current_pos];
+        let gens = self
+            .current_chain()
+            .flat_map(|record| record.gens.generators())
+            .map(|f| f.clone())
+            .collect::<Vec<Permutation>>();
+        let k = rand::Rng::gen_range(&mut self.rng, 0, gens.len() / 2 + 1);
+        //Create an iterator of subproducts w1, w2
+        let subproduct_iter = repeat_with(|| {
+            (
+                random_subproduct_full(&mut self.rng.clone(), &gens[..]),
+                random_subproduct_subset(&mut self.rng.clone(), &gens[..], k),
+            )
+        })
+        .take(C3);
+        let g_iter = repeat_with(|| {
+            record
+                .transversal
+                .keys()
+                .choose(&mut self.rng.clone())
+                .map(|point| representative_raw(&record.transversal, record.base, point.clone()))
+                .expect("should be present")
+        })
+        .take(C4 * t);
     }
 
     /// Test that we have a base and strong generating set, rectifying this if we do not.
