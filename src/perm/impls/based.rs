@@ -1,4 +1,3 @@
-use crate::perm::builder::PermBuilder;
 use crate::perm::impls::standard::StandardPermutation;
 use crate::perm::Permutation;
 
@@ -154,16 +153,6 @@ impl std::hash::Hash for BasedPermutation {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.base.hash(state);
         self.perm.hash(state);
-    }
-}
-
-impl PermBuilder<BasedPermutation> for BasedPermutation {
-    fn build_apply(&self, x: usize) -> usize {
-        self.apply(x)
-    }
-
-    fn collapse(&self) -> BasedPermutation {
-        self.clone()
     }
 }
 

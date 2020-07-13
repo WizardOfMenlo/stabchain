@@ -1,9 +1,9 @@
-use crate::perm::builder::PermBuilder;
 use crate::perm::Permutation;
 
 use std::cell::RefCell;
 use std::cmp::max;
 use std::fmt;
+use std::iter::FromIterator;
 use std::rc::Rc;
 
 /// Represents a permutation
@@ -113,10 +113,6 @@ impl Permutation for StandardPermutation {
         }
     }
 
-    fn pow(&self, pow: isize) -> Self {
-        self.build_pow(pow).collapse()
-    }
-
     fn order(&self) -> usize {
         // TODO: If we ever use order in resource heavy context, optmize here
         use crate::perm::export::CyclePermutation;
@@ -140,20 +136,6 @@ impl Permutation for StandardPermutation {
         let new_images = self.vals.iter().map(|i| i + k);
         images.extend(new_images);
         StandardPermutation::from_vec_unchecked(images)
-    }
-}
-
-impl PermBuilder<StandardPermutation> for StandardPermutation {
-    fn build_apply(&self, x: usize) -> usize {
-        if x < self.vals.len() {
-            self.vals[x]
-        } else {
-            x
-        }
-    }
-
-    fn collapse(&self) -> StandardPermutation {
-        self.clone()
     }
 }
 
@@ -185,6 +167,12 @@ impl std::hash::Hash for StandardPermutation {
 impl From<Vec<usize>> for StandardPermutation {
     fn from(v: Vec<usize>) -> Self {
         StandardPermutation::from_vec(v)
+    }
+}
+
+impl FromIterator<usize> for StandardPermutation {
+    fn from_iter<T: IntoIterator<Item = usize>>(iter: T) -> Self {
+        StandardPermutation::from_vec(iter.into_iter().collect())
     }
 }
 

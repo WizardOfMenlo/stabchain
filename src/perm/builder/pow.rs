@@ -52,9 +52,9 @@ where
     }
 }
 
-// Recursive helper function, uses repeated exponentiation
-// to perform exponentiation to the n in O(log n) steps
-fn pow<P: Permutation + Clone>(perm: P, n: usize) -> P {
+/// Recursive helper function, uses repeated exponentiation
+/// to perform exponentiation to the n in O(log n) steps
+pub fn pow<P: Permutation>(perm: P, n: usize) -> P {
     if n == 0 {
         return P::id();
     }

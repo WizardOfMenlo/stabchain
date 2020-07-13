@@ -1,5 +1,7 @@
 use super::ClassicalPermutation;
-use crate::perm::impls::{based::BasedPermutation, standard::StandardPermutation};
+use crate::perm::impls::{
+    based::BasedPermutation, map::MapPermutation, standard::StandardPermutation,
+};
 use crate::perm::Permutation;
 use serde::{Deserialize, Serialize};
 
@@ -80,6 +82,13 @@ impl From<CyclePermutation> for StandardPermutation {
 }
 
 impl From<CyclePermutation> for BasedPermutation {
+    fn from(perm: CyclePermutation) -> Self {
+        let int: StandardPermutation = perm.into();
+        int.into()
+    }
+}
+
+impl From<CyclePermutation> for MapPermutation {
     fn from(perm: CyclePermutation) -> Self {
         let int: StandardPermutation = perm.into();
         int.into()
