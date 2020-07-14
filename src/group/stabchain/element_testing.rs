@@ -1,5 +1,6 @@
 use super::StabchainRecord;
 use crate::group::orbit::abstraction::TransversalResolver;
+use crate::group::utils::apply_permutation_word;
 use crate::perm::Permutation;
 
 /// Given a stabilizer chain, computes whether the given element is in the group
@@ -74,7 +75,7 @@ where
     }
 }
 
-/// Sift the word through the chain, returning the residue it generates.
+/// Sift the permutation through the chain, returning the residue it generates.
 pub fn residue_as_words<'a, V>(
     it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
     p: &Permutation,
@@ -105,6 +106,41 @@ where
             .unwrap();
         res.push(representative.clone());
         g = g.divide(&representative);
+    }
+    res
+}
+
+/// Sift the permutation word through the chain, returning the residue it generates.
+pub fn residue_as_words_from_words<'a, V>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
+    p: &Vec<Permutation>,
+) -> Vec<Permutation>
+where
+    V: 'a + TransversalResolver,
+{
+    // Early exit
+    if p.is_empty() {
+        // The empty product is the identity
+        return Vec::new();
+    }
+
+    let mut res = p.clone();
+    let mut g = p.clone();
+    for record in it {
+        let base = record.base;
+        //TODO Perhaps instead apply res to cut down on permutation applications.
+        let application = apply_permutation_word(g.iter(), base);
+
+        if !record.transversal.contains_key(&application) {
+            break;
+        }
+
+        let representative = record
+            .resolver()
+            .representative(&record.transversal, base, application)
+            .unwrap();
+        res.push(representative.clone());
+        g.push(representative.inv());
     }
     res
 }
