@@ -35,6 +35,27 @@ pub(crate) fn representative_raw<S: std::hash::BuildHasher>(
     }
 }
 
+pub(crate) fn representative_raw_as_word<S: std::hash::BuildHasher>(
+    transversal: &HashMap<usize, Permutation, S>,
+    base: usize,
+    point: usize,
+) -> Option<Vec<Permutation>> {
+    // Check if the element is in the orbit.
+    if !transversal.contains_key(&point) {
+        None
+    } else {
+        let mut orbit_point = point;
+        let mut rep = vec![];
+        // Move along the orbit till we reach a representative that the base moves to the point.
+        while orbit_point != base {
+            let g_inv = transversal.get(&orbit_point).unwrap();
+            rep.push(g_inv.inv());
+            orbit_point = g_inv.apply(orbit_point);
+        }
+        Some(rep)
+    }
+}
+
 impl FactoredTransversal {
     /// Given a group, construct the factored transversal
     ///```
