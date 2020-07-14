@@ -18,6 +18,14 @@ pub fn random_subproduct_full<T: Rng>(rng: &mut T, gens: &[Permutation]) -> Perm
     random_subproduct_subset(rng, gens, gens.len())
 }
 
+/// Apply a point to permutations stored as a word.
+pub fn apply_permutation_word<'a>(
+    perm_word: impl IntoIterator<Item = &'a Permutation>,
+    x: usize,
+) -> usize {
+    perm_word.into_iter().fold(x, |accum, p| p.apply(accum))
+}
+
 /// Generate a random subproduct of a random k sized subset of the given generators.
 pub fn random_subproduct_subset<T: Rng>(
     rng: &mut T,
