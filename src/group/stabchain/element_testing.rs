@@ -114,14 +114,14 @@ where
 pub fn residue_as_words_from_words<'a, V>(
     it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
     p: &Vec<Permutation>,
-) -> Vec<Permutation>
+) -> (bool, Vec<Permutation>)
 where
     V: 'a + TransversalResolver,
 {
     // Early exit
     if p.is_empty() {
         // The empty product is the identity
-        return Vec::new();
+        return (true, Vec::new());
     }
 
     let mut res = p.clone();
@@ -132,7 +132,7 @@ where
         let application = apply_permutation_word(g.iter(), base);
 
         if !record.transversal.contains_key(&application) {
-            break;
+            return (false, res);
         }
 
         let representative = record
@@ -142,7 +142,7 @@ where
         res.push(representative.clone());
         g.push(representative.inv());
     }
-    res
+    (true, res)
 }
 
 #[cfg(test)]
