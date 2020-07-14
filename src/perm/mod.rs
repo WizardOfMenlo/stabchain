@@ -36,13 +36,25 @@ pub trait Permutation: Clone + Eq + Hash {
     fn multiply(&self, other: &Self) -> Self;
 
     /// Exponentiate this permutation
-    fn pow(&self, pow: isize) -> Self;
+    fn pow(&self, pow: isize) -> Self {
+        let perm = if pow < 0 { self.inv() } else { self.clone() };
+
+        builder::pow::pow(perm, pow.abs() as usize)
+    }
 
     /// Shift the permutation some places on the right
     fn shift(&self, pos: usize) -> Self;
 
     /// Get the order of the permutation
-    fn order(&self) -> usize;
+    fn order(&self) -> usize {
+        let mut acc = Self::id();
+        let mut counter = 0;
+        while !acc.is_id() {
+            acc = acc.multiply(self);
+            counter += 1;
+        }
+        counter
+    }
 
     fn divide(&self, other: &Self) -> Self {
         self.multiply(&other.inv())

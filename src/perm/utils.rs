@@ -26,6 +26,29 @@ pub fn order_n_permutation<P: Permutation>(start: usize, n: usize) -> P {
     P::from_images(images)
 }
 
+#[derive(Debug)]
+pub enum ImageError {
+    DuplicatedImage(usize),
+    MissingValue(usize),
+}
+
+/// Check that an array is in the right format
+pub fn validate_images(images: &[usize]) -> Result<(), ImageError> {
+    use std::cmp::Ordering;
+
+    let mut vec: Vec<_> = images.into();
+    vec.sort();
+    for (index, &value) in vec.iter().enumerate() {
+        return match value.cmp(&index) {
+            Ordering::Less => Err(ImageError::DuplicatedImage(value)),
+            Ordering::Greater => Err(ImageError::MissingValue(index)),
+            Ordering::Equal => continue,
+        };
+    }
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -55,5 +78,23 @@ mod tests {
         }
 
         assert!(perm.build_pow(25).collapse().is_id())
+    }
+
+    #[test]
+    fn validate_images_missing_first() {
+        let parse_res = validate_images(&[1, 2, 4, 3]);
+        assert!(parse_res.is_err());
+    }
+
+    #[test]
+    fn validate_images_missing_middle() {
+        let parse_res = validate_images(&[0, 1, 3, 2, 5, 7, 6]);
+        assert!(parse_res.is_err());
+    }
+
+    #[test]
+    fn validate_images_duplicated() {
+        let parse_res = validate_images(&[0, 1, 2, 3, 5, 4, 2]);
+        assert!(parse_res.is_err());
     }
 }

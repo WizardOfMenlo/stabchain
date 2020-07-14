@@ -33,3 +33,16 @@ pub trait PermBuilder<P: Permutation>: Clone {
     /// Unfold all the layers and make a single permutation (Note, often it will be wanted to store this)
     fn collapse(&self) -> P;
 }
+
+impl<P> PermBuilder<P> for P
+where
+    P: Permutation,
+{
+    fn build_apply(&self, x: usize) -> usize {
+        self.apply(x)
+    }
+
+    fn collapse(&self) -> P {
+        self.clone()
+    }
+}

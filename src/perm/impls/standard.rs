@@ -1,9 +1,9 @@
-use crate::perm::builder::PermBuilder;
 use crate::perm::Permutation;
 
 use std::cell::RefCell;
 use std::cmp::max;
 use std::fmt;
+use std::iter::FromIterator;
 use std::rc::Rc;
 
 /// Represents a permutation
@@ -30,17 +30,8 @@ impl StandardPermutation {
     }
 
     pub fn from_vec(vals: Vec<usize>) -> Self {
-        let mut copy = vals.clone();
-        let perm = StandardPermutation::from_vec_unchecked(vals);
-
-        copy.sort();
-        for i in copy.into_iter().enumerate() {
-            if i.0 != i.1 {
-                panic!("Invalid Representation");
-            }
-        }
-
-        perm
+        crate::perm::utils::validate_images(&vals[..]).unwrap();
+        StandardPermutation::from_vec_unchecked(vals)
     }
 
     pub(crate) fn from_vec_unchecked(mut vals: Vec<usize>) -> Self {
@@ -113,10 +104,6 @@ impl Permutation for StandardPermutation {
         }
     }
 
-    fn pow(&self, pow: isize) -> Self {
-        self.build_pow(pow).collapse()
-    }
-
     fn order(&self) -> usize {
         // TODO: If we ever use order in resource heavy context, optmize here
         use crate::perm::export::CyclePermutation;
@@ -140,20 +127,6 @@ impl Permutation for StandardPermutation {
         let new_images = self.vals.iter().map(|i| i + k);
         images.extend(new_images);
         StandardPermutation::from_vec_unchecked(images)
-    }
-}
-
-impl PermBuilder<StandardPermutation> for StandardPermutation {
-    fn build_apply(&self, x: usize) -> usize {
-        if x < self.vals.len() {
-            self.vals[x]
-        } else {
-            x
-        }
-    }
-
-    fn collapse(&self) -> StandardPermutation {
-        self.clone()
     }
 }
 
@@ -188,213 +161,8 @@ impl From<Vec<usize>> for StandardPermutation {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    #[should_panic]
-    fn invalid_missing_0() {
-        StandardPermutation::from_vec(vec![1, 2, 3]);
-    }
-
-    #[test]
-    #[should_panic]
-    fn invalid_double_value() {
-        StandardPermutation::from_vec(vec![0, 1, 2, 2]);
-    }
-
-    #[test]
-    fn id_perm() {
-        assert_eq!(StandardPermutation::id(), StandardPermutation::id());
-        assert_eq!(
-            StandardPermutation::id(),
-            StandardPermutation::from_vec(vec![0, 1, 2])
-        );
-    }
-
-    #[test]
-    fn test_is_id() {
-        let perm = StandardPermutation::from_vec(vec![0, 1, 2]);
-        assert!(perm.is_id());
-        let perm = StandardPermutation::from_vec(vec![0, 2, 1, 4, 3]);
-        assert!(perm.multiply(&perm.inv()).is_id())
-    }
-
-    #[test]
-    fn leq_perm() {
-        assert!(StandardPermutation::id() <= StandardPermutation::id());
-        assert!(!(StandardPermutation::id() < StandardPermutation::id()));
-        assert!(StandardPermutation::id() <= StandardPermutation::from_vec(vec![0, 1, 2]));
-        assert!(!(StandardPermutation::id() < StandardPermutation::from_vec(vec![0, 1, 2])));
-
-        let id = StandardPermutation::id();
-        let cycle = StandardPermutation::from_vec(vec![1, 2, 0]);
-        assert!(id < cycle);
-        assert!(!(id > cycle));
-    }
-
-    #[test]
-    fn not_eq_perm() {
-        assert_ne!(
-            StandardPermutation::id(),
-            StandardPermutation::from_vec(vec![2, 1, 0])
-        );
-        assert_ne!(
-            StandardPermutation::from_vec(vec![2, 1, 0]),
-            StandardPermutation::id()
-        );
-    }
-
-    #[test]
-    fn apply_perm() {
-        let id = StandardPermutation::id();
-        let cycle = StandardPermutation::from_vec(vec![1, 2, 0]);
-
-        assert_eq!(0, id.apply(0));
-        assert_eq!(1, id.apply(1));
-        assert_eq!(1, cycle.apply(0));
-        assert_eq!(2, cycle.apply(1));
-        assert_eq!(0, cycle.apply(2));
-        assert_eq!(3, cycle.apply(3));
-    }
-
-    #[test]
-    fn mult_perm() {
-        let id = StandardPermutation::id();
-        let cycle = StandardPermutation::from_vec(vec![1, 2, 0]);
-        let cycle2 = StandardPermutation::from_vec(vec![2, 0, 1]);
-
-        let id = &id;
-        let cycle = &cycle;
-        let cycle2 = &cycle2;
-
-        assert_eq!(*id, id.multiply(id));
-        assert_eq!(*cycle, cycle.multiply(id));
-        assert_eq!(*cycle, id.multiply(cycle));
-        assert_eq!(*cycle2, cycle.multiply(cycle));
-        assert_eq!(*id, cycle.multiply(cycle).multiply(cycle));
-        assert_ne!(*cycle, cycle.multiply(cycle));
-        assert_eq!(*cycle, cycle.pow(1));
-        assert_eq!(cycle.pow(-1), cycle.multiply(cycle));
-        assert_eq!(cycle.pow(-2), *cycle);
-        assert_eq!(cycle.pow(3), *id);
-        assert_eq!(cycle.pow(10), *cycle);
-    }
-
-    /// Check that multiplication is correct for non-commuting elements.
-    #[test]
-    fn mult_perm_non_commutative() {
-        let perm1 = StandardPermutation::from(vec![1, 0]);
-        let perm2 = StandardPermutation::from(vec![0, 2, 1]);
-        let expected_perm = StandardPermutation::from(vec![2, 0, 1]);
-        assert_eq!(perm1.multiply(&perm2), expected_perm);
-        // Should not be the same when order is reveresed.
-        assert_ne!(perm2.multiply(&perm1), expected_perm);
-        let perm1 = StandardPermutation::from(vec![1, 2, 3, 0]);
-        let perm2 = StandardPermutation::from(vec![0, 2, 1]);
-        let expected_perm = StandardPermutation::from(vec![2, 1, 3, 0]);
-        assert_eq!(perm1.multiply(&perm2), expected_perm);
-        // Should not be the same when order is reveresed.
-        assert_ne!(perm2.multiply(&perm1), expected_perm);
-    }
-
-    /// Check that the multiplication is associative
-    #[test]
-    fn mult_perm_associative() {
-        let perm1 = StandardPermutation::from(vec![1, 5, 4, 0, 2, 3]);
-        let perm2 = StandardPermutation::from(vec![3, 2, 0, 1]);
-        let perm3 = StandardPermutation::from(vec![6, 5, 4, 3, 2, 1, 0]);
-        assert_eq!(
-            perm1.multiply(&perm2).multiply(&perm3),
-            perm1.multiply(&perm2.multiply(&perm3))
-        );
-    }
-
-    /// Test that multiplication for the lazy or eager implementaions are identical
-    #[test]
-    fn mult_perm_lazy_eager() {
-        use crate::perm::builder::PermBuilder;
-        let perm1 = StandardPermutation::from(vec![2, 3, 0, 1]);
-        let perm2 = StandardPermutation::from(vec![2, 1, 0]);
-        assert_eq!(
-            perm1.multiply(&perm2),
-            perm1.build_multiply(&perm2).collapse()
-        )
-    }
-
-    /// Test inverse for the indentity.
-    #[test]
-    fn invert_perm_id() {
-        let id = StandardPermutation::id();
-        assert_eq!(id, id.inv());
-        assert_eq!(id, id.inv().inv());
-    }
-    /// Test inverting permutation for normal cases.
-    #[test]
-    fn invert_perm() {
-        let id = StandardPermutation::id();
-        //Permutation that is its own inverse
-        let perm1 = StandardPermutation::from(vec![5, 4, 2, 6, 1, 0, 3]);
-        assert_eq!(perm1, perm1.inv());
-        assert_eq!(perm1.multiply(&perm1.inv()), id);
-        // n-cycle permutations
-        let perm2 = StandardPermutation::from(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
-        let perm2_inv = StandardPermutation::from(vec![9, 0, 1, 2, 3, 4, 5, 6, 7, 8]);
-        assert_ne!(perm2, perm2_inv);
-        assert_eq!(perm2_inv, perm2.inv());
-        assert_eq!(perm2, perm2.inv().inv());
-        assert_eq!(perm2, perm2_inv.inv());
-        assert_eq!(perm2.multiply(&perm2_inv), id);
-        assert_eq!(perm2_inv.multiply(&perm2), id);
-        //Permutations with more than one cycle.
-        let perm3 = StandardPermutation::from(vec![2, 5, 4, 6, 0, 3, 1]);
-        let perm3_inv = StandardPermutation::from(vec![4, 6, 0, 5, 2, 1, 3]);
-        assert_ne!(perm3, perm3_inv);
-        assert_eq!(perm3_inv, perm3.inv());
-        assert_eq!(perm3, perm3.inv().inv());
-        assert_eq!(perm3, perm3_inv.inv());
-        assert_eq!(perm3.multiply(&perm3_inv), id);
-        assert_eq!(perm3_inv.multiply(&perm3), id);
-    }
-
-    #[test]
-    fn trailing_end_edge() {
-        let a = StandardPermutation::from_vec(vec![1, 3, 2, 0]);
-        let b = StandardPermutation::from_vec(vec![3, 2, 0, 1]);
-        a.multiply(&b).inv();
-    }
-
-    #[test]
-    fn div_perm() {
-        let id = StandardPermutation::id();
-        let cycle = StandardPermutation::from_vec(vec![1, 2, 0]);
-        let cycle2 = StandardPermutation::from_vec(vec![2, 0, 1]);
-
-        let id = &id;
-        let cycle = &cycle;
-        let cycle2 = &cycle2;
-
-        assert_eq!(*id, id.divide(id));
-        assert_eq!(*cycle, cycle.divide(id));
-        assert_eq!(*cycle2, id.divide(cycle));
-        assert_eq!(*cycle, id.divide(cycle2));
-        assert_eq!(*id, cycle.divide(cycle));
-        assert_eq!(*cycle, id.divide(cycle2));
-        assert_eq!(*cycle2, id.divide(cycle));
-    }
-
-    #[test]
-    fn test_shift_identity() {
-        let p = StandardPermutation::id();
-        assert!(p.shift(3).is_id())
-    }
-
-    #[test]
-    fn test_shift() {
-        use crate::perm::export::CyclePermutation;
-        let perm: StandardPermutation = CyclePermutation::single_cycle(&[1, 2, 3]).into();
-        let shifted: StandardPermutation = CyclePermutation::single_cycle(&[4, 5, 6]).into();
-        assert_eq!(perm.shift(3), shifted)
+impl FromIterator<usize> for StandardPermutation {
+    fn from_iter<T: IntoIterator<Item = usize>>(iter: T) -> Self {
+        StandardPermutation::from_vec(iter.into_iter().collect())
     }
 }
