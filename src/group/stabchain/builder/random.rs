@@ -1,9 +1,14 @@
 use crate::group::orbit::abstraction::FactoredTransversalResolver;
-use crate::group::orbit::transversal::factored_transversal::representative_raw;
-use crate::group::stabchain::element_testing::{is_in_group, residue_as_words};
+use crate::group::orbit::transversal::factored_transversal::{
+    factored_transversal_complete_opt, representative_raw, representative_raw_as_word,
+};
+use crate::group::stabchain::element_testing::{
+    is_in_group, residue_as_words, residue_as_words_from_words,
+};
 use crate::group::stabchain::{MovedPointSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{
     apply_permutation_word, random_subproduct_full, random_subproduct_subset,
+    random_subproduct_word_full, random_subproduct_word_subset,
 };
 use crate::group::Group;
 use crate::perm::Permutation;
@@ -31,6 +36,7 @@ pub struct StabchainBuilderRandom<T: MovedPointSelector> {
     n: usize,
     base: Vec<usize>,
     rng: ThreadRng,
+    up_to_date: usize,
 }
 #[allow(dead_code)] //TODO remove
 impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
@@ -42,6 +48,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             n: 0,
             base: Vec::new(),
             rng: thread_rng(),
+            up_to_date: 0,
         }
     }
 
@@ -197,6 +204,47 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
+    fn random_schrier_generator_word(&mut self) -> Vec<Permutation> {
+        //First pick a random coset representative of the group
+        let record = &self.chain[self.current_pos];
+        let point = record
+            .transversal
+            .keys()
+            .choose(&mut self.rng)
+            .expect("Should be non empty");
+        let mut coset_representative =
+            representative_raw_as_word(&record.transversal, record.base, *point)
+                .expect("Should be in the orbit");
+        debug_assert!(apply_permutation_word(coset_representative.iter(), record.base) == *point);
+        //Generate a random subword.
+        let gens = self
+            .current_chain()
+            .flat_map(|record| record.gens.generators())
+            .map(|f| f.clone())
+            .collect::<Vec<Permutation>>();
+        let w1 = random_subproduct_word_full(&mut self.rng, &gens[..]);
+        let k = rand::Rng::gen_range(&mut self.rng, 0, gens.len() / 2 + 1);
+        let w2 = random_subproduct_word_subset(&mut self.rng, &gens[..], k);
+        let g = gens.choose(&mut self.rng).expect("Should be non empty");
+        //Combine this into a random subword, randomly including the generator or not.
+        //This is equivalent to w1*(*g^e)*w2 where e is generated from a uniform distribution in [0,1]
+        //Multiply the coset representive by the subword.
+        coset_representative.extend(w1);
+        if rand::Rng::gen::<bool>(&mut self.rng) {
+            coset_representative.push(g.clone());
+        }
+        coset_representative.extend(w2);
+        //Get the residue of coset_representative*subword
+        let residue_as_words =
+            residue_as_words_from_words(self.current_chain(), &coset_representative);
+        //Take it's inverse as a word, i.e reverse the order and replace each entry with the inverse.
+        let residue_inverse_as_word = residue_as_words.iter().map(|p| p.inv()).rev();
+        //Combine everything together as a single permutation.
+        coset_representative.extend(residue_inverse_as_word);
+        coset_representative
+    }
+
+    /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
     fn random_schrier_generator(&mut self) -> Permutation {
         //First pick a random coset representative of the group
         let record = &self.chain[self.current_pos];
@@ -285,6 +333,22 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.chain[self.current_pos] = record;
     }
 
+    fn sgc(&mut self, i: usize) {
+        let mut record = self.chain[self.current_pos].clone();
+        //If the transvesal hasn't been calculated, then calculate it. Shouldn't need the second check, as the trivial group should have an orbit?
+        if record.transversal.is_empty() && record.group().generators().is_empty() {
+            record.transversal = factored_transversal_complete_opt(&record.group(), record.base);
+        }
+        let random_generations = 64.0
+            * self
+                .current_chain()
+                .map(|record| (record.transversal.len() as f64).ln())
+                .sum::<f64>();
+        for _ in 0..random_generations as i32 {
+            let h = self.random_schrier_generator();
+        }
+    }
+
     fn sgt(&mut self) {
         //Sum of all "depths". In reality the transversal doesn't have a depth, so we use this as a upper bound.
         let t = self
@@ -356,7 +420,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     ) -> bool {
         points
             .into_iter()
-            .any(|x| apply_permutation_word(p_as_words, x) == x)
+            .any(|x| apply_permutation_word(p_as_words.iter(), x) == x)
     }
 
     /// Test that we have a base and strong generating set, rectifying this if we do not.
