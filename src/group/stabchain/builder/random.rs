@@ -2,7 +2,9 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::factored_transversal::representative_raw;
 use crate::group::stabchain::element_testing::{is_in_group, residue_as_words};
 use crate::group::stabchain::{MovedPointSelector, Stabchain, StabchainRecord};
-use crate::group::utils::{random_subproduct_full, random_subproduct_subset};
+use crate::group::utils::{
+    apply_permutation_word, random_subproduct_full, random_subproduct_subset,
+};
 use crate::group::Group;
 use crate::perm::Permutation;
 use rand::rngs::ThreadRng;
@@ -322,7 +324,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         //Sift the original generators.
         for g in self.chain[0].gens.generators() {
             let residue = residue_as_words(self.current_chain(), &g);
-            if self.is_trivial_residue(&residue) {
+            if self.is_trivial_residue_all_points(&residue) {
                 todo!();
             }
         }
@@ -330,21 +332,31 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         for g in g_iter {
             for (w1, w2) in subproduct_iter.iter() {
                 let residue = residue_as_words(self.current_chain(), &g.multiply(w1));
-                if self.is_trivial_residue(&residue) {
+                if self.is_trivial_residue_all_points(&residue) {
                     todo!();
                 }
                 let residue = residue_as_words(self.current_chain(), &g.multiply(w2));
-                if self.is_trivial_residue(&residue) {
+                if self.is_trivial_residue_all_points(&residue) {
                     todo!();
                 }
             }
         }
     }
 
+    /// Wrapper function to check all points of the permutation domain.
+    fn is_trivial_residue_all_points(&self, p_as_words: &Vec<Permutation>) -> bool {
+        self.is_trivial_residue(p_as_words, 0..self.n)
+    }
+
     /// Check if a residue acts non-trivially
-    //TODO maybe convert so iterator of values is passed in, for cases where you don't evaluate on all points.
-    fn is_trivial_residue(&self, p_as_words: &Vec<Permutation>) -> bool {
-        (0..self.n).any(|x| p_as_words.iter().fold(x, |accum, perm| perm.apply(accum)) == x)
+    fn is_trivial_residue(
+        &self,
+        p_as_words: &Vec<Permutation>,
+        points: impl IntoIterator<Item = usize>,
+    ) -> bool {
+        points
+            .into_iter()
+            .any(|x| apply_permutation_word(p_as_words, x) == x)
     }
 
     /// Test that we have a base and strong generating set, rectifying this if we do not.
