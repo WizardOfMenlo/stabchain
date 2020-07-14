@@ -17,12 +17,15 @@ use rand::seq::{IteratorRandom, SliceRandom};
 use rand::thread_rng;
 use std::cmp::min;
 use std::collections::{HashMap, VecDeque};
+use std::iter::Iterator;
 use std::iter::{repeat_with, FromIterator};
 
 const C: f32 = 10.0;
 //Constants for subproduct generation
 const C1: usize = 10;
 const C2: usize = 10;
+const ORBIT_BOUND: usize = 50;
+const BASE_BOUND: usize = 5;
 // Cosntants for the Strong Generating Test.
 const C3: usize = 10;
 const C4: usize = 10;
@@ -238,7 +241,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         let residue_as_words =
             residue_as_words_from_words(self.current_chain(), &coset_representative);
         //Take it's inverse as a word, i.e reverse the order and replace each entry with the inverse.
-        let residue_inverse_as_word = residue_as_words.iter().map(|p| p.inv()).rev();
+        let residue_inverse_as_word = residue_as_words.1.iter().map(|p| p.inv()).rev();
         //Combine everything together as a single permutation.
         coset_representative.extend(residue_inverse_as_word);
         coset_representative
@@ -333,7 +336,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.chain[self.current_pos] = record;
     }
 
-    fn sgc(&mut self, i: usize) {
+    fn sgc(&mut self) {
         let mut record = self.chain[self.current_pos].clone();
         //If the transvesal hasn't been calculated, then calculate it. Shouldn't need the second check, as the trivial group should have an orbit?
         if record.transversal.is_empty() && record.group().generators().is_empty() {
@@ -344,8 +347,73 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 .current_chain()
                 .map(|record| (record.transversal.len() as f64).ln())
                 .sum::<f64>();
+        //To see if all generators are discarded.
+        let mut all_discarded = true;
         for _ in 0..random_generations as i32 {
-            let h = self.random_schrier_generator();
+            let h = self.random_schrier_generator_word();
+            let (sift, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
+            if sift {
+                //Pick the points that should be evaluated.
+                let evaluated_points: Vec<usize> = if record.transversal.len() <= ORBIT_BOUND {
+                    (0..self.n).collect()
+                } else if self.base.len() <= BASE_BOUND {
+                    record
+                        .transversal
+                        .keys()
+                        .choose_multiple(&mut self.rng, BASE_BOUND)
+                        .into_iter()
+                        .map(|x| x.clone())
+                        .collect()
+                } else {
+                    record
+                        .transversal
+                        .keys()
+                        .choose_multiple(&mut self.rng, self.base.len())
+                        .into_iter()
+                        .map(|x| x.clone())
+                        .collect()
+                };
+                //If any point is not fixed by the residue
+                if evaluated_points
+                    .iter()
+                    .any(|x| apply_permutation_word(h_residue.iter(), *x) == *x)
+                {
+                    //Not all permutations have been discarded
+                    all_discarded = false;
+                    let h_star = h_residue
+                        .iter()
+                        .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
+                    //Add this residue as a generator
+                    record.gens.generators.push(h_star.clone());
+                    //Add a new base point, along with a new record for that base point.
+                    let new_base_point = self.selector.moved_point(&h_star);
+                    debug_assert!(!self.base.contains(&new_base_point));
+                    self.base.push(new_base_point);
+                    let record = StabchainRecord::new(
+                        new_base_point,
+                        Group::new(&[]),
+                        [(new_base_point, Permutation::id())]
+                            .iter()
+                            .cloned()
+                            .collect(),
+                    );
+                    self.chain.push(record);
+                    //Now up to date beneath the newly added point.
+                    self.up_to_date = self.base.len();
+                }
+            } else {
+                let h_star = h_residue
+                    .iter()
+                    .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
+                record.gens.generators.push(h_star);
+                //Find the position at which this didn't sift through.
+                let j = self.current_pos + h_residue.len() - h.len();
+                //Consider the chain now up to date below level j.
+                self.up_to_date = j;
+            }
+            if all_discarded {
+                self.up_to_date = self.current_pos - 1;
+            }
         }
     }
 
