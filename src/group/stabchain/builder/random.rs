@@ -13,6 +13,9 @@ use std::collections::{HashMap, VecDeque};
 use std::iter::{repeat_with, FromIterator};
 
 const C: f32 = 10.0;
+//Constants for subproduct generation
+const C1: usize = 10;
+const C2: usize = 10;
 // Cosntants for the Strong Generating Test.
 const C3: usize = 10;
 const C4: usize = 10;
@@ -281,13 +284,14 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     fn sgt(&mut self) {
-        //Sum of all "depths". In reality the transversal doesn't have a depth, so the upper bound of the
+        //Sum of all "depths". In reality the transversal doesn't have a depth, so we use this as a upper bound.
         let t = self
             .current_chain()
             .map(|record| (record.transversal.len() as f64).log2())
             .sum::<f64>()
             .floor() as usize;
         let record = &self.chain[self.current_pos];
+        //The union of the generator sets in the chain to this point.
         let gens = self
             .current_chain()
             .flat_map(|record| record.gens.generators())
@@ -301,16 +305,46 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 random_subproduct_subset(&mut self.rng.clone(), &gens[..], k),
             )
         })
-        .take(C3);
+        .take(C3)
+        .collect::<Vec<(Permutation, Permutation)>>();
+        // Iterator of random coset representatives.
         let g_iter = repeat_with(|| {
             record
                 .transversal
                 .keys()
                 .choose(&mut self.rng.clone())
-                .map(|point| representative_raw(&record.transversal, record.base, point.clone()))
+                .map(|point| {
+                    representative_raw(&record.transversal, record.base, point.clone()).unwrap()
+                })
                 .expect("should be present")
         })
         .take(C4 * t);
+        //Sift the original generators.
+        for g in self.chain[0].gens.generators() {
+            let residue = residue_as_words(self.current_chain(), &g);
+            if self.is_trivial_residue(&residue) {
+                todo!();
+            }
+        }
+        //Sift all products of the form g*w_{1,2}.
+        for g in g_iter {
+            for (w1, w2) in subproduct_iter.iter() {
+                let residue = residue_as_words(self.current_chain(), &g.multiply(w1));
+                if self.is_trivial_residue(&residue) {
+                    todo!();
+                }
+                let residue = residue_as_words(self.current_chain(), &g.multiply(w2));
+                if self.is_trivial_residue(&residue) {
+                    todo!();
+                }
+            }
+        }
+    }
+
+    /// Check if a residue acts non-trivially
+    //TODO maybe convert so iterator of values is passed in, for cases where you don't evaluate on all points.
+    fn is_trivial_residue(&self, p_as_words: &Vec<Permutation>) -> bool {
+        (0..self.n).any(|x| p_as_words.iter().fold(x, |accum, perm| perm.apply(accum)) == x)
     }
 
     /// Test that we have a base and strong generating set, rectifying this if we do not.
