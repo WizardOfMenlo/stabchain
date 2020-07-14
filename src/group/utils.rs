@@ -42,6 +42,23 @@ pub fn random_subproduct_subset<T: Rng>(
         })
 }
 
+/// Generate a word representation of a random subproduct of the given generators.
+pub fn random_subproduct_word_subset<T: Rng>(
+    rng: &mut T,
+    gens: &[Permutation],
+    k: usize,
+) -> Vec<Permutation> {
+    gens.choose_multiple(rng, k)
+        .filter(|_| rng.gen::<bool>())
+        .map(|p| p.clone())
+        .collect::<Vec<Permutation>>()
+}
+
+/// Generate random subproduct of the given generators.
+pub fn random_subproduct_word_full<T: Rng>(rng: &mut T, gens: &[Permutation]) -> Vec<Permutation> {
+    random_subproduct_word_subset(rng, gens, gens.len())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
