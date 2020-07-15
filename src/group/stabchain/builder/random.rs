@@ -414,6 +414,12 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 self.up_to_date = self.current_pos - 1;
             }
         }
+        self.sgt();
+        //SGC terminates if it is up to date at position 0.
+        if self.up_to_date != 0 {
+            self.current_pos += 1;
+            self.sgc();
+        }
     }
 
     fn sgt(&mut self) {
