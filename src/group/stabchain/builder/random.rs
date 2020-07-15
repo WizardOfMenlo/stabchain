@@ -382,6 +382,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
                     //Add this residue as a generator
                     record.gens.generators.push(h_star.clone());
+                    //TODO check if this is the correct location
+                    self.check_transversal_augmentation(h_star.clone());
                     //Add a new base point, along with a new record for that base point.
                     let new_base_point = self.selector.moved_point(&h_star);
                     debug_assert!(!self.base.contains(&new_base_point));
