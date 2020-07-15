@@ -207,7 +207,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
-    fn random_schrier_generator_word(&mut self) -> Vec<Permutation> {
+    fn random_schrier_generator_word(&mut self, gens: &[Permutation]) -> Vec<Permutation> {
         //First pick a random coset representative of the group
         let record = &self.chain[self.current_pos];
         let point = record
@@ -220,11 +220,6 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 .expect("Should be in the orbit");
         debug_assert!(apply_permutation_word(coset_representative.iter(), record.base) == *point);
         //Generate a random subword.
-        let gens = self
-            .current_chain()
-            .flat_map(|record| record.gens.generators())
-            .map(|f| f.clone())
-            .collect::<Vec<Permutation>>();
         let w1 = random_subproduct_word_full(&mut self.rng, &gens[..]);
         let k = rand::Rng::gen_range(&mut self.rng, 0, gens.len() / 2 + 1);
         let w2 = random_subproduct_word_subset(&mut self.rng, &gens[..], k);
@@ -349,8 +344,13 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 .sum::<f64>();
         //To see if all generators are discarded.
         let mut all_discarded = true;
+        let gens = self
+            .current_chain()
+            .flat_map(|record| record.gens.generators())
+            .map(|f| f.clone())
+            .collect::<Vec<Permutation>>();
         for _ in 0..random_generations as i32 {
-            let h = self.random_schrier_generator_word();
+            let h = self.random_schrier_generator_word(&gens[..]);
             let (sift, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if sift {
                 //Pick the points that should be evaluated.
