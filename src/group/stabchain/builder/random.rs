@@ -440,20 +440,13 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .map(|f| f.clone())
             .collect::<Vec<Permutation>>();
         let k = rand::Rng::gen_range(&mut self.rng, 0, gens.len() / 2 + 1);
-        //Create an iterator of subproducts w1, w2
-        let subproduct_iter = repeat_with(|| {
-            (
-                random_subproduct_word_full(&mut self.rng.clone(), &gens[..]),
-                random_subproduct_word_subset(&mut self.rng.clone(), &gens[..], k),
-            )
-        })
-        .take(C3)
-        .collect::<Vec<(Vec<Permutation>, Vec<Permutation>)>>();
+        //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
             repeat_with(|| random_subproduct_word_full(&mut self.rng.clone(), &gens[..])).take(C3);
         let subproduct_w2_iter =
             repeat_with(|| random_subproduct_word_subset(&mut self.rng.clone(), &gens[..], k))
                 .take(C3);
+        //Iterleave the two iterators.
         let subproduct_iter: Vec<Vec<Permutation>> =
             subproduct_w1_iter.interleave(subproduct_w2_iter).collect();
         // Iterator of random coset representatives.
