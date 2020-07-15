@@ -210,15 +210,15 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     fn random_schrier_generator_word(&mut self, gens: &[Permutation]) -> Vec<Permutation> {
         //First pick a random coset representative of the group
         let record = &self.chain[self.current_pos];
-        let point = record
+        //Pick a random coset representative.
+        let mut coset_representative = record
             .transversal
             .keys()
             .choose(&mut self.rng)
-            .expect("Should be non empty");
-        let mut coset_representative =
-            representative_raw_as_word(&record.transversal, record.base, *point)
-                .expect("Should be in the orbit");
-        debug_assert!(apply_permutation_word(coset_representative.iter(), record.base) == *point);
+            .map(|point| {
+                representative_raw_as_word(&record.transversal, record.base, *point).unwrap()
+            })
+            .expect("Should be present");
         //Generate a random subword.
         let w1 = random_subproduct_word_full(&mut self.rng, &gens[..]);
         let k = rand::Rng::gen_range(&mut self.rng, 0, gens.len() / 2 + 1);
