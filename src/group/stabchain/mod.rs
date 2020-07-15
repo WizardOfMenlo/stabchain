@@ -11,13 +11,14 @@ use moved_point_selector::MovedPointSelector;
 use std::collections::HashMap;
 
 #[derive(Debug)]
-pub struct Stabchain<P, V> {
-    chain: Vec<StabchainRecord<P, V>>,
+pub struct Stabchain<P, A, V> {
+    chain: Vec<StabchainRecord<P, A, V>>,
 }
 
-impl<P, V> Stabchain<P, V>
+impl<P, A, V> Stabchain<P, A, V>
 where
     P: Permutation,
+    A: Action<P>,
     V: TransversalResolver<P>,
 {
     /// Creates a stabilizer chain, using a selected strategy.
@@ -86,7 +87,7 @@ where
     }
 
     /// Get G^(n)
-    pub fn layer(&self, n: usize) -> Option<&StabchainRecord<P, V>> {
+    pub fn layer(&self, n: usize) -> Option<&StabchainRecord<P, A, V>> {
         self.chain.get(n)
     }
 
@@ -96,8 +97,8 @@ where
     }
 }
 
-impl<P, V> IntoIterator for Stabchain<P, V> {
-    type Item = StabchainRecord<P, V>;
+impl<P, A, V> IntoIterator for Stabchain<P, A, V> {
+    type Item = StabchainRecord<P, A, V>;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -107,10 +108,13 @@ impl<P, V> IntoIterator for Stabchain<P, V> {
 
 /// All the information stored in a layer of the stabilizer chain
 #[derive(Debug, Clone)]
-pub struct StabchainRecord<P, V> {
-    base: usize,
+pub struct StabchainRecord<P, A, V>
+where
+    A: Action<P>,
+{
+    base: A::OrbitT,
     gens: Group<P>,
-    transversal: HashMap<usize, P>,
+    transversal: HashMap<A::OrbitT, P>,
     resolver: V,
 }
 

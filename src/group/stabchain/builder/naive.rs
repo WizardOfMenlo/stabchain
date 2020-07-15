@@ -2,23 +2,25 @@ use super::{MovedPointSelector, Stabchain};
 use crate::group::orbit::abstraction::SimpleTransversalResolver;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
-use crate::perm::Permutation;
+use crate::perm::{Action, Permutation};
 use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
 // Helper struct, used to build the stabilizer chain
-pub struct StabchainBuilderNaive<P, T> {
+pub struct StabchainBuilderNaive<P, A, T> {
     current_pos: usize,
     chain: Vec<StabchainRecord<P, SimpleTransversalResolver>>,
     selector: T,
+    action: A,
 }
 
-impl<P, T> StabchainBuilderNaive<P, T> {
-    pub(super) fn new(selector: T) -> Self {
+impl<P, A, T> StabchainBuilderNaive<P, A, T> {
+    pub(super) fn new(selector: T, action: A) -> Self {
         StabchainBuilderNaive {
             current_pos: 0,
             chain: Vec::new(),
             selector,
+            action,
         }
     }
 
@@ -33,9 +35,10 @@ impl<P, T> StabchainBuilderNaive<P, T> {
     }
 }
 
-impl<P, T> StabchainBuilderNaive<P, T>
+impl<P, A, T> StabchainBuilderNaive<P, A, T>
 where
     P: Permutation,
+    A: Action<P>,
     T: MovedPointSelector<P>,
 {
     fn extend_lower_level(&mut self, p: P) {
@@ -150,9 +153,10 @@ where
     }
 }
 
-impl<P, M> super::Builder<P, SimpleTransversalResolver> for StabchainBuilderNaive<P, M>
+impl<P, A, M> super::Builder<P, SimpleTransversalResolver> for StabchainBuilderNaive<P, A, M>
 where
     P: Permutation,
+    A: Action<P>,
     M: MovedPointSelector<P>,
 {
     fn set_generators(&mut self, gens: &Group<P>) {

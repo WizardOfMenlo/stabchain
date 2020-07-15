@@ -4,7 +4,7 @@ use crate::group::orbit::transversal::factored_transversal::representative_raw;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
-use crate::perm::Permutation;
+use crate::perm::{Action, Permutation};
 use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
@@ -21,18 +21,20 @@ where
 }
 
 // Helper struct, used to build the stabilizer chain
-pub struct StabchainBuilderIFT<P, T> {
+pub struct StabchainBuilderIFT<P, T, A> {
     current_pos: usize,
-    chain: Vec<StabchainRecord<P, FactoredTransversalResolver<SimpleApplication<P>>>>,
+    chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>>>,
     selector: T,
+    action: A,
 }
 
-impl<P, T> StabchainBuilderIFT<P, T> {
-    pub(super) fn new(selector: T) -> Self {
+impl<P, T, A> StabchainBuilderIFT<P, T, A> {
+    pub(super) fn new(selector: T, action: A) -> Self {
         StabchainBuilderIFT {
             current_pos: 0,
             chain: Vec::new(),
             selector,
+            action,
         }
     }
 
@@ -48,10 +50,11 @@ impl<P, T> StabchainBuilderIFT<P, T> {
     }
 }
 
-impl<P, T> StabchainBuilderIFT<P, T>
+impl<P, A, T> StabchainBuilderIFT<P, T, A>
 where
     P: Permutation,
     T: MovedPointSelector<P>,
+    A: Action<P>,
 {
     fn extend_lower_level(&mut self, p: P) {
         self.current_pos += 1;
@@ -165,10 +168,10 @@ where
     }
 }
 
-impl<P, M> super::Builder<P, FactoredTransversalResolver<SimpleApplication<P>>>
-    for StabchainBuilderIFT<P, M>
+impl<P, A, M> super::Builder<P, FactoredTransversalResolver<A>> for StabchainBuilderIFT<P, A, M>
 where
     P: Permutation,
+    A: Action<P>,
     M: MovedPointSelector<P>,
 {
     fn set_generators(&mut self, gens: &Group<P>) {
