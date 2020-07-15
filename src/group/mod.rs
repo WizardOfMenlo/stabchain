@@ -94,6 +94,13 @@ impl Group {
     }
 }
 
+impl<P> Group<P> {
+    /// Get a reference to the generators of the group
+    pub fn generators(&self) -> &[P] {
+        &self.generators[..]
+    }
+}
+
 impl<P> Group<P>
 where
     P: Permutation,
@@ -101,11 +108,6 @@ where
     /// Instantiate the group from some generators
     pub fn new(generators: &[P]) -> Self {
         Self::from_iter(generators.iter().cloned())
-    }
-
-    /// Get a reference to the generators of the group
-    pub fn generators(&self) -> &[P] {
-        &self.generators[..]
     }
 
     /// Computes the orbit of the generator.
