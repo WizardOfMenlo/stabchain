@@ -122,7 +122,7 @@ where
     where
         A: Action<P>,
     {
-        orbit::Orbit::new_with_strategy(self, base, strat)
+        orbit::Orbit::new_with_action(self, base, strat)
     }
 
     /// Computes the transversal from the group generators (use factored transversal instead for memory efficience)

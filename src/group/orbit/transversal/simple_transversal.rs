@@ -13,8 +13,8 @@ use std::collections::{HashMap, VecDeque};
 /// memory intensive. In applications please use FactoredTransversal
 /// (After some testing, it seems that it is also slower computationally,
 /// so don't use unless wanting some pain)
-pub type SimpleTransversal<P, OrbitT = usize> =
-    TransversalSkeleton<P, SimpleTransversalResolver, OrbitT>;
+pub type SimpleTransversal<P, A = SimpleApplication<P>> =
+    TransversalSkeleton<P, SimpleTransversalResolver, A>;
 
 impl<P> SimpleTransversal<P>
 where
@@ -30,16 +30,13 @@ where
     }
 }
 
-impl<P, OrbitT> SimpleTransversal<P, OrbitT>
+impl<P, A> SimpleTransversal<P, A>
 where
     P: Permutation,
-    OrbitT: std::hash::Hash + Eq + Clone,
+    A: Action<P>,
 {
     /// Create from the group
-    pub fn new_with_strategy<A>(g: &Group<P>, base: OrbitT, strategy: A) -> Self
-    where
-        A: Action<P, OrbitT = OrbitT>,
-    {
+    pub fn new_with_strategy(g: &Group<P>, base: A::OrbitT, strategy: A) -> Self {
         Self::from_raw(
             base.clone(),
             transversal(g, base, strategy),

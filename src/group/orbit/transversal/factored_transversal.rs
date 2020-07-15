@@ -12,7 +12,7 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
 /// Contains the base of this traversal, and a factored traversal of the orbit.
 pub type FactoredTransversal<P, A = SimpleApplication<P>> =
-    TransversalSkeleton<P, FactoredTransversalResolver<A>, <A as Action<P>>::OrbitT>;
+    TransversalSkeleton<P, FactoredTransversalResolver<A>, A>;
 
 pub(crate) fn representative_raw<P, S, A>(
     transversal: &HashMap<A::OrbitT, P, S>,

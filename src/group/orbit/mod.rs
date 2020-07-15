@@ -33,7 +33,7 @@ impl<OrbitT> Orbit<OrbitT>
 where
     OrbitT: std::hash::Hash + Eq + Clone,
 {
-    pub fn new_with_strategy<P, A>(g: &Group<P>, w: OrbitT, strat: A) -> Self
+    pub fn new_with_action<P, A>(g: &Group<P>, w: OrbitT, strat: A) -> Self
     where
         P: Permutation,
         A: Action<P, OrbitT = OrbitT>,
