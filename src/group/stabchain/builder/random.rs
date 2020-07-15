@@ -12,6 +12,7 @@ use crate::group::utils::{
 };
 use crate::group::Group;
 use crate::perm::Permutation;
+use itertools::Itertools;
 use rand::rngs::ThreadRng;
 use rand::seq::{IteratorRandom, SliceRandom};
 use rand::thread_rng;
@@ -448,6 +449,13 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         })
         .take(C3)
         .collect::<Vec<(Vec<Permutation>, Vec<Permutation>)>>();
+        let subproduct_w1_iter =
+            repeat_with(|| random_subproduct_word_full(&mut self.rng.clone(), &gens[..])).take(C3);
+        let subproduct_w2_iter =
+            repeat_with(|| random_subproduct_word_subset(&mut self.rng.clone(), &gens[..], k))
+                .take(C3);
+        let subproduct_iter: Vec<Vec<Permutation>> =
+            subproduct_w1_iter.interleave(subproduct_w2_iter).collect();
         // Iterator of random coset representatives.
         let g_iter = repeat_with(|| {
             record
@@ -462,23 +470,24 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 })
                 .expect("should be present")
         })
-        .take(C4 * t)
-        .collect::<Vec<Vec<Permutation>>>();
-        //Sift the original generators.
-        let gens = self.chain[0].gens.generators.clone();
-        for g in gens {
-            self.sgt_test(&vec![g.clone()])
-        }
-        //Sift all products of the form g*w_{1,2}.
-        for g in g_iter {
-            for (w1, w2) in subproduct_iter.iter() {
-                let mut gw1 = g.clone();
-                gw1.extend(w1.clone());
-                self.sgt_test(&gw1);
-                let mut gw2 = g.clone();
-                gw2.extend(w2.clone());
-                self.sgt_test(&gw2);
-            }
+        .take(C4 * t);
+        //Create an iterator that first has the original generators, and then all combintations of each coset representative with each pair of subproducts.
+        let products: Vec<Vec<Permutation>> = self.chain[0]
+            .gens
+            .generators
+            .iter()
+            .map(|p| vec![p.clone()])
+            .chain(g_iter.flat_map(|g| {
+                subproduct_iter.iter().map(move |w| {
+                    let mut gw = g.clone();
+                    gw.extend(w.clone());
+                    gw
+                })
+            }))
+            .collect();
+        //Sift the original generators, and all products of the form g*w_{1,2}.
+        for p in products {
+            self.sgt_test(&p);
         }
     }
 
