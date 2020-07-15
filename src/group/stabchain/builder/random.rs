@@ -374,10 +374,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .collect()
                 };
                 //If any point is not fixed by the residue
-                if evaluated_points
-                    .iter()
-                    .any(|x| apply_permutation_word(h_residue.iter(), *x) == *x)
-                {
+                if !self.is_trivial_residue(&h_residue, evaluated_points) {
                     //Not all permutations have been discarded
                     all_discarded = false;
                     let h_star = h_residue
@@ -488,7 +485,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     ) -> bool {
         points
             .into_iter()
-            .any(|x| apply_permutation_word(p_as_words.iter(), x) == x)
+            .all(|x| apply_permutation_word(p_as_words.iter(), x) == x)
     }
 
     /// Test that we have a base and strong generating set, rectifying this if we do not.
