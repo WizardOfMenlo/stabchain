@@ -26,6 +26,12 @@ pub fn apply_permutation_word<'a>(
     perm_word.into_iter().fold(x, |accum, p| p.apply(accum))
 }
 
+/// Convert from a permutation stored as a word, into a single permutation.
+pub fn collapse_perm_word<'a>(p: impl IntoIterator<Item = &'a Permutation>) -> Permutation {
+    p.into_iter()
+        .fold(Permutation::id(), |accum, perm| accum.multiply(perm))
+}
+
 /// Generate a random subproduct of a random k sized subset of the given generators.
 pub fn random_subproduct_subset<T: Rng>(
     rng: &mut T,
