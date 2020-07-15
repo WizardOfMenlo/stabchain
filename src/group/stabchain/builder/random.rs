@@ -7,7 +7,7 @@ use crate::group::stabchain::element_testing::{
 };
 use crate::group::stabchain::{MovedPointSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{
-    apply_permutation_word, random_subproduct_full, random_subproduct_subset,
+    apply_permutation_word, collapse_perm_word, random_subproduct_full, random_subproduct_subset,
     random_subproduct_word_full, random_subproduct_word_subset,
 };
 use crate::group::Group;
@@ -417,6 +417,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     fn sgt(&mut self) {
+        //Should be at the top of the chain, I think.
+        debug_assert!(self.current_pos == 0);
         //Sum of all "depths". In reality the transversal doesn't have a depth, so we use this as a upper bound.
         let t = self
             .current_chain()
@@ -434,12 +436,12 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         //Create an iterator of subproducts w1, w2
         let subproduct_iter = repeat_with(|| {
             (
-                random_subproduct_full(&mut self.rng.clone(), &gens[..]),
-                random_subproduct_subset(&mut self.rng.clone(), &gens[..], k),
+                random_subproduct_word_full(&mut self.rng.clone(), &gens[..]),
+                random_subproduct_word_subset(&mut self.rng.clone(), &gens[..], k),
             )
         })
         .take(C3)
-        .collect::<Vec<(Permutation, Permutation)>>();
+        .collect::<Vec<(Vec<Permutation>, Vec<Permutation>)>>();
         // Iterator of random coset representatives.
         let g_iter = repeat_with(|| {
             record
@@ -447,31 +449,54 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 .keys()
                 .choose(&mut self.rng.clone())
                 .map(|point| {
-                    representative_raw(&record.transversal, record.base, point.clone()).unwrap()
+                    vec![
+                        representative_raw(&record.transversal, record.base, point.clone())
+                            .unwrap(),
+                    ]
                 })
                 .expect("should be present")
         })
-        .take(C4 * t);
+        .take(C4 * t)
+        .collect::<Vec<Vec<Permutation>>>();
         //Sift the original generators.
-        for g in self.chain[0].gens.generators() {
-            let residue = residue_as_words(self.current_chain(), &g);
-            if self.is_trivial_residue_all_points(&residue) {
-                todo!();
-            }
+        let gens = self.chain[0].gens.generators.clone();
+        for g in gens {
+            self.sgt_test(&vec![g.clone()])
         }
         //Sift all products of the form g*w_{1,2}.
         for g in g_iter {
             for (w1, w2) in subproduct_iter.iter() {
-                let residue = residue_as_words(self.current_chain(), &g.multiply(w1));
-                if self.is_trivial_residue_all_points(&residue) {
-                    todo!();
-                }
-                let residue = residue_as_words(self.current_chain(), &g.multiply(w2));
-                if self.is_trivial_residue_all_points(&residue) {
-                    todo!();
-                }
+                let mut gw1 = g.clone();
+                gw1.extend(w1.clone());
+                self.sgt_test(&gw1);
+                let mut gw2 = g.clone();
+                gw2.extend(w2.clone());
+                self.sgt_test(&gw2);
             }
         }
+    }
+
+    fn sgt_test(&mut self, p: &Vec<Permutation>) {
+        let (sift, residue) = residue_as_words_from_words(self.current_chain(), p);
+        let original_position = self.current_pos;
+        if self.is_trivial_residue_all_points(&residue) {
+            //Distinguish between two cases
+            //If this occurs then the element will have acted non-trivially on the current orbit.
+            if residue.len() == p.len() {
+                //Add this permutation to the generators of the current orbit, then invoke the strong generator constructor.
+                self.chain[self.current_pos]
+                    .gens
+                    .generators
+                    .push(collapse_perm_word(p));
+            } else {
+                //Find the position at which this acted non-trivially.
+                let j = self.current_pos + residue.len() - p.len();
+                self.current_pos = j;
+            }
+            self.sgc();
+        }
+        //Reset the position.
+        self.current_pos = original_position;
     }
 
     /// Wrapper function to check all points of the permutation domain.
