@@ -415,7 +415,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             }
         }
         self.sgt();
-        //SGC terminates if it is up to date at position 0.
+        //SGC terminates if it is up to date at position 0; otherwise moving onto the next layers.
         if self.up_to_date != 0 {
             self.current_pos += 1;
             self.sgc();
