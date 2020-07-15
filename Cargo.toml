@@ -1,15 +1,16 @@
 [package]
-name = "stabchain"
-version = "0.1.0"
 authors = ["Giacomo Fenzi <giacomofenzi@outlook.com>"]
 edition = "2018"
+name = "stabchain"
+version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version = "1.0", features= ["derive", "rc"] }
+itertools = "0.9"
 num = "0.3"
 rand = "0.7"
+serde = {version = "1.0", features = ["derive", "rc"]}
 
 [dev-dependencies]
 criterion = "0.3"
@@ -19,5 +20,5 @@ criterion = "0.3"
 bench = false
 
 [[bench]]
-name = "entry"
 harness = false
+name = "entry"
