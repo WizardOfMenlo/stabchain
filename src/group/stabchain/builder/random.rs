@@ -218,7 +218,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
         random_gens.iter_mut().for_each(|gw| {
             //Take the inverse of the word we have
-            let gw_inv = gw.clone().iter().map(|p| p.inv()).rev().collect();
+            let gw_inv = gw.iter().map(|p| p.inv()).rev().collect();
             //Then get the residue of the inverse, adding it onto our schrier generator.
             let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), &gw_inv);
             gw.extend(gw_bar);
