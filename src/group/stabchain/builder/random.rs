@@ -246,7 +246,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 })
                 .expect("should be present")
         })
-        .take(subproducts * t);
+        .take(coset_representatives * t);
         //Create an iterator that contains combintations of each coset representative with each pair of subproducts.
         g_iter
             .flat_map(|g| {
