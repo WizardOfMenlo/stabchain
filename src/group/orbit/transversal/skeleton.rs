@@ -1,3 +1,5 @@
+//! Utility to avoid code duplication in the context of transversals
+
 use super::Transversal;
 use crate::group::orbit::abstraction::TransversalResolver;
 use crate::perm::Action;

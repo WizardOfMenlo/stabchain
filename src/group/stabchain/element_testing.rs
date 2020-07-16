@@ -1,3 +1,5 @@
+//! Utilities for testing element membership and coset representatives
+
 use super::StabchainRecord;
 use crate::group::orbit::abstraction::TransversalResolver;
 use crate::perm::{Action, Permutation};

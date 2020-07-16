@@ -1,3 +1,5 @@
+//! Utilities for selecting base points of a stabilizer chain
+
 use crate::perm::Permutation;
 
 /// A very small trait, used to seamlessly switch between

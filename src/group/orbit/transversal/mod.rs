@@ -1,3 +1,5 @@
+//! Various utilities related to transversals
+
 pub mod factored_transversal;
 pub mod simple_transversal;
 pub mod skeleton;
@@ -10,6 +12,8 @@ use crate::perm::Action;
 
 // TODO: Note that a lot of this was thought with Orbit : Copy in mind. Now that this is not the case anymore it might
 // be worthwhile to optimize
+
+/// A trait that the different implementations of transversals should implement
 #[allow(clippy::len_without_is_empty)]
 pub trait Transversal<P, A = SimpleApplication<P>>
 where

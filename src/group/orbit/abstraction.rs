@@ -1,3 +1,6 @@
+//! Some useful abstractions to abstract over the two different kind of transversals.
+//! In particular useful for stabchain as it allows to build factored transversal quite transparently
+
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
 use std::collections::HashMap;
@@ -7,6 +10,7 @@ pub trait TransversalResolver<P, A = SimpleApplication<P>>: Default
 where
     A: Action<P>,
 {
+    /// The transversal that can be built from a HashMap by this resolver
     type AssociatedTransversal: super::transversal::Transversal<P, A>;
 
     /// Compute the representative

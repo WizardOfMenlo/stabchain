@@ -1,16 +1,23 @@
+//! Utility for generating random elements of a subgroup
+
 use crate::perm::{DefaultPermutation, Permutation};
 use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::cmp::max;
+
+/// Calling random_element from this struct repetedly will generate random permutations in the subgroup
 #[derive(Debug)]
-pub struct RandPerm {
+pub struct RandPerm<P = DefaultPermutation> {
     size: usize,
     rng: ThreadRng,
-    gen_elements: Vec<DefaultPermutation>,
-    accum: DefaultPermutation,
+    gen_elements: Vec<P>,
+    accum: P,
 }
 
-impl RandPerm {
+impl<P> RandPerm<P>
+where
+    P: Permutation,
+{
     /// Construct and initialise a random permutation generator.
     /// ```
     /// use stabchain::perm::{Permutation, DefaultPermutation};
@@ -18,23 +25,19 @@ impl RandPerm {
     /// let generators = &[DefaultPermutation::from_images(&[1, 0]), DefaultPermutation::from_images(&[0, 2, 3, 1])];
     /// let rand_perm = RandPerm::from_generators(11, generators, 50);
     /// ```
-    pub fn from_generators(
-        min_size: usize,
-        generators: &[DefaultPermutation],
-        initial_runs: usize,
-    ) -> Self {
+    pub fn from_generators(min_size: usize, generators: &[P], initial_runs: usize) -> Self {
         let rng = rand::thread_rng();
-        let mut gen_elements: Vec<DefaultPermutation> = if !generators.is_empty() {
+        let mut gen_elements: Vec<_> = if !generators.is_empty() {
             generators.to_vec()
         } else {
-            vec![DefaultPermutation::id()]
+            vec![P::id()]
         };
         let k = gen_elements.len();
         //Repeat elements if there aren't enough generators.
         for i in k..min_size {
             gen_elements.push(gen_elements[(i - k) % k].clone());
         }
-        let accum = DefaultPermutation::id();
+        let accum = P::id();
         let size = max(min_size, k);
         let mut rand = RandPerm {
             size,
@@ -57,7 +60,7 @@ impl RandPerm {
     /// let mut rand_perm = RandPerm::from_generators(11, generators, 50);
     /// rand_perm.random_permutation();
     /// ```
-    pub fn random_permutation(&mut self) -> DefaultPermutation {
+    pub fn random_permutation(&mut self) -> P {
         let s = self.rng.gen_range(0, self.size);
         let mut t = s;
         // Generate another index that isn't equal to s.
@@ -112,7 +115,7 @@ mod tests {
     fn closure_larger_disjoint() {
         use crate::group::Group;
         use crate::perm::export::CyclePermutation;
-        let g = Group::new(&[
+        let g = Group::<DefaultPermutation>::new(&[
             CyclePermutation::single_cycle(&[1, 2, 4]).into(),
             CyclePermutation::single_cycle(&[3, 5, 8]).into(),
             CyclePermutation::single_cycle(&[7, 9]).into(),

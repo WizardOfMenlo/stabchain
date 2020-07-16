@@ -1,3 +1,5 @@
+//! Transversal using a Schrier Vector approach to save memory over standard
+
 use super::skeleton::TransversalSkeleton;
 use crate::group::orbit::transversal::Transversal;
 use crate::group::Group;
@@ -54,7 +56,7 @@ where
     /// let fc = FactoredTransversal::new(&Group::symmetric(10), 1);
     ///```
     pub fn new(g: &Group<P>, base: usize) -> Self {
-        Self::new_with_strategy(g, base, &SimpleApplication::default())
+        Self::new_with_action(g, base, &SimpleApplication::default())
     }
 
     /// Given a set of generating elements and element, construct the factored transversal.
@@ -74,7 +76,8 @@ where
     P: Permutation,
     A: Action<P>,
 {
-    pub fn new_with_strategy(g: &Group<P>, base: A::OrbitT, strat: &A) -> Self {
+    /// Build a factored transversal using a predefined action
+    pub fn new_with_action(g: &Group<P>, base: A::OrbitT, strat: &A) -> Self {
         FactoredTransversal::from_raw(
             base.clone(),
             factored_transversal(g, base, strat),

@@ -1,3 +1,5 @@
+//! Mod which contains the definition of a stabilizer chain, complete with all the ways of creating such a chain
+
 pub mod builder;
 pub mod element_testing;
 pub mod moved_point_selector;
@@ -11,6 +13,8 @@ use moved_point_selector::MovedPointSelector;
 
 use std::collections::HashMap;
 
+/// A stabilizer chain. Each level of the chain represents a subgroup of the
+/// preceding group, which usually fixes a single point.
 pub struct Stabchain<P, V, A = SimpleApplication<P>>
 where
     A: Action<P>,

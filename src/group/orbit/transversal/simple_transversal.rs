@@ -1,3 +1,5 @@
+//! A transversal which naively stores the first representative it finds
+
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
@@ -36,7 +38,7 @@ where
     A: Action<P>,
 {
     /// Create from the group
-    pub fn new_with_strategy(g: &Group<P>, base: A::OrbitT, strategy: &A) -> Self {
+    pub fn new_with_action(g: &Group<P>, base: A::OrbitT, strategy: &A) -> Self {
         Self::from_raw(
             base.clone(),
             transversal(g, base, strategy),
