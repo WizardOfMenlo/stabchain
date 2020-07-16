@@ -350,15 +350,13 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
 
     fn sgc(&mut self) {
         let mut record = self.chain[self.current_pos].clone();
-        //If the transvesal hasn't been calculated, then calculate it. Shouldn't need the second check, as the trivial group should have an orbit?
-        if record.transversal.is_empty() && record.group().generators().is_empty() {
-            record.transversal = factored_transversal_complete_opt(&record.group(), record.base);
+        //If the transvesal hasn't been calculated, then calculate it. If the generators are non-empty, then the orbit should be larger than 1.
+        if record.transversal.len() == 1 && !record.group().generators().is_empty() {
+            record.transversal.extend(factored_transversal_complete_opt(
+                &record.group(),
+                record.base,
+            ));
         }
-        let random_generations = 64.0
-            * self
-                .current_chain()
-                .map(|record| (record.transversal.len() as f64).ln())
-                .sum::<f64>();
         //To see if all generators are discarded.
         let mut all_discarded = true;
         let gens = self
