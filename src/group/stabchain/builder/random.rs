@@ -208,39 +208,55 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
-    fn random_schrier_generator_word(&mut self, gens: &[Permutation]) -> Vec<Permutation> {
-        //First pick a random coset representative of the group
+    fn random_schrier_generator_word(
+        &mut self,
+        subproducts: usize,
+        coset_representatives: usize,
+        gens: &[Permutation],
+    ) -> Vec<Vec<Permutation>> {
+        //Sum of all "depths". In reality the transversal doesn't have a depth, so we use this as a upper bound.
+        let t = self
+            .current_chain()
+            .map(|record| (record.transversal.len() as f64).log2())
+            .sum::<f64>()
+            .floor() as usize;
         let record = &self.chain[self.current_pos];
-        //Pick a random coset representative.
-        let mut coset_representative = record
-            .transversal
-            .keys()
-            .choose(&mut self.rng)
-            .map(|point| {
-                representative_raw_as_word(&record.transversal, record.base, *point).unwrap()
-            })
-            .expect("Should be present");
-        //Generate a random subword.
-        let w1 = random_subproduct_word_full(&mut self.rng, &gens[..]);
         let k = rand::Rng::gen_range(&mut self.rng, 0, gens.len() / 2 + 1);
-        let w2 = random_subproduct_word_subset(&mut self.rng, &gens[..], k);
-        let g = gens.choose(&mut self.rng).expect("Should be non empty");
-        //Combine this into a random subword, randomly including the generator or not.
-        //This is equivalent to w1*(*g^e)*w2 where e is generated from a uniform distribution in [0,1]
-        //Multiply the coset representive by the subword.
-        coset_representative.extend(w1);
-        if rand::Rng::gen::<bool>(&mut self.rng) {
-            coset_representative.push(g.clone());
-        }
-        coset_representative.extend(w2);
-        //Get the residue of coset_representative*subword
-        let residue_as_words =
-            residue_as_words_from_words(self.current_chain(), &coset_representative);
-        //Take it's inverse as a word, i.e reverse the order and replace each entry with the inverse.
-        let residue_inverse_as_word = residue_as_words.1.iter().map(|p| p.inv()).rev();
-        //Combine everything together as a single permutation.
-        coset_representative.extend(residue_inverse_as_word);
-        coset_representative
+        //Create an iterator of subproducts w and w2
+        let subproduct_w1_iter =
+            repeat_with(|| random_subproduct_word_full(&mut self.rng.clone(), &gens[..]))
+                .take(subproducts);
+        let subproduct_w2_iter =
+            repeat_with(|| random_subproduct_word_subset(&mut self.rng.clone(), &gens[..], k))
+                .take(subproducts);
+        //Iterleave the two iterators.
+        let subproduct_iter: Vec<Vec<Permutation>> =
+            subproduct_w1_iter.interleave(subproduct_w2_iter).collect();
+        // Iterator of random coset representatives.
+        let g_iter = repeat_with(|| {
+            record
+                .transversal
+                .keys()
+                .choose(&mut self.rng.clone())
+                .map(|point| {
+                    vec![
+                        representative_raw(&record.transversal, record.base, point.clone())
+                            .unwrap(),
+                    ]
+                })
+                .expect("should be present")
+        })
+        .take(subproducts * t);
+        //Create an iterator that contains combintations of each coset representative with each pair of subproducts.
+        g_iter
+            .flat_map(|g| {
+                subproduct_iter.iter().map(move |w| {
+                    let mut gw = g.clone();
+                    gw.extend(w.clone());
+                    gw
+                })
+            })
+            .collect()
     }
 
     /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
@@ -350,8 +366,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .flat_map(|record| record.gens.generators())
             .map(|f| f.clone())
             .collect::<Vec<Permutation>>();
-        for _ in 0..random_generations as i32 {
-            let h = self.random_schrier_generator_word(&gens[..]);
+        for h in self.random_schrier_generator_word(C1, C2, &gens[..]) {
             let (sift, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if sift {
                 //Pick the points that should be evaluated.
@@ -426,57 +441,20 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     fn sgt(&mut self) {
         //Should be at the top of the chain, I think.
         debug_assert!(self.current_pos == 0);
-        //Sum of all "depths". In reality the transversal doesn't have a depth, so we use this as a upper bound.
-        let t = self
-            .current_chain()
-            .map(|record| (record.transversal.len() as f64).log2())
-            .sum::<f64>()
-            .floor() as usize;
-        let record = &self.chain[self.current_pos];
         //The union of the generator sets in the chain to this point.
         let gens = self
             .current_chain()
             .flat_map(|record| record.gens.generators())
             .map(|f| f.clone())
             .collect::<Vec<Permutation>>();
-        let k = rand::Rng::gen_range(&mut self.rng, 0, gens.len() / 2 + 1);
-        //Create an iterator of subproducts w and w2
-        let subproduct_w1_iter =
-            repeat_with(|| random_subproduct_word_full(&mut self.rng.clone(), &gens[..])).take(C3);
-        let subproduct_w2_iter =
-            repeat_with(|| random_subproduct_word_subset(&mut self.rng.clone(), &gens[..], k))
-                .take(C3);
-        //Iterleave the two iterators.
-        let subproduct_iter: Vec<Vec<Permutation>> =
-            subproduct_w1_iter.interleave(subproduct_w2_iter).collect();
-        // Iterator of random coset representatives.
-        let g_iter = repeat_with(|| {
-            record
-                .transversal
-                .keys()
-                .choose(&mut self.rng.clone())
-                .map(|point| {
-                    vec![
-                        representative_raw(&record.transversal, record.base, point.clone())
-                            .unwrap(),
-                    ]
-                })
-                .expect("should be present")
-        })
-        .take(C4 * t);
-        //Create an iterator that first has the original generators, and then all combintations of each coset representative with each pair of subproducts.
+        //Create an iterator that first has the original generators, and then the random schrier generators.
         let products: Vec<Vec<Permutation>> = self.chain[0]
             .gens
             .generators
+            .clone()
             .iter()
             .map(|p| vec![p.clone()])
-            .chain(g_iter.flat_map(|g| {
-                subproduct_iter.iter().map(move |w| {
-                    let mut gw = g.clone();
-                    gw.extend(w.clone());
-                    gw
-                })
-            }))
+            .chain(self.random_schrier_generator_word(C3, C4, &gens[..]))
             .collect();
         //Sift the original generators, and all products of the form g*w_{1,2}.
         for p in products {
@@ -514,7 +492,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.is_trivial_residue(p_as_words, 0..self.n)
     }
 
-    /// Check if a residue acts non-trivially
+    /// Check if a residue acts trivially on a set of points.
     fn is_trivial_residue(
         &self,
         p_as_words: &Vec<Permutation>,
