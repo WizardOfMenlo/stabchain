@@ -90,7 +90,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
 
     /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
     fn random_schrier_generators_as_word(
-        &mut self,
+        &self,
         subproducts: usize,
         coset_representatives: usize,
         gens: &[Permutation],
@@ -102,7 +102,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .sum::<f64>()
             .floor() as usize;
         let record = &self.chain[self.current_pos];
-        let k = rand::Rng::gen_range(&mut self.rng, 0, gens.len() / 2 + 1);
+        let k = rand::Rng::gen_range(&mut self.rng.clone(), 0, gens.len() / 2 + 1);
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
             repeat_with(|| random_subproduct_word_full(&mut self.rng.clone(), &gens[..]))
@@ -132,6 +132,11 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 subproduct_iter.iter().map(move |w| {
                     let mut gw = g.clone();
                     gw.extend(w.clone());
+                    //Take the inverse of the word we have
+                    let gw_inv = gw.clone().iter().map(|p| p.inv()).rev().collect();
+                    //Then get the residue of the inverse, adding it onto our schrier generator.
+                    let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), &gw_inv);
+                    gw.extend(gw_bar);
                     gw
                 })
             })
@@ -228,6 +233,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     fn sgc(&mut self) {
+        println!("SGC {}", self.current_pos);
         let mut record = self.chain[self.current_pos].clone();
         //If the transvesal hasn't been calculated, then calculate it. If the generators are non-empty, then the orbit should be larger than 1.
         if record.transversal.len() == 1 && !record.group().generators().is_empty() {
@@ -287,6 +293,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     //Add a new base point, along with a new record for that base point.
                     let new_base_point = self.selector.moved_point(&h_star);
                     debug_assert!(!self.base.contains(&new_base_point));
+                    dbg!(new_base_point);
                     self.base.push(new_base_point);
                     let record = StabchainRecord::new(
                         new_base_point,
@@ -323,6 +330,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     fn sgt(&mut self) {
+        println!("SGT");
         let original_position = self.current_pos;
         self.current_pos = 0;
         //Should be at the top of the chain, I think.
