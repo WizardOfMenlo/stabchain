@@ -2,9 +2,7 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::factored_transversal::{
     factored_transversal_complete_opt, representative_raw, representative_raw_as_word,
 };
-use crate::group::stabchain::element_testing::{
-    is_in_group, residue_as_words, residue_as_words_from_words,
-};
+use crate::group::stabchain::element_testing::{residue_as_words, residue_as_words_from_words};
 use crate::group::stabchain::{MovedPointSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{
     apply_permutation_word, collapse_perm_word, random_subproduct_full, random_subproduct_subset,
@@ -16,12 +14,10 @@ use itertools::Itertools;
 use rand::rngs::ThreadRng;
 use rand::seq::{IteratorRandom, SliceRandom};
 use rand::thread_rng;
-use std::cmp::min;
 use std::collections::{HashMap, VecDeque};
 use std::iter::Iterator;
 use std::iter::{repeat_with, FromIterator};
 
-const C: f32 = 10.0;
 //Constants for subproduct generation
 const C1: usize = 10;
 const C2: usize = 10;
@@ -124,10 +120,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 .keys()
                 .choose(&mut self.rng.clone())
                 .map(|point| {
-                    vec![
-                        representative_raw(&record.transversal, record.base, point.clone())
-                            .unwrap(),
-                    ]
+                    representative_raw_as_word(&record.transversal, record.base, point.clone())
+                        .unwrap()
                 })
                 .expect("should be present")
         })
