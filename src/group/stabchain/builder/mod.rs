@@ -12,19 +12,19 @@ mod naive;
 /// A builder is a datastructure to be used for constructing
 /// a stabilizer chain. While the ultimate record is the same for any kind of
 /// chain, there are some very real differences in performance that can occur
-pub trait Builder<P, A, S>
+pub trait Builder<P, V, A>
 where
     A: Action<P>,
 {
     fn set_generators(&mut self, gens: &Group<P>);
-    fn build(self) -> Stabchain<P, A, S>;
+    fn build(self) -> Stabchain<P, V, A>;
 }
 
 /// A strategy is a lightweight struct that allows to
 /// (hopefully at compile time plz compiler) select which builder to use
 pub trait BuilderStrategy<P> {
     type Action: Action<P>;
-    type BuilderT: Builder<P, Self::Action, Self::Transversal>;
+    type BuilderT: Builder<P, Self::Transversal, Self::Action>;
 
     // Note, typically Transversal = BuilderT::Transversal (need unstable)
     type Transversal: TransversalResolver<P, Self::Action>;
@@ -50,7 +50,7 @@ impl<A, S> NaiveBuilderStrategy<A, S> {
     }
 }
 
-impl<P, A, S> BuilderStrategy<P> for NaiveBuilderStrategy<A, S>
+impl<P, S, A> BuilderStrategy<P> for NaiveBuilderStrategy<A, S>
 where
     P: Permutation,
     A: Action<P>,
@@ -58,7 +58,7 @@ where
 {
     type Action = A;
     type Transversal = SimpleTransversalResolver;
-    type BuilderT = naive::StabchainBuilderNaive<P, A, S>;
+    type BuilderT = naive::StabchainBuilderNaive<P, S, A>;
 
     fn make_builder(self) -> Self::BuilderT {
         naive::StabchainBuilderNaive::new(self.selector, self.action)
@@ -79,7 +79,7 @@ impl<A, S> IFTBuilderStrategy<A, S> {
     }
 }
 
-impl<P, A, S> BuilderStrategy<P> for IFTBuilderStrategy<A, S>
+impl<P, S, A> BuilderStrategy<P> for IFTBuilderStrategy<A, S>
 where
     P: Permutation,
     A: Action<P>,
@@ -87,7 +87,7 @@ where
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
-    type BuilderT = ift::StabchainBuilderIFT<P, A, S>;
+    type BuilderT = ift::StabchainBuilderIFT<P, S, A>;
 
     fn make_builder(self) -> Self::BuilderT {
         ift::StabchainBuilderIFT::new(self.selector, self.action)

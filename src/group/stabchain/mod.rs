@@ -4,27 +4,28 @@ pub mod moved_point_selector;
 
 use crate::group::orbit::abstraction::TransversalResolver;
 use crate::group::Group;
+use crate::perm::actions::SimpleApplication;
 use crate::perm::*;
 use builder::{Builder, BuilderStrategy};
 use moved_point_selector::MovedPointSelector;
 
 use std::collections::HashMap;
 
-pub struct Stabchain<P, A, V>
+pub struct Stabchain<P, V, A = SimpleApplication<P>>
 where
     A: Action<P>,
 {
-    chain: Vec<StabchainRecord<P, A, V>>,
+    chain: Vec<StabchainRecord<P, V, A>>,
 }
 
-impl<P, A, V> Stabchain<P, A, V>
+impl<P, V, A> Stabchain<P, V, A>
 where
     P: Permutation,
     A: Action<P>,
     V: TransversalResolver<P, A>,
 {
     /// Creates a stabilizer chain, using a selected strategy.
-    pub fn new_with_strategy<S, B: Builder<P, A, V>>(g: &Group<P>, build_strategy: S) -> Self
+    pub fn new_with_strategy<S, B: Builder<P, V, A>>(g: &Group<P>, build_strategy: S) -> Self
     where
         S: BuilderStrategy<P, Action = A, Transversal = V, BuilderT = B>,
     {
@@ -34,7 +35,7 @@ where
     }
 
     // Utility to get the chain
-    fn get_chain_at_layer(&self, n: usize) -> impl Iterator<Item = &StabchainRecord<P, A, V>> {
+    fn get_chain_at_layer(&self, n: usize) -> impl Iterator<Item = &StabchainRecord<P, V, A>> {
         self.chain.iter().skip(n)
     }
 
@@ -89,21 +90,21 @@ where
     }
 
     /// Get G^(n)
-    pub fn layer(&self, n: usize) -> Option<&StabchainRecord<P, A, V>> {
+    pub fn layer(&self, n: usize) -> Option<&StabchainRecord<P, V, A>> {
         self.chain.get(n)
     }
 
     /// Get an iterator over the records
-    pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord<P, A, V>> {
+    pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord<P, V, A>> {
         self.chain.iter()
     }
 }
 
-impl<P, A, V> IntoIterator for Stabchain<P, A, V>
+impl<P, V, A> IntoIterator for Stabchain<P, V, A>
 where
     A: Action<P>,
 {
-    type Item = StabchainRecord<P, A, V>;
+    type Item = StabchainRecord<P, V, A>;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -113,7 +114,7 @@ where
 
 /// All the information stored in a layer of the stabilizer chain
 #[derive(Debug, Clone)]
-pub struct StabchainRecord<P, A, V>
+pub struct StabchainRecord<P, V, A = SimpleApplication<P>>
 where
     A: Action<P>,
 {
@@ -123,7 +124,7 @@ where
     resolver: V,
 }
 
-impl<P, A, V> StabchainRecord<P, A, V>
+impl<P, V, A> StabchainRecord<P, V, A>
 where
     A: Action<P>,
 {
@@ -138,7 +139,7 @@ where
     }
 }
 
-impl<P, A, V> StabchainRecord<P, A, V>
+impl<P, V, A> StabchainRecord<P, V, A>
 where
     P: Permutation,
     A: Action<P>,
@@ -167,7 +168,7 @@ where
 
 use std::fmt;
 
-impl<P, A, V> fmt::Display for Stabchain<P, A, V>
+impl<P, V, A> fmt::Display for Stabchain<P, V, A>
 where
     P: fmt::Display + Permutation,
     A: Action<P>,
@@ -183,7 +184,7 @@ where
     }
 }
 
-impl<P, A, V> fmt::Display for StabchainRecord<P, A, V>
+impl<P, V, A> fmt::Display for StabchainRecord<P, V, A>
 where
     P: fmt::Display + Permutation,
     A: Action<P>,
@@ -200,7 +201,7 @@ mod tests {
     use super::*;
     use crate::group::orbit::transversal::Transversal;
 
-    fn check_well_formed_chain<P, A, V>(s: &Stabchain<P, A, V>)
+    fn check_well_formed_chain<P, V, A>(s: &Stabchain<P, V, A>)
     where
         P: Permutation,
         V: TransversalResolver<P, A>,

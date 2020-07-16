@@ -4,7 +4,7 @@ use crate::perm::{Action, Permutation};
 
 /// Given a stabilizer chain, computes whether the given element is in the group
 pub fn is_in_group<'a, P, A, V>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<P, A, V>>,
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
     p: &P,
 ) -> bool
 where
@@ -41,7 +41,7 @@ where
 /// Given a stabilizer chain, computes a list of coset representatives of the given element if it is in the group
 /// So that p == s_m s_m-1 ... s_1
 pub fn coset_representative<'a, P, A, V>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<P, A, V>>,
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
     p: &P,
 ) -> Option<Vec<P>>
 where

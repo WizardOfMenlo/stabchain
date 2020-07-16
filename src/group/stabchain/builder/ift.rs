@@ -3,22 +3,23 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::factored_transversal::representative_raw;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
+use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
 use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
 // Helper struct, used to build the stabilizer chain
-pub struct StabchainBuilderIFT<P, A, S>
+pub struct StabchainBuilderIFT<P, S, A = SimpleApplication<P>>
 where
     A: Action<P>,
 {
     current_pos: usize,
-    chain: Vec<StabchainRecord<P, A, FactoredTransversalResolver<A>>>,
+    chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
     selector: S,
     action: A,
 }
 
-impl<P, A, S> StabchainBuilderIFT<P, A, S>
+impl<P, S, A> StabchainBuilderIFT<P, S, A>
 where
     A: Action<P>,
 {
@@ -37,12 +38,12 @@ where
 
     fn current_chain(
         &self,
-    ) -> impl Iterator<Item = &StabchainRecord<P, A, FactoredTransversalResolver<A>>> {
+    ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
         self.chain.iter().skip(self.current_pos)
     }
 }
 
-impl<P, A, S> StabchainBuilderIFT<P, A, S>
+impl<P, S, A> StabchainBuilderIFT<P, S, A>
 where
     P: Permutation,
     S: MovedPointSelector<P, A::OrbitT>,
@@ -185,7 +186,7 @@ where
     }
 }
 
-impl<P, A, S> super::Builder<P, A, FactoredTransversalResolver<A>> for StabchainBuilderIFT<P, A, S>
+impl<P, S, A> super::Builder<P, FactoredTransversalResolver<A>, A> for StabchainBuilderIFT<P, S, A>
 where
     P: Permutation,
     A: Action<P>,
@@ -198,7 +199,7 @@ where
         }
     }
 
-    fn build(self) -> Stabchain<P, A, FactoredTransversalResolver<A>> {
+    fn build(self) -> Stabchain<P, FactoredTransversalResolver<A>, A> {
         Stabchain { chain: self.chain }
     }
 }

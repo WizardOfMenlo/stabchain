@@ -2,22 +2,23 @@ use super::{MovedPointSelector, Stabchain};
 use crate::group::orbit::abstraction::SimpleTransversalResolver;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
+use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
 use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
 // Helper struct, used to build the stabilizer chain
-pub struct StabchainBuilderNaive<P, A, S>
+pub struct StabchainBuilderNaive<P, S, A = SimpleApplication<P>>
 where
     A: Action<P>,
 {
     current_pos: usize,
-    chain: Vec<StabchainRecord<P, A, SimpleTransversalResolver>>,
+    chain: Vec<StabchainRecord<P, SimpleTransversalResolver, A>>,
     selector: S,
     action: A,
 }
 
-impl<P, A, S> StabchainBuilderNaive<P, A, S>
+impl<P, S, A> StabchainBuilderNaive<P, S, A>
 where
     A: Action<P>,
 {
@@ -36,16 +37,16 @@ where
 
     fn current_chain(
         &self,
-    ) -> impl Iterator<Item = &StabchainRecord<P, A, SimpleTransversalResolver>> {
+    ) -> impl Iterator<Item = &StabchainRecord<P, SimpleTransversalResolver, A>> {
         self.chain.iter().skip(self.current_pos)
     }
 }
 
-impl<P, A, T> StabchainBuilderNaive<P, A, T>
+impl<P, S, A> StabchainBuilderNaive<P, S, A>
 where
     P: Permutation,
     A: Action<P>,
-    T: MovedPointSelector<P, A::OrbitT>,
+    S: MovedPointSelector<P, A::OrbitT>,
 {
     fn extend_lower_level(&mut self, p: P) {
         self.current_pos += 1;
@@ -159,7 +160,7 @@ where
     }
 }
 
-impl<P, A, S> super::Builder<P, A, SimpleTransversalResolver> for StabchainBuilderNaive<P, A, S>
+impl<P, S, A> super::Builder<P, SimpleTransversalResolver, A> for StabchainBuilderNaive<P, S, A>
 where
     P: Permutation,
     A: Action<P>,
@@ -172,7 +173,7 @@ where
         }
     }
 
-    fn build(self) -> Stabchain<P, A, SimpleTransversalResolver> {
+    fn build(self) -> Stabchain<P, SimpleTransversalResolver, A> {
         Stabchain { chain: self.chain }
     }
 }
