@@ -213,7 +213,17 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .flat_map(|record| record.gens.generators())
             .map(|f| f.clone())
             .collect::<Vec<Permutation>>();
-        for h in self.random_schrier_generators_as_word(C1, C2, &gens[..]) {
+        //Random products of the form gw
+        let mut random_gens = self.random_schrier_generators_as_word(C1, C2, &gens[..]);
+        //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
+        random_gens.iter_mut().for_each(|gw| {
+            //Take the inverse of the word we have
+            let gw_inv = gw.clone().iter().map(|p| p.inv()).rev().collect();
+            //Then get the residue of the inverse, adding it onto our schrier generator.
+            let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), &gw_inv);
+            gw.extend(gw_bar);
+        });
+        for h in random_gens {
             let (sift, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if sift {
                 //Pick the points that should be evaluated.
