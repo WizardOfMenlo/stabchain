@@ -68,7 +68,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         Stabchain { chain: self.chain }
     }
 
-    fn construct_strong_generating_set(&mut self, group: &Group, upper_bound: usize) {
+    fn construct_strong_generating_set(&mut self, group: &Group) {
         //Edge case for trivial group.
         if group.generators().is_empty() {
             return;
@@ -80,135 +80,10 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .map(|gen| gen.lmp().expect("Should not be the identity."))
             .max()
             .unwrap_or(0);
-        let mut upper_bound = upper_bound;
-        let moved_point = 0; //todo check if this is correct?
-        let record = StabchainRecord::new(
-            moved_point,
-            group.clone(),
-            [(moved_point, Permutation::id())].iter().cloned().collect(),
-        );
-        self.base.push(moved_point);
-        debug_assert!(self.base.len() == 1);
-        self.chain.push(record);
-        for g in group.generators() {
-            // If g has a non trivial residue
-            if !is_in_group(self.current_chain(), &g) {
-                let j = self.selector.moved_point(&g);
-                //Evaluate points less than j.
-                for i in (0..=j).rev() {
-                    //Try complete the subgroup, increasing the upper bound if it fails.
-                    while !self.complete_stabchain_subgroup(g.clone(), i, upper_bound) {
-                        upper_bound *= 2;
-                    }
-                }
-            }
-        }
-        // The iterator we are using. We need a copy in case we need to reset due to failure.
-        let orig_iter = (0..self.chain.len()).rev();
-        let mut iter = orig_iter.clone();
-        // TODO assume base e, but doesn't seem to b e specified.
-        let passes_required = (self.n as f32).ln().ln().ceil() as i32;
-        while let Some(i) = iter.next() {
-            // If this fails, then we double the upper bound and reset.
-            if !self.complete_stabchain_subgroup(Permutation::id(), i, upper_bound) {
-                upper_bound *= 2;
-                //Reset the iterator back to the start.
-                iter = orig_iter.clone();
-                continue;
-            }
-            //Perform the strong generator test ceil(log(log(n))) times, resetting if there is any failure.
-            for _ in 0..(passes_required) {
-                // Perform the strong generator test
-                self.strong_generating_test();
-            }
-        }
-    }
-
-    /// Generate new elements of the subgroup in order to complete it.
-    fn complete_stabchain_subgroup(
-        &mut self,
-        g: Permutation,
-        layer: usize,
-        upper_bound: usize,
-    ) -> bool {
-        let previous_pos = self.current_pos;
-        self.current_pos = layer;
-        self.check_transversal_augmentation(g);
-        let mut trivial_residues = 0;
-        let trivial_residues_required = (C * (self.n as f32).ln()).ceil() as i32;
-        let subset_size = min(
-            self.n,
-            upper_bound * (upper_bound as f32).ln().floor() as usize,
-        );
-        //Repeat until we have a certain number of random schrier generators result in trivial residues.
-        while trivial_residues < trivial_residues_required {
-            //TODO move 64 to constant
-            let random_generations = 64.0
-                * self
-                    .current_chain()
-                    .map(|record| (record.transversal.len() as f64).ln())
-                    .sum::<f64>();
-            for _ in 0..random_generations as i32 {
-                let h = self.random_schrier_generator();
-                //Get the coset representation of h.
-                let h_as_words = residue_as_words(self.current_chain(), &h);
-                let b_dash = (0..self.n).choose_multiple(&mut self.rng, subset_size);
-                //Check if any points in base union base_dash are fixed by the permutation h.
-                //TODO should only be union of base and b_dash. Won't affect things, just wasted effort.
-                if self
-                    .base
-                    .clone()
-                    .into_iter()
-                    .chain(b_dash.clone())
-                    .any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b)
-                {
-                    //Check if h fixes all points of B, then add it as a base point.
-                    if self
-                        .base
-                        .clone()
-                        .into_iter()
-                        .all(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b)
-                    {
-                        //Search for a new base point that h moves.
-                        let new_base_point = b_dash
-                            .into_iter()
-                            .find(|&b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b)
-                            .expect("This point should exist");
-                        debug_assert!(!self.base.contains(&new_base_point));
-                        self.base.push(new_base_point);
-                        dbg!(&self.base);
-                        let record = StabchainRecord::new(
-                            new_base_point,
-                            Group::new(&[]),
-                            [(new_base_point, Permutation::id())]
-                                .iter()
-                                .cloned()
-                                .collect(),
-                        );
-                        self.chain.push(record);
-                    }
-                    //Evaluate h as a permutation.
-                    let h = h_as_words
-                        .iter()
-                        .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
-                    //h should not be the identity, as it moves a point of the base.
-                    debug_assert!(!h.is_id());
-                    let j_dash = self.selector.moved_point(&h);
-                    for k in (layer + 1..=j_dash).rev() {
-                        self.complete_stabchain_subgroup(h.clone(), k, upper_bound);
-                    }
-                } else {
-                    trivial_residues += 1;
-                }
-            }
-        }
-        //Reset the current position to what it was previously.
-        self.current_pos = previous_pos;
-        true
     }
 
     /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
-    fn random_schrier_generator_word(
+    fn random_schrier_generators_as_word(
         &mut self,
         subproducts: usize,
         coset_representatives: usize,
@@ -371,7 +246,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .flat_map(|record| record.gens.generators())
             .map(|f| f.clone())
             .collect::<Vec<Permutation>>();
-        for h in self.random_schrier_generator_word(C1, C2, &gens[..]) {
+        for h in self.random_schrier_generators_as_word(C1, C2, &gens[..]) {
             let (sift, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if sift {
                 //Pick the points that should be evaluated.
@@ -461,7 +336,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .clone()
             .iter()
             .map(|p| vec![p.clone()])
-            .chain(self.random_schrier_generator_word(C3, C4, &gens[..]))
+            .chain(self.random_schrier_generators_as_word(C3, C4, &gens[..]))
             .collect();
         //Sift the original generators, and all products of the form g*w_{1,2}.
         for p in products {
@@ -510,63 +385,6 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .into_iter()
             .all(|x| apply_permutation_word(p_as_words.iter(), x) == x)
     }
-
-    /// Test that we have a base and strong generating set, rectifying this if we do not.
-    fn strong_generating_test(&mut self) {
-        //Current position should be 0
-        debug_assert!(self.current_pos == 0);
-        for i in 0..self.chain.len() {
-            //TODO see if a better bound can be achieved.
-            let random_generations = 64.0
-                * self
-                    .current_chain()
-                    .map(|record| (record.transversal.len() as f64).ln())
-                    .sum::<f64>();
-            for _ in 0..random_generations as i32 {
-                let h = self.random_schrier_generator();
-                let h_as_words = residue_as_words(self.current_chain(), &h);
-                //TODO change to not evaluate all n points.
-                let mut b_dash = 0..self.n;
-                //Check if any points in base union base_dash are fixed by the permutation h.
-                //TODO should only be union of base and b_dash. Won't affect things, just wasted effort.
-                if b_dash.any(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b) {
-                    //Check if h fixes all points of B, then add it as a base point.
-                    if self
-                        .base
-                        .clone()
-                        .into_iter()
-                        .all(|b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) == b)
-                    {
-                        //Search for a new base point that h moves.
-                        let new_base_point = b_dash
-                            .into_iter()
-                            .find(|&b| h_as_words.iter().fold(b, |x, perm| perm.apply(x)) != b)
-                            .expect("This point should exist");
-                        debug_assert!(!self.base.contains(&new_base_point));
-                        self.base.push(new_base_point);
-                        dbg!(&self.base);
-                        let record = StabchainRecord::new(
-                            new_base_point,
-                            Group::new(&[]),
-                            [(new_base_point, Permutation::id())]
-                                .iter()
-                                .cloned()
-                                .collect(),
-                        );
-                        self.chain.push(record);
-                    }
-                    //Evaluate h as a permutation.
-                    let h = h_as_words
-                        .iter()
-                        .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
-                    let i_dash = self.selector.moved_point(&h);
-                    for k in (i + 1..=i_dash).rev() {
-                        self.complete_stabchain_subgroup(h.clone(), k, self.n);
-                    }
-                }
-            }
-        }
-    }
 }
 
 impl<M> super::Builder<FactoredTransversalResolver> for StabchainBuilderRandom<M>
@@ -574,7 +392,7 @@ where
     M: MovedPointSelector,
 {
     fn set_generators(&mut self, gens: &Group) {
-        self.construct_strong_generating_set(gens, 50); //TODO update upper bound
+        self.construct_strong_generating_set(gens);
     }
 
     fn build(self) -> Stabchain<FactoredTransversalResolver> {
@@ -622,7 +440,7 @@ mod tests {
     fn trivial_chain() {
         let g = Group::trivial();
         let mut builder = StabchainBuilderRandom::new(FmpSelector);
-        builder.construct_strong_generating_set(&g, 10);
+        builder.construct_strong_generating_set(&g);
         let chain = builder.build();
         println!("{}", &chain);
         check_well_formed_chain(&chain);
@@ -633,7 +451,7 @@ mod tests {
     fn symmetric_chain() {
         let g = Group::symmetric(4);
         let mut builder = StabchainBuilderRandom::new(FmpSelector);
-        builder.construct_strong_generating_set(&g, 10);
+        builder.construct_strong_generating_set(&g);
         println!("{:?}", builder.base.clone());
         let chain = builder.build();
         check_well_formed_chain(&chain);
