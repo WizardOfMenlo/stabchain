@@ -129,7 +129,6 @@ mod tests {
         }
     }
 
-    #[ignore]
     #[test]
     ///Test that random elements from the symmetric group are included. This is ignored as it is slow.
     fn closure_larger_symmetric() {

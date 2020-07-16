@@ -71,13 +71,19 @@ mod tests {
 
     #[test]
     fn order_n_order() {
-        use crate::perm::builder::PermBuilder;
         let perm = order_n_permutation::<DefaultPermutation>(10, 25);
         for i in 1..25 {
-            assert!(!perm.build_pow(i).collapse().is_id());
+            assert!(!perm.pow(i).is_id());
         }
 
-        assert!(perm.build_pow(25).collapse().is_id())
+        assert!(perm.pow(25).is_id())
+    }
+
+    #[test]
+    fn order_and_order() {
+        for i in 1..25 {
+            assert_eq!(order_n_permutation::<DefaultPermutation>(1, i).order(), i)
+        }
     }
 
     #[test]
