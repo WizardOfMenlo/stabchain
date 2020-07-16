@@ -359,6 +359,13 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         }
         //To see if all generators are discarded.
         let mut all_discarded = true;
+        //Number of base points than are in the current orbit.
+        let b_star = self
+            .base
+            .iter()
+            .filter(|&b| record.transversal.contains_key(b))
+            .cloned()
+            .collect::<Vec<usize>>();
         let gens = self
             .current_chain()
             .flat_map(|record| record.gens.generators())
@@ -382,7 +389,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     record
                         .transversal
                         .keys()
-                        .choose_multiple(&mut self.rng, self.base.len())
+                        .choose_multiple(&mut self.rng, b_star.len())
                         .into_iter()
                         .map(|x| x.clone())
                         .collect()
