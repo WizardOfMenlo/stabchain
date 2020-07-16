@@ -80,6 +80,16 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .map(|gen| gen.lmp().expect("Should not be the identity."))
             .max()
             .unwrap_or(0);
+        //Check if this is fine?
+        let moved_point = 0;
+        let initial_record = StabchainRecord::new(
+            moved_point,
+            group.clone(),
+            [(moved_point, Permutation::id())].iter().cloned().collect(),
+        );
+        self.base.push(moved_point);
+        self.chain.push(initial_record);
+        self.sgc();
     }
 
     /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
