@@ -7,21 +7,21 @@ use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
 // Helper struct, used to build the stabilizer chain
-pub struct StabchainBuilderNaive<P, A, T>
+pub struct StabchainBuilderNaive<P, A, S>
 where
     A: Action<P>,
 {
     current_pos: usize,
     chain: Vec<StabchainRecord<P, A, SimpleTransversalResolver>>,
-    selector: T,
+    selector: S,
     action: A,
 }
 
-impl<P, A, T> StabchainBuilderNaive<P, A, T>
+impl<P, A, S> StabchainBuilderNaive<P, A, S>
 where
     A: Action<P>,
 {
-    pub(super) fn new(selector: T, action: A) -> Self {
+    pub(super) fn new(selector: S, action: A) -> Self {
         StabchainBuilderNaive {
             current_pos: 0,
             chain: Vec::new(),
@@ -159,11 +159,11 @@ where
     }
 }
 
-impl<P, A, M> super::Builder<P, A, SimpleTransversalResolver> for StabchainBuilderNaive<P, A, M>
+impl<P, A, S> super::Builder<P, A, SimpleTransversalResolver> for StabchainBuilderNaive<P, A, S>
 where
     P: Permutation,
     A: Action<P>,
-    M: MovedPointSelector<P, A::OrbitT>,
+    S: MovedPointSelector<P, A::OrbitT>,
 {
     fn set_generators(&mut self, gens: &Group<P>) {
         for gen in gens.generators() {

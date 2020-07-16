@@ -5,12 +5,13 @@ pub mod skeleton;
 pub use factored_transversal::FactoredTransversal;
 pub use simple_transversal::SimpleTransversal;
 
+use crate::perm::actions::SimpleApplication;
 use crate::perm::Action;
 
 // TODO: Note that a lot of this was thought with Orbit : Copy in mind. Now that this is not the case anymore it might
 // be worthwhile to optimize
 #[allow(clippy::len_without_is_empty)]
-pub trait Transversal<P, A>
+pub trait Transversal<P, A = SimpleApplication<P>>
 where
     A: Action<P>,
 {

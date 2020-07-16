@@ -12,12 +12,12 @@ mod naive;
 /// A builder is a datastructure to be used for constructing
 /// a stabilizer chain. While the ultimate record is the same for any kind of
 /// chain, there are some very real differences in performance that can occur
-pub trait Builder<P, A, V>
+pub trait Builder<P, A, S>
 where
     A: Action<P>,
 {
     fn set_generators(&mut self, gens: &Group<P>);
-    fn build(self) -> Stabchain<P, A, V>;
+    fn build(self) -> Stabchain<P, A, S>;
 }
 
 /// A strategy is a lightweight struct that allows to
@@ -33,32 +33,32 @@ pub trait BuilderStrategy<P> {
 }
 
 /// The strategy that is to be used by default
-pub type DefaultStrategy<A, M> = NaiveBuilderStrategy<A, M>;
+pub type DefaultStrategy<A, S> = NaiveBuilderStrategy<A, S>;
 
 /// Schreir Sims with unfactored transversal. Faster than the
 /// factored transversal version, yet more memory intensive
 #[derive(Debug, Clone)]
-pub struct NaiveBuilderStrategy<A, M> {
-    selector: M,
+pub struct NaiveBuilderStrategy<A, S> {
+    selector: S,
     action: A,
 }
 
-impl<A, M> NaiveBuilderStrategy<A, M> {
+impl<A, S> NaiveBuilderStrategy<A, S> {
     // TODO: Defaults
-    pub fn new(action: A, selector: M) -> Self {
+    pub fn new(action: A, selector: S) -> Self {
         NaiveBuilderStrategy { selector, action }
     }
 }
 
-impl<P, A, M> BuilderStrategy<P> for NaiveBuilderStrategy<A, M>
+impl<P, A, S> BuilderStrategy<P> for NaiveBuilderStrategy<A, S>
 where
     P: Permutation,
     A: Action<P>,
-    M: MovedPointSelector<P, A::OrbitT>,
+    S: MovedPointSelector<P, A::OrbitT>,
 {
     type Action = A;
     type Transversal = SimpleTransversalResolver;
-    type BuilderT = naive::StabchainBuilderNaive<P, A, M>;
+    type BuilderT = naive::StabchainBuilderNaive<P, A, S>;
 
     fn make_builder(self) -> Self::BuilderT {
         naive::StabchainBuilderNaive::new(self.selector, self.action)
@@ -68,26 +68,26 @@ where
 /// Schreir Sims with factored transversal. Much more memory friendly,
 /// yet much slower
 #[derive(Debug, Clone)]
-pub struct IFTBuilderStrategy<A, M> {
-    selector: M,
+pub struct IFTBuilderStrategy<A, S> {
+    selector: S,
     action: A,
 }
 
-impl<A, M> IFTBuilderStrategy<A, M> {
-    pub fn new(action: A, selector: M) -> Self {
+impl<A, S> IFTBuilderStrategy<A, S> {
+    pub fn new(action: A, selector: S) -> Self {
         IFTBuilderStrategy { action, selector }
     }
 }
 
-impl<P, A, M> BuilderStrategy<P> for IFTBuilderStrategy<A, M>
+impl<P, A, S> BuilderStrategy<P> for IFTBuilderStrategy<A, S>
 where
     P: Permutation,
     A: Action<P>,
-    M: MovedPointSelector<P, A::OrbitT>,
+    S: MovedPointSelector<P, A::OrbitT>,
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
-    type BuilderT = ift::StabchainBuilderIFT<P, A, M>;
+    type BuilderT = ift::StabchainBuilderIFT<P, A, S>;
 
     fn make_builder(self) -> Self::BuilderT {
         ift::StabchainBuilderIFT::new(self.selector, self.action)
