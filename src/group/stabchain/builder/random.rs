@@ -437,6 +437,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     fn sgt(&mut self) {
+        let original_position = self.current_pos;
+        self.current_pos = 0;
         //Should be at the top of the chain, I think.
         debug_assert!(self.current_pos == 0);
         //The union of the generator sets in the chain to this point.
@@ -458,6 +460,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         for p in products {
             self.sgt_test(&p);
         }
+        self.current_pos = original_position;
     }
 
     fn sgt_test(&mut self, p: &Vec<Permutation>) {
