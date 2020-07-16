@@ -138,44 +138,6 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .collect()
     }
 
-    /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
-    fn random_schrier_generator(&mut self) -> Permutation {
-        //First pick a random coset representative of the group
-        let record = &self.chain[self.current_pos];
-        let point = record
-            .transversal
-            .keys()
-            .choose(&mut self.rng)
-            .expect("Should be non empty");
-        let coset_representative = representative_raw(&record.transversal, record.base, *point)
-            .expect("Should be in the orbit");
-        debug_assert!(coset_representative.apply(record.base) == *point);
-        //Generate a random subword.
-        let gens = self
-            .current_chain()
-            .flat_map(|record| record.gens.generators())
-            .map(|f| f.clone())
-            .collect::<Vec<Permutation>>();
-        let w1 = random_subproduct_full(&mut self.rng, &gens[..]);
-        let k = rand::Rng::gen_range(&mut self.rng, 0, gens.len() / 2 + 1);
-        let w2 = random_subproduct_subset(&mut self.rng, &gens[..], k);
-        let g = gens.choose(&mut self.rng).expect("Should be non empty");
-        //Combine this into a random subword, randomly including the generator or not.
-        //This is equivalent to w1*(*g^e)*w2 where e is generated from a uniform distribution in [0,1]
-        let subword = if rand::Rng::gen::<bool>(&mut self.rng) {
-            w1.multiply(&w2)
-        } else {
-            w1.multiply(&g).multiply(&w2)
-        };
-        let uw = coset_representative.multiply(&subword);
-        //Get the residue of coset_representative*subword
-        let residue_as_words = residue_as_words(self.current_chain(), &uw);
-        //Take it's inverse as a word, i.e reverse the order and replace each entry with the inverse.
-        let residue_inverse_as_word = residue_as_words.iter().map(|p| p.inv()).rev();
-        //Combine everything together as a single permutation.
-        residue_inverse_as_word.fold(uw, |accum, p| accum.multiply(&p))
-    }
-
     /// Check if adding a new element modifies the current layer of the chain.
     fn check_transversal_augmentation(&mut self, p: Permutation) {
         let mut record = self.chain[self.current_pos].clone();
