@@ -121,6 +121,11 @@ where
         orbit::Orbit::new(self, base)
     }
 
+    /// Create a random generator for elements of the group
+    pub fn rng(&self) -> random_perm::RandPerm<P> {
+        random_perm::RandPerm::from_generators(11, self.generators(), 50)
+    }
+
     /// Computes the orbit of a particular action
     pub fn orbit_of_action<A>(&self, base: A::OrbitT, strat: &A) -> orbit::Orbit<A::OrbitT>
     where
