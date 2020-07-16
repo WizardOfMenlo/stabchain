@@ -46,10 +46,7 @@ where
     }
 }
 
-impl<P, T> MovedPointSelector<P, T> for FixedBaseSelector<T>
-where
-    P: Permutation,
-{
+impl<P, T> MovedPointSelector<P, T> for FixedBaseSelector<T> {
     fn moved_point(&mut self, _: &P) -> T {
         self.base
             .pop_front()
