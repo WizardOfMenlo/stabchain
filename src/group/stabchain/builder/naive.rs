@@ -7,14 +7,20 @@ use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
 // Helper struct, used to build the stabilizer chain
-pub struct StabchainBuilderNaive<P, A, T> {
+pub struct StabchainBuilderNaive<P, A, T>
+where
+    A: Action<P>,
+{
     current_pos: usize,
-    chain: Vec<StabchainRecord<P, SimpleTransversalResolver>>,
+    chain: Vec<StabchainRecord<P, A, SimpleTransversalResolver>>,
     selector: T,
     action: A,
 }
 
-impl<P, A, T> StabchainBuilderNaive<P, A, T> {
+impl<P, A, T> StabchainBuilderNaive<P, A, T>
+where
+    A: Action<P>,
+{
     pub(super) fn new(selector: T, action: A) -> Self {
         StabchainBuilderNaive {
             current_pos: 0,
@@ -30,7 +36,7 @@ impl<P, A, T> StabchainBuilderNaive<P, A, T> {
 
     fn current_chain(
         &self,
-    ) -> impl Iterator<Item = &StabchainRecord<P, SimpleTransversalResolver>> {
+    ) -> impl Iterator<Item = &StabchainRecord<P, A, SimpleTransversalResolver>> {
         self.chain.iter().skip(self.current_pos)
     }
 }
@@ -39,7 +45,7 @@ impl<P, A, T> StabchainBuilderNaive<P, A, T>
 where
     P: Permutation,
     A: Action<P>,
-    T: MovedPointSelector<P>,
+    T: MovedPointSelector<P, A::OrbitT>,
 {
     fn extend_lower_level(&mut self, p: P) {
         self.current_pos += 1;
@@ -58,18 +64,18 @@ where
         if self.bottom_of_the_chain() {
             let moved_point = self.selector.moved_point(&p);
             let mut record = StabchainRecord::new(
-                moved_point,
+                moved_point.clone(),
                 Group::new(&[p.clone()]),
-                [(moved_point, P::id())].iter().cloned().collect(),
+                [(moved_point.clone(), P::id())].iter().cloned().collect(),
             );
 
-            let mut next_orbit_point = p.apply(moved_point);
+            let mut next_orbit_point = self.action.apply(&p, moved_point.clone());
             let mut representative = p.clone();
             while next_orbit_point != moved_point {
                 record
                     .transversal
-                    .insert(next_orbit_point, representative.clone());
-                next_orbit_point = p.apply(next_orbit_point);
+                    .insert(next_orbit_point.clone(), representative.clone());
+                next_orbit_point = self.action.apply(&p, next_orbit_point);
                 representative = representative.multiply(&p);
             }
             self.chain.push(record);
@@ -81,12 +87,12 @@ where
         // Gets the record to be updated
         let mut record = self.chain[self.current_pos].clone();
 
-        let mut to_check = VecDeque::from_iter(record.transversal.keys().copied());
+        let mut to_check = VecDeque::from_iter(record.transversal.keys().cloned());
         let mut new_transversal = HashMap::new();
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
             let orbit_element_repr = record.transversal.get(&orbit_element).unwrap();
-            let new_image = p.apply(orbit_element);
+            let new_image = self.action.apply(&p, orbit_element);
 
             // If we already saw the element
             if record.transversal.contains_key(&new_image)
@@ -107,7 +113,7 @@ where
 
         // We now want to check all the newly added elements
         let mut to_check =
-            VecDeque::from_iter(new_transversal.iter().map(|(o, p)| (*o, p.clone())));
+            VecDeque::from_iter(new_transversal.iter().map(|(o, p)| (o.clone(), p.clone())));
 
         // Update the record
         record.transversal.extend(new_transversal);
@@ -119,7 +125,7 @@ where
 
             // For each generator (and p)
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
-                let new_image = generator.apply(orbit_element);
+                let new_image = self.action.apply(generator, orbit_element.clone());
 
                 // If we have already seen the image
                 if record.transversal.contains_key(&new_image) {
@@ -136,7 +142,7 @@ where
                     let repr = orbit_element_repr.multiply(generator);
 
                     // Store in transversal
-                    record.transversal.insert(new_image, repr.clone());
+                    record.transversal.insert(new_image.clone(), repr.clone());
 
                     // Update and ask to check the new image
                     to_check.push_back((new_image, repr));
@@ -153,11 +159,11 @@ where
     }
 }
 
-impl<P, A, M> super::Builder<P, SimpleTransversalResolver> for StabchainBuilderNaive<P, A, M>
+impl<P, A, M> super::Builder<P, A, SimpleTransversalResolver> for StabchainBuilderNaive<P, A, M>
 where
     P: Permutation,
     A: Action<P>,
-    M: MovedPointSelector<P>,
+    M: MovedPointSelector<P, A::OrbitT>,
 {
     fn set_generators(&mut self, gens: &Group<P>) {
         for gen in gens.generators() {
@@ -166,7 +172,7 @@ where
         }
     }
 
-    fn build(self) -> Stabchain<P, SimpleTransversalResolver> {
+    fn build(self) -> Stabchain<P, A, SimpleTransversalResolver> {
         Stabchain { chain: self.chain }
     }
 }

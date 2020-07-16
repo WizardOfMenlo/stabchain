@@ -2,9 +2,9 @@ use crate::perm::Permutation;
 
 /// A very small trait, used to seamlessly switch between
 /// an automatic base repr, and one which uses a precomputed one
-pub trait MovedPointSelector<P> {
+pub trait MovedPointSelector<P, OrbitT = usize> {
     /// Contract, should never be called with id
-    fn moved_point(&mut self, p: &P) -> usize;
+    fn moved_point(&mut self, p: &P) -> OrbitT;
 }
 
 /// The default type of moved point selector. Should be a good choice
@@ -15,7 +15,7 @@ pub type DefaultSelector = LmpSelector;
 #[derive(Default, Debug, Copy, Clone)]
 pub struct LmpSelector;
 
-impl<P> MovedPointSelector<P> for LmpSelector
+impl<P> MovedPointSelector<P, usize> for LmpSelector
 where
     P: Permutation,
 {
@@ -28,24 +28,27 @@ use std::collections::VecDeque;
 
 /// A selector that chooses elements in order from a common base i.e. [1,2,3,4]
 #[derive(Default, Clone)]
-pub struct FixedBaseSelector {
-    base: VecDeque<usize>,
+pub struct FixedBaseSelector<T = usize> {
+    base: VecDeque<T>,
 }
 
-impl FixedBaseSelector {
+impl<T> FixedBaseSelector<T>
+where
+    T: Clone,
+{
     /// Create from the given base
-    pub fn new(base: &[usize]) -> Self {
+    pub fn new(base: &[T]) -> Self {
         FixedBaseSelector {
-            base: base.iter().copied().collect(),
+            base: base.iter().cloned().collect(),
         }
     }
 }
 
-impl<P> MovedPointSelector<P> for FixedBaseSelector
+impl<P, T> MovedPointSelector<P, T> for FixedBaseSelector<T>
 where
     P: Permutation,
 {
-    fn moved_point(&mut self, _: &P) -> usize {
+    fn moved_point(&mut self, _: &P) -> T {
         self.base
             .pop_front()
             .expect("Base was shorter than expected")

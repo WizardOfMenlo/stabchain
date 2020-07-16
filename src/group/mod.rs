@@ -9,6 +9,7 @@ use self::stabchain::moved_point_selector::FixedBaseSelector;
 use crate::group::orbit::abstraction::TransversalResolver;
 use crate::group::stabchain::builder::BuilderStrategy;
 use crate::group::stabchain::moved_point_selector::MovedPointSelector;
+use crate::perm::actions::SimpleApplication;
 use crate::perm::export::CyclePermutation;
 use crate::perm::utils::order_n_permutation;
 use crate::perm::*;
@@ -126,7 +127,10 @@ where
     }
 
     /// Computes the transversal from the group generators (use factored transversal instead for memory efficience)
-    pub fn transversal(&self, base: usize) -> impl orbit::transversal::Transversal<P> {
+    pub fn transversal(
+        &self,
+        base: usize,
+    ) -> impl orbit::transversal::Transversal<P, SimpleApplication<P>> {
         orbit::transversal::SimpleTransversal::new(self, base)
     }
 
@@ -135,7 +139,7 @@ where
         &self,
         base: A::OrbitT,
         strat: A,
-    ) -> impl orbit::transversal::Transversal<P, A::OrbitT>
+    ) -> impl orbit::transversal::Transversal<P, A>
     where
         A: Action<P>,
     {
@@ -143,7 +147,10 @@ where
     }
 
     /// Computes the factored transversal from the group generators
-    pub fn factored_transversal(&self, base: usize) -> impl orbit::transversal::Transversal<P> {
+    pub fn factored_transversal(
+        &self,
+        base: usize,
+    ) -> impl orbit::transversal::Transversal<P, SimpleApplication<P>> {
         orbit::transversal::FactoredTransversal::new(self, base)
     }
 
@@ -152,7 +159,7 @@ where
         &self,
         base: A::OrbitT,
         strat: A,
-    ) -> impl orbit::transversal::Transversal<P, A::OrbitT>
+    ) -> impl orbit::transversal::Transversal<P, A>
     where
         A: Action<P>,
     {
@@ -160,11 +167,13 @@ where
     }
 
     /// Computes a stabilizer chain for this group
-    pub fn stabchain(&self) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
+    pub fn stabchain(
+        &self,
+    ) -> stabchain::Stabchain<P, SimpleApplication<P>, impl TransversalResolver<P>> {
         use self::stabchain::moved_point_selector::DefaultSelector;
         stabchain::Stabchain::new_with_strategy(
             self,
-            DefaultStrategy::new(DefaultSelector::default()),
+            DefaultStrategy::new(SimpleApplication::default(), DefaultSelector::default()),
         )
     }
 
@@ -172,10 +181,10 @@ where
     pub fn stabchain_base(
         &self,
         base: &[usize],
-    ) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
+    ) -> stabchain::Stabchain<P, SimpleApplication<P>, impl TransversalResolver<P>> {
         stabchain::Stabchain::new_with_strategy(
             self,
-            DefaultStrategy::new(FixedBaseSelector::new(base)),
+            DefaultStrategy::new(SimpleApplication::default(), FixedBaseSelector::new(base)),
         )
     }
 
@@ -183,7 +192,7 @@ where
     pub fn stabchain_with_strategy<S: BuilderStrategy<P>>(
         &self,
         strat: S,
-    ) -> stabchain::Stabchain<P, S::Transversal> {
+    ) -> stabchain::Stabchain<P, S::Action, S::Transversal> {
         stabchain::Stabchain::new_with_strategy(self, strat)
     }
 
@@ -191,8 +200,11 @@ where
     pub fn stabchain_with_selector(
         &self,
         selector: impl MovedPointSelector<P>,
-    ) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
-        stabchain::Stabchain::new_with_strategy(self, DefaultStrategy::new(selector))
+    ) -> stabchain::Stabchain<P, SimpleApplication<P>, impl TransversalResolver<P>> {
+        stabchain::Stabchain::new_with_strategy(
+            self,
+            DefaultStrategy::new(SimpleApplication::default(), selector),
+        )
     }
 
     /// Bruteforce the elements to get all elements in the group using an orbit strategy

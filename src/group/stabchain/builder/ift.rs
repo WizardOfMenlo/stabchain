@@ -3,32 +3,25 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::factored_transversal::representative_raw;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
-use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
 use std::collections::{HashMap, VecDeque};
 use std::iter::FromIterator;
 
-pub(crate) fn representative_raw_simple<P, S>(
-    transversal: &HashMap<usize, P, S>,
-    base: usize,
-    point: usize,
-) -> Option<P>
-where
-    P: Permutation,
-    S: std::hash::BuildHasher,
-{
-    representative_raw(transversal, base, point, SimpleApplication::default())
-}
-
 // Helper struct, used to build the stabilizer chain
-pub struct StabchainBuilderIFT<P, T, A> {
+pub struct StabchainBuilderIFT<P, A, T>
+where
+    A: Action<P>,
+{
     current_pos: usize,
-    chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>>>,
+    chain: Vec<StabchainRecord<P, A, FactoredTransversalResolver<A>>>,
     selector: T,
     action: A,
 }
 
-impl<P, T, A> StabchainBuilderIFT<P, T, A> {
+impl<P, A, T> StabchainBuilderIFT<P, A, T>
+where
+    A: Action<P>,
+{
     pub(super) fn new(selector: T, action: A) -> Self {
         StabchainBuilderIFT {
             current_pos: 0,
@@ -44,16 +37,15 @@ impl<P, T, A> StabchainBuilderIFT<P, T, A> {
 
     fn current_chain(
         &self,
-    ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<SimpleApplication<P>>>>
-    {
+    ) -> impl Iterator<Item = &StabchainRecord<P, A, FactoredTransversalResolver<A>>> {
         self.chain.iter().skip(self.current_pos)
     }
 }
 
-impl<P, A, T> StabchainBuilderIFT<P, T, A>
+impl<P, A, T> StabchainBuilderIFT<P, A, T>
 where
     P: Permutation,
-    T: MovedPointSelector<P>,
+    T: MovedPointSelector<P, A::OrbitT>,
     A: Action<P>,
 {
     fn extend_lower_level(&mut self, p: P) {
@@ -73,16 +65,16 @@ where
         if self.bottom_of_the_chain() {
             let moved_point = self.selector.moved_point(&p);
             let mut record = StabchainRecord::new(
-                moved_point,
+                moved_point.clone(),
                 Group::new(&[p.clone()]),
-                [(moved_point, P::id())].iter().cloned().collect(),
+                [(moved_point.clone(), P::id())].iter().cloned().collect(),
             );
 
-            let mut next_orbit_point = p.apply(moved_point);
+            let mut next_orbit_point = self.action.apply(&p, moved_point.clone());
             let mut representative = p.clone();
             while next_orbit_point != moved_point {
-                record.transversal.insert(next_orbit_point, p.inv());
-                next_orbit_point = p.apply(next_orbit_point);
+                record.transversal.insert(next_orbit_point.clone(), p.inv());
+                next_orbit_point = self.action.apply(&p, next_orbit_point);
                 representative = representative.multiply(&p);
             }
             self.chain.push(record);
@@ -94,24 +86,38 @@ where
         // Gets the record to be updated
         let mut record = self.chain[self.current_pos].clone();
 
-        let mut to_check = VecDeque::from_iter(record.transversal.keys().copied());
+        let mut to_check = VecDeque::from_iter(record.transversal.keys().cloned());
         let mut new_transversal = HashMap::new();
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
-            let orbit_element_repr =
-                representative_raw_simple(&record.transversal, record.base, orbit_element).unwrap();
-            let new_image = p.apply(orbit_element);
+            let orbit_element_repr = representative_raw(
+                &record.transversal,
+                record.base.clone(),
+                orbit_element.clone(),
+                self.action.clone(),
+            )
+            .unwrap();
+            let new_image = self.action.apply(&p, orbit_element);
 
             // If we already saw the element
             if record.transversal.contains_key(&new_image)
                 || new_transversal.contains_key(&new_image)
             {
-                let image_repr =
-                    representative_raw_simple(&record.transversal, record.base, new_image)
-                        .or_else(|| {
-                            representative_raw_simple(&new_transversal, record.base, new_image)
-                        })
-                        .unwrap();
+                let image_repr = representative_raw(
+                    &record.transversal,
+                    record.base.clone(),
+                    new_image.clone(),
+                    self.action.clone(),
+                )
+                .or_else(|| {
+                    representative_raw(
+                        &new_transversal,
+                        record.base.clone(),
+                        new_image,
+                        self.action.clone(),
+                    )
+                })
+                .unwrap();
 
                 let new_perm = orbit_element_repr.multiply(&p).multiply(&image_repr.inv());
                 self.extend_lower_level(new_perm);
@@ -121,7 +127,7 @@ where
         }
 
         // We now want to check all the newly added elements
-        let mut to_check = VecDeque::from_iter(new_transversal.keys().copied());
+        let mut to_check = VecDeque::from_iter(new_transversal.keys().cloned());
 
         // Update the record
         record.transversal.extend(new_transversal);
@@ -130,19 +136,28 @@ where
         while !to_check.is_empty() {
             // Get the pair
             let orbit_element = to_check.pop_back().unwrap();
-            let orbit_element_repr =
-                representative_raw_simple(&record.transversal, record.base, orbit_element).unwrap();
+            let orbit_element_repr = representative_raw(
+                &record.transversal,
+                record.base.clone(),
+                orbit_element.clone(),
+                self.action.clone(),
+            )
+            .unwrap();
 
             // For each generator (and p)
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
-                let new_image = generator.apply(orbit_element);
+                let new_image = self.action.apply(generator, orbit_element.clone());
 
                 // If we have already seen the image
                 if record.transversal.contains_key(&new_image) {
                     // Get the representative
-                    let image_repr =
-                        representative_raw_simple(&record.transversal, record.base, new_image)
-                            .unwrap();
+                    let image_repr = representative_raw(
+                        &record.transversal,
+                        record.base.clone(),
+                        new_image.clone(),
+                        self.action.clone(),
+                    )
+                    .unwrap();
 
                     // Extend lower level
                     let new_perm = orbit_element_repr
@@ -151,7 +166,9 @@ where
                     self.extend_lower_level(new_perm);
                 } else {
                     // Store in transversal
-                    record.transversal.insert(new_image, generator.inv());
+                    record
+                        .transversal
+                        .insert(new_image.clone(), generator.inv());
 
                     // Update and ask to check the new image
                     to_check.push_back(new_image);
@@ -168,11 +185,11 @@ where
     }
 }
 
-impl<P, A, M> super::Builder<P, FactoredTransversalResolver<A>> for StabchainBuilderIFT<P, A, M>
+impl<P, A, M> super::Builder<P, A, FactoredTransversalResolver<A>> for StabchainBuilderIFT<P, A, M>
 where
     P: Permutation,
     A: Action<P>,
-    M: MovedPointSelector<P>,
+    M: MovedPointSelector<P, A::OrbitT>,
 {
     fn set_generators(&mut self, gens: &Group<P>) {
         for gen in gens.generators() {
@@ -181,7 +198,7 @@ where
         }
     }
 
-    fn build(self) -> Stabchain<P, FactoredTransversalResolver<SimpleApplication<P>>> {
+    fn build(self) -> Stabchain<P, A, FactoredTransversalResolver<A>> {
         Stabchain { chain: self.chain }
     }
 }

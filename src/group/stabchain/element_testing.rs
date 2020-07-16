@@ -1,22 +1,28 @@
 use super::StabchainRecord;
 use crate::group::orbit::abstraction::TransversalResolver;
-use crate::perm::Permutation;
+use crate::perm::{Action, Permutation};
 
 /// Given a stabilizer chain, computes whether the given element is in the group
-pub fn is_in_group<'a, P, V>(it: impl IntoIterator<Item = &'a StabchainRecord<P, V>>, p: &P) -> bool
+pub fn is_in_group<'a, P, A, V>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, A, V>>,
+    p: &P,
+) -> bool
 where
     P: 'a + Permutation,
-    V: 'a + TransversalResolver<P>,
+    A: 'a + Action<P>,
+    V: 'a + TransversalResolver<P, A>,
 {
     // Early exit
     if p.is_id() {
         return true;
     }
 
+    let applicator = A::default();
+
     let mut g = p.clone();
     for record in it {
-        let base = record.base;
-        let application = g.apply(base);
+        let base = record.base.clone();
+        let application = applicator.apply(&g, base.clone());
 
         if !record.transversal.contains_key(&application) {
             return false;
@@ -34,13 +40,14 @@ where
 
 /// Given a stabilizer chain, computes a list of coset representatives of the given element if it is in the group
 /// So that p == s_m s_m-1 ... s_1
-pub fn coset_representative<'a, P, V>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<P, V>>,
+pub fn coset_representative<'a, P, A, V>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, A, V>>,
     p: &P,
 ) -> Option<Vec<P>>
 where
     P: 'a + Permutation,
-    V: 'a + TransversalResolver<P>,
+    A: 'a + Action<P>,
+    V: 'a + TransversalResolver<P, A>,
 {
     // Early exit
     if p.is_id() {
@@ -48,11 +55,13 @@ where
         return Some(Vec::new());
     }
 
+    let applicator = A::default();
+
     let mut res = Vec::new();
     let mut g = p.clone();
     for record in it {
-        let base = record.base;
-        let application = g.apply(base);
+        let base = record.base.clone();
+        let application = applicator.apply(&g, base.clone());
 
         if !record.transversal.contains_key(&application) {
             return None;
