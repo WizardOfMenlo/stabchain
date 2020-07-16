@@ -15,11 +15,11 @@ fn transversal_vs_optmized_transversal_complete(c: &mut Criterion) {
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("transversal", i), i, |b, i| {
             let g = Group::symmetric(*i);
-            b.iter(|| transversal(&g, 0, SimpleApplication::default()));
+            b.iter(|| transversal(&g, 0, &SimpleApplication::default()));
         });
         group.bench_with_input(BenchmarkId::new("transversal_optmized", i), i, |b, i| {
             let g = Group::symmetric(*i);
-            b.iter(|| transversal_complete_opt(&g, 0, SimpleApplication::default()));
+            b.iter(|| transversal_complete_opt(&g, 0, &SimpleApplication::default()));
         });
     }
     group.finish();
@@ -31,11 +31,11 @@ fn transversal_vs_optmized_transversal_complete_many_generators(c: &mut Criterio
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("transversal", i), i, |b, i| {
             let g = Group::alternating(*i);
-            b.iter(|| transversal(&g, 0, SimpleApplication::default()));
+            b.iter(|| transversal(&g, 0, &SimpleApplication::default()));
         });
         group.bench_with_input(BenchmarkId::new("transversal_optmized", i), i, |b, i| {
             let g = Group::alternating(*i);
-            b.iter(|| transversal_complete_opt(&g, 0, SimpleApplication::default()));
+            b.iter(|| transversal_complete_opt(&g, 0, &SimpleApplication::default()));
         });
     }
     group.finish();
@@ -49,11 +49,11 @@ fn transversal_vs_optmized_transversal_uncomplete(c: &mut Criterion) {
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("transversal", i), i, |b, i| {
             let g = copies_of_cyclic(&[*i, 20, 20]);
-            b.iter(|| transversal(&g, 0, SimpleApplication::default()));
+            b.iter(|| transversal(&g, 0, &SimpleApplication::default()));
         });
         group.bench_with_input(BenchmarkId::new("transversal_optmized", i), i, |b, i| {
             let g = copies_of_cyclic(&[*i, 20, 20]);
-            b.iter(|| transversal_complete_opt(&g, 0, SimpleApplication::default()));
+            b.iter(|| transversal_complete_opt(&g, 0, &SimpleApplication::default()));
         });
     }
     group.finish();

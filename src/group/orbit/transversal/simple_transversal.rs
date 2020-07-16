@@ -24,7 +24,7 @@ where
     pub fn new(g: &Group<P>, base: usize) -> Self {
         Self::from_raw(
             base,
-            transversal(g, base, SimpleApplication::default()),
+            transversal(g, base, &SimpleApplication::default()),
             SimpleTransversalResolver,
         )
     }
@@ -36,7 +36,7 @@ where
     A: Action<P>,
 {
     /// Create from the group
-    pub fn new_with_strategy(g: &Group<P>, base: A::OrbitT, strategy: A) -> Self {
+    pub fn new_with_strategy(g: &Group<P>, base: A::OrbitT, strategy: &A) -> Self {
         Self::from_raw(
             base.clone(),
             transversal(g, base, strategy),
@@ -72,7 +72,7 @@ where
 
 // Needed since entry requires &mut
 #[allow(clippy::map_entry)]
-pub fn transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: A) -> HashMap<A::OrbitT, P>
+pub fn transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: &A) -> HashMap<A::OrbitT, P>
 where
     P: Permutation,
     A: Action<P>,
@@ -111,7 +111,7 @@ where
 pub fn transversal_complete_opt<P, A>(
     g: &Group<P>,
     base: A::OrbitT,
-    strat: A,
+    strat: &A,
 ) -> HashMap<A::OrbitT, P>
 where
     P: Permutation,

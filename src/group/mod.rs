@@ -143,7 +143,7 @@ where
     where
         A: Action<P>,
     {
-        orbit::transversal::SimpleTransversal::new_with_strategy(self, base, strat)
+        orbit::transversal::SimpleTransversal::new_with_strategy(self, base, &strat)
     }
 
     /// Computes the factored transversal from the group generators
@@ -163,7 +163,7 @@ where
     where
         A: Action<P>,
     {
-        orbit::transversal::FactoredTransversal::new_with_strategy(self, base, strat)
+        orbit::transversal::FactoredTransversal::new_with_strategy(self, base, &strat)
     }
 
     /// Computes a stabilizer chain for this group
