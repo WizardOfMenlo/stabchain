@@ -217,7 +217,7 @@ mod tests {
             // We do not directly check the transversal since representatives are not unique
             assert_eq!(
                 transversal.orbit(),
-                gens.orbit_of_action(record.base.clone(), applicator.clone())
+                gens.orbit_of_action(record.base.clone(), &applicator)
             );
 
             for elem in transversal.orbit().iter().cloned() {
@@ -228,10 +228,7 @@ mod tests {
             // Check that everything is stabilized correctly
             if !previous.is_none() {
                 let stabilized = previous.unwrap();
-                assert_eq!(
-                    gens.orbit_of_action(stabilized, applicator.clone()).len(),
-                    1
-                );
+                assert_eq!(gens.orbit_of_action(stabilized, &applicator).len(), 1);
             }
 
             previous = Some(record.base.clone());

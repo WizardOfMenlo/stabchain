@@ -94,7 +94,7 @@ where
                 &record.transversal,
                 record.base.clone(),
                 orbit_element.clone(),
-                self.action.clone(),
+                &self.action,
             )
             .unwrap();
             let new_image = self.action.apply(&p, orbit_element);
@@ -107,14 +107,14 @@ where
                     &record.transversal,
                     record.base.clone(),
                     new_image.clone(),
-                    self.action.clone(),
+                    &self.action,
                 )
                 .or_else(|| {
                     representative_raw(
                         &new_transversal,
                         record.base.clone(),
                         new_image,
-                        self.action.clone(),
+                        &self.action,
                     )
                 })
                 .unwrap();
@@ -140,7 +140,7 @@ where
                 &record.transversal,
                 record.base.clone(),
                 orbit_element.clone(),
-                self.action.clone(),
+                &self.action,
             )
             .unwrap();
 
@@ -155,7 +155,7 @@ where
                         &record.transversal,
                         record.base.clone(),
                         new_image.clone(),
-                        self.action.clone(),
+                        &self.action,
                     )
                     .unwrap();
 

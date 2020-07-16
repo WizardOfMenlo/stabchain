@@ -71,12 +71,7 @@ where
         base: A::OrbitT,
         point: A::OrbitT,
     ) -> Option<P> {
-        super::transversal::factored_transversal::representative_raw(
-            map,
-            base,
-            point,
-            self.0.clone(),
-        )
+        super::transversal::factored_transversal::representative_raw(map, base, point, &self.0)
     }
 
     // Note that no validation is actually done here

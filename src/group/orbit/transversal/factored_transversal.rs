@@ -18,7 +18,7 @@ pub(crate) fn representative_raw<P, S, A>(
     transversal: &HashMap<A::OrbitT, P, S>,
     base: A::OrbitT,
     point: A::OrbitT,
-    strat: A,
+    strat: &A,
 ) -> Option<P>
 where
     P: Permutation,

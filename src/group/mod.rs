@@ -119,7 +119,7 @@ where
     }
 
     /// Computes the orbit of a particular action
-    pub fn orbit_of_action<A>(&self, base: A::OrbitT, strat: A) -> orbit::Orbit<A::OrbitT>
+    pub fn orbit_of_action<A>(&self, base: A::OrbitT, strat: &A) -> orbit::Orbit<A::OrbitT>
     where
         A: Action<P>,
     {
@@ -212,7 +212,7 @@ where
     pub fn bruteforce_elements(&self) -> Vec<P> {
         self.orbit_of_action(
             P::id(),
-            crate::perm::actions::MultiplicationAction::default(),
+            &crate::perm::actions::MultiplicationAction::default(),
         )
         .iter()
         .cloned()
