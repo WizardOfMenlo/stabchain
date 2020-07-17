@@ -1,3 +1,5 @@
+//! Group utilities which I was not sure where to place
+
 use super::Group;
 
 /// Creates a group generated from n copies of the cyclic group

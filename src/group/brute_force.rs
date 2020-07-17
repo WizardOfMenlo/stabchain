@@ -1,3 +1,5 @@
+//! Mod which contains a deprecated utility for bruteforcing group elements
+
 use super::Group;
 use crate::perm::Permutation;
 

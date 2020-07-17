@@ -1,3 +1,5 @@
+//! Various utilities for dealing with orbits and transversals
+
 pub mod abstraction;
 pub mod transversal;
 
@@ -33,6 +35,7 @@ impl<OrbitT> Orbit<OrbitT>
 where
     OrbitT: std::hash::Hash + Eq + Clone,
 {
+    /// Build an orbit from a group, given a starting element and an action to apply
     pub fn new_with_action<P, A>(g: &Group<P>, w: OrbitT, strat: &A) -> Self
     where
         P: Permutation,

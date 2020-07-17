@@ -1,3 +1,5 @@
+//! Traits for creating chains
+
 use super::MovedPointSelector;
 use super::Stabchain;
 use crate::group::orbit::abstraction::{
@@ -16,19 +18,27 @@ pub trait Builder<P, V, A>
 where
     A: Action<P>,
 {
+    /// Add the generators to be used for the construction
     fn set_generators(&mut self, gens: &Group<P>);
+
+    /// Build the stabilizer chain
     fn build(self) -> Stabchain<P, V, A>;
 }
 
 /// A strategy is a lightweight struct that allows to
 /// (hopefully at compile time plz compiler) select which builder to use
 pub trait BuilderStrategy<P> {
+    /// The action that this strategy uses
     type Action: Action<P>;
+
+    /// The builder type associated to this strategy
     type BuilderT: Builder<P, Self::Transversal, Self::Action>;
 
     // Note, typically Transversal = BuilderT::Transversal (need unstable)
+    /// The transversal to be used in this strategy
     type Transversal: TransversalResolver<P, Self::Action>;
 
+    /// Create the builder from this strategy
     fn make_builder(self) -> Self::BuilderT;
 }
 
@@ -44,7 +54,7 @@ pub struct NaiveBuilderStrategy<A, S> {
 }
 
 impl<A, S> NaiveBuilderStrategy<A, S> {
-    // TODO: Defaults
+    /// Create the strategy
     pub fn new(action: A, selector: S) -> Self {
         NaiveBuilderStrategy { selector, action }
     }
@@ -74,6 +84,7 @@ pub struct IFTBuilderStrategy<A, S> {
 }
 
 impl<A, S> IFTBuilderStrategy<A, S> {
+    /// Create the strategy
     pub fn new(action: A, selector: S) -> Self {
         IFTBuilderStrategy { action, selector }
     }

@@ -1,3 +1,5 @@
+//! Mod with various operations and utilities for working with groups
+
 pub mod brute_force;
 pub mod orbit;
 pub mod random_perm;
@@ -16,6 +18,7 @@ use crate::perm::*;
 
 use std::iter::FromIterator;
 
+/// The main struct exported. It stores a group as a list of generators.
 #[derive(Debug, Clone)]
 pub struct Group<P = DefaultPermutation> {
     generators: Vec<P>,
@@ -118,6 +121,11 @@ where
         orbit::Orbit::new(self, base)
     }
 
+    /// Create a random generator for elements of the group
+    pub fn rng(&self) -> random_perm::RandPerm<P> {
+        random_perm::RandPerm::from_generators(11, self.generators(), 50)
+    }
+
     /// Computes the orbit of a particular action
     pub fn orbit_of_action<A>(&self, base: A::OrbitT, strat: &A) -> orbit::Orbit<A::OrbitT>
     where
@@ -143,7 +151,7 @@ where
     where
         A: Action<P>,
     {
-        orbit::transversal::SimpleTransversal::new_with_strategy(self, base, &strat)
+        orbit::transversal::SimpleTransversal::new_with_action(self, base, &strat)
     }
 
     /// Computes the factored transversal from the group generators
@@ -163,7 +171,7 @@ where
     where
         A: Action<P>,
     {
-        orbit::transversal::FactoredTransversal::new_with_strategy(self, base, &strat)
+        orbit::transversal::FactoredTransversal::new_with_action(self, base, &strat)
     }
 
     /// Computes a stabilizer chain for this group
