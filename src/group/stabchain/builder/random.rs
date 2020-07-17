@@ -36,6 +36,9 @@ pub struct StabchainBuilderRandom<T: MovedPointSelector> {
     n: usize,
     base: Vec<usize>,
     rng: ThreadRng,
+    //The chain is zero indexed, but this field is 1 indexed.
+    //This is due to the end condition being when the chain is up to date below the index of the first record position, and this would be -1 with zero indexing.
+    //For zero indexing this would have to be a signed type, which doesn't really seem worth it just to require one negative value at the end condition.
     up_to_date: usize,
 }
 #[allow(dead_code)] //TODO remove
