@@ -1,18 +1,18 @@
 use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::factored_transversal::{
-    factored_transversal_complete_opt, representative_raw, representative_raw_as_word,
+    factored_transversal_complete_opt, representative_raw_as_word,
 };
-use crate::group::stabchain::element_testing::{residue_as_words, residue_as_words_from_words};
+use crate::group::stabchain::element_testing::residue_as_words_from_words;
 use crate::group::stabchain::{MovedPointSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{
-    apply_permutation_word, collapse_perm_word, random_subproduct_full, random_subproduct_subset,
-    random_subproduct_word_full, random_subproduct_word_subset,
+    apply_permutation_word, collapse_perm_word, random_subproduct_word_full,
+    random_subproduct_word_subset,
 };
 use crate::group::Group;
 use crate::perm::Permutation;
 use itertools::Itertools;
 use rand::rngs::ThreadRng;
-use rand::seq::{IteratorRandom, SliceRandom};
+use rand::seq::IteratorRandom;
 use rand::thread_rng;
 use std::collections::{HashMap, VecDeque};
 use std::iter::Iterator;
