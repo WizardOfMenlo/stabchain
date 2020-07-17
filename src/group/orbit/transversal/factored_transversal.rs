@@ -12,13 +12,13 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
 /// Contains the base of this traversal, and a factored traversal of the orbit.
 pub type FactoredTransversal<P, A = SimpleApplication<P>> =
-    TransversalSkeleton<P, FactoredTransversalResolver<A>, <A as Action<P>>::OrbitT>;
+    TransversalSkeleton<P, FactoredTransversalResolver<A>, A>;
 
 pub(crate) fn representative_raw<P, S, A>(
     transversal: &HashMap<A::OrbitT, P, S>,
     base: A::OrbitT,
     point: A::OrbitT,
-    strat: A,
+    strat: &A,
 ) -> Option<P>
 where
     P: Permutation,
@@ -54,7 +54,7 @@ where
     /// let fc = FactoredTransversal::new(&Group::symmetric(10), 1);
     ///```
     pub fn new(g: &Group<P>, base: usize) -> Self {
-        Self::new_with_strategy(g, base, SimpleApplication::default())
+        Self::new_with_strategy(g, base, &SimpleApplication::default())
     }
 
     /// Given a set of generating elements and element, construct the factored transversal.
@@ -74,11 +74,11 @@ where
     P: Permutation,
     A: Action<P>,
 {
-    pub fn new_with_strategy(g: &Group<P>, base: A::OrbitT, strat: A) -> Self {
+    pub fn new_with_strategy(g: &Group<P>, base: A::OrbitT, strat: &A) -> Self {
         FactoredTransversal::from_raw(
             base.clone(),
-            factored_transversal(g, base, &strat),
-            FactoredTransversalResolver(strat),
+            factored_transversal(g, base, strat),
+            FactoredTransversalResolver(strat.clone()),
         )
     }
 }

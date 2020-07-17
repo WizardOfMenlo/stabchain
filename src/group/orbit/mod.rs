@@ -25,7 +25,7 @@ where
 impl Orbit {
     /// Build an orbit from a group
     pub fn new<P: Permutation>(g: &Group<P>, w: usize) -> Self {
-        Self::from_raw(w, orbit(g, w, SimpleApplication::default()))
+        Self::from_raw(w, orbit(g, w, &SimpleApplication::default()))
     }
 }
 
@@ -33,7 +33,7 @@ impl<OrbitT> Orbit<OrbitT>
 where
     OrbitT: std::hash::Hash + Eq + Clone,
 {
-    pub fn new_with_strategy<P, A>(g: &Group<P>, w: OrbitT, strat: A) -> Self
+    pub fn new_with_action<P, A>(g: &Group<P>, w: OrbitT, strat: &A) -> Self
     where
         P: Permutation,
         A: Action<P, OrbitT = OrbitT>,
@@ -92,7 +92,7 @@ impl fmt::Display for Orbit {
 }
 
 /// Algorithm to compute orbit from a group
-pub fn orbit<P, A>(g: &Group<P>, w: A::OrbitT, strat: A) -> HashSet<A::OrbitT>
+pub fn orbit<P, A>(g: &Group<P>, w: A::OrbitT, strat: &A) -> HashSet<A::OrbitT>
 where
     P: Permutation,
     A: Action<P>,
@@ -126,7 +126,7 @@ where
 
 /// Algorithm to compute orbit from a group. This variant optimizes by checking
 /// if the orbit is complete before doing more work
-pub fn orbit_complete_opt<P, A>(g: &Group<P>, w: A::OrbitT, strat: A) -> HashSet<A::OrbitT>
+pub fn orbit_complete_opt<P, A>(g: &Group<P>, w: A::OrbitT, strat: &A) -> HashSet<A::OrbitT>
 where
     P: Permutation,
     A: Action<P>,
@@ -167,7 +167,7 @@ mod tests {
     use super::*;
 
     fn orbit_simple<P: Permutation>(g: &Group<P>, w: usize) -> HashSet<usize> {
-        orbit(g, w, SimpleApplication::default())
+        orbit(g, w, &SimpleApplication::default())
     }
 
     #[test]

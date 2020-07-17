@@ -5,6 +5,7 @@ const RANGE_OF_VALUES: [usize; 5] = [8, 10, 16, 20, 32];
 use stabchain::group::stabchain::builder::{IFTBuilderStrategy, NaiveBuilderStrategy};
 use stabchain::group::stabchain::moved_point_selector::DefaultSelector;
 use stabchain::group::Group;
+use stabchain::perm::actions::SimpleApplication;
 
 fn stabchain_cyclic(c: &mut Criterion) {
     let mut group = c.benchmark_group("group__stabchain__ss__cyclic");
@@ -15,12 +16,14 @@ fn stabchain_cyclic(c: &mut Criterion) {
         });
         group.bench_with_input(BenchmarkId::new("naive", i), i, |b, i| {
             let g = Group::cyclic(*i);
-            let strat = NaiveBuilderStrategy::new(DefaultSelector::default());
+            let strat =
+                NaiveBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default());
             b.iter(|| g.stabchain_with_strategy(strat.clone()))
         });
         group.bench_with_input(BenchmarkId::new("ift", i), i, |b, i| {
             let g = Group::cyclic(*i);
-            let strat = IFTBuilderStrategy::new(DefaultSelector::default());
+            let strat =
+                IFTBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default());
             b.iter(|| g.stabchain_with_strategy(strat.clone()))
         });
     }
@@ -36,12 +39,14 @@ fn stabchain_symmetric(c: &mut Criterion) {
         });
         group.bench_with_input(BenchmarkId::new("naive", i), i, |b, i| {
             let g = Group::symmetric(*i);
-            let strat = NaiveBuilderStrategy::new(DefaultSelector::default());
+            let strat =
+                NaiveBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default());
             b.iter(|| g.stabchain_with_strategy(strat.clone()))
         });
         group.bench_with_input(BenchmarkId::new("ift", i), i, |b, i| {
             let g = Group::symmetric(*i);
-            let strat = IFTBuilderStrategy::new(DefaultSelector::default());
+            let strat =
+                IFTBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default());
             b.iter(|| g.stabchain_with_strategy(strat.clone()))
         });
     }
@@ -57,12 +62,14 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
         });
         group.bench_with_input(BenchmarkId::new("naive", i), i, |b, i| {
             let g = Group::product(&Group::symmetric(*i), &Group::symmetric(*i));
-            let strat = NaiveBuilderStrategy::new(DefaultSelector::default());
+            let strat =
+                NaiveBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default());
             b.iter(|| g.stabchain_with_strategy(strat.clone()))
         });
         group.bench_with_input(BenchmarkId::new("ift", i), i, |b, i| {
             let g = Group::product(&Group::symmetric(*i), &Group::symmetric(*i));
-            let strat = IFTBuilderStrategy::new(DefaultSelector::default());
+            let strat =
+                IFTBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default());
             b.iter(|| g.stabchain_with_strategy(strat.clone()))
         });
     }

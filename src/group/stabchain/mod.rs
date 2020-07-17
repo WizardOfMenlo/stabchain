@@ -4,26 +4,30 @@ pub mod moved_point_selector;
 
 use crate::group::orbit::abstraction::TransversalResolver;
 use crate::group::Group;
+use crate::perm::actions::SimpleApplication;
 use crate::perm::*;
 use builder::{Builder, BuilderStrategy};
 use moved_point_selector::MovedPointSelector;
 
 use std::collections::HashMap;
 
-#[derive(Debug)]
-pub struct Stabchain<P, V> {
-    chain: Vec<StabchainRecord<P, V>>,
+pub struct Stabchain<P, V, A = SimpleApplication<P>>
+where
+    A: Action<P>,
+{
+    chain: Vec<StabchainRecord<P, V, A>>,
 }
 
-impl<P, V> Stabchain<P, V>
+impl<P, V, A> Stabchain<P, V, A>
 where
     P: Permutation,
-    V: TransversalResolver<P>,
+    A: Action<P>,
+    V: TransversalResolver<P, A>,
 {
     /// Creates a stabilizer chain, using a selected strategy.
-    pub fn new_with_strategy<S, B: Builder<P, V>>(g: &Group<P>, build_strategy: S) -> Self
+    pub fn new_with_strategy<S, B: Builder<P, V, A>>(g: &Group<P>, build_strategy: S) -> Self
     where
-        S: BuilderStrategy<P, Transversal = V, BuilderT = B>,
+        S: BuilderStrategy<P, Action = A, Transversal = V, BuilderT = B>,
     {
         let mut builder = build_strategy.make_builder();
         builder.set_generators(g);
@@ -31,7 +35,7 @@ where
     }
 
     // Utility to get the chain
-    fn get_chain_at_layer(&self, n: usize) -> impl Iterator<Item = &StabchainRecord<P, V>> {
+    fn get_chain_at_layer(&self, n: usize) -> impl Iterator<Item = &StabchainRecord<P, V, A>> {
         self.chain.iter().skip(n)
     }
 
@@ -70,8 +74,8 @@ where
     }
 
     /// Get the base corresponding to this stabilizer chain
-    pub fn base(&self) -> Vec<usize> {
-        self.chain.iter().map(|g| g.base).collect()
+    pub fn base(&self) -> Vec<A::OrbitT> {
+        self.chain.iter().map(|g| &g.base).cloned().collect()
     }
 
     /// Get chain length
@@ -86,18 +90,21 @@ where
     }
 
     /// Get G^(n)
-    pub fn layer(&self, n: usize) -> Option<&StabchainRecord<P, V>> {
+    pub fn layer(&self, n: usize) -> Option<&StabchainRecord<P, V, A>> {
         self.chain.get(n)
     }
 
     /// Get an iterator over the records
-    pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord<P, V>> {
+    pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord<P, V, A>> {
         self.chain.iter()
     }
 }
 
-impl<P, V> IntoIterator for Stabchain<P, V> {
-    type Item = StabchainRecord<P, V>;
+impl<P, V, A> IntoIterator for Stabchain<P, V, A>
+where
+    A: Action<P>,
+{
+    type Item = StabchainRecord<P, V, A>;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -107,31 +114,38 @@ impl<P, V> IntoIterator for Stabchain<P, V> {
 
 /// All the information stored in a layer of the stabilizer chain
 #[derive(Debug, Clone)]
-pub struct StabchainRecord<P, V> {
-    base: usize,
+pub struct StabchainRecord<P, V, A = SimpleApplication<P>>
+where
+    A: Action<P>,
+{
+    base: A::OrbitT,
     gens: Group<P>,
-    transversal: HashMap<usize, P>,
+    transversal: HashMap<A::OrbitT, P>,
     resolver: V,
 }
 
-impl<P, V> StabchainRecord<P, V> {
+impl<P, V, A> StabchainRecord<P, V, A>
+where
+    A: Action<P>,
+{
     /// Get the associated group
     pub fn group(&self) -> &Group<P> {
         &self.gens
     }
 
     /// Get the base of this layer, i.e. the element that the next layer stabilizes
-    pub fn base(&self) -> usize {
-        self.base
+    pub fn base(&self) -> &A::OrbitT {
+        &self.base
     }
 }
 
-impl<P, V> StabchainRecord<P, V>
+impl<P, V, A> StabchainRecord<P, V, A>
 where
     P: Permutation,
-    V: TransversalResolver<P>,
+    A: Action<P>,
+    V: TransversalResolver<P, A>,
 {
-    pub(crate) fn new(base: usize, gens: Group<P>, transversal: HashMap<usize, P>) -> Self {
+    pub(crate) fn new(base: A::OrbitT, gens: Group<P>, transversal: HashMap<A::OrbitT, P>) -> Self {
         StabchainRecord {
             base,
             gens,
@@ -148,16 +162,17 @@ where
     /// Get the resolver of the record
     pub fn transversal(&self) -> V::AssociatedTransversal {
         self.resolver
-            .into_transversal(self.transversal.clone(), self.base)
+            .into_transversal(self.transversal.clone(), self.base.clone())
     }
 }
 
 use std::fmt;
 
-impl<P, V> fmt::Display for Stabchain<P, V>
+impl<P, V, A> fmt::Display for Stabchain<P, V, A>
 where
     P: fmt::Display + Permutation,
-    V: TransversalResolver<P>,
+    A: Action<P, OrbitT = usize>,
+    V: TransversalResolver<P, A>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[Stabchain: ")?;
@@ -168,11 +183,13 @@ where
     }
 }
 
-impl<P, V> fmt::Display for StabchainRecord<P, V>
+impl<P, V, A> fmt::Display for StabchainRecord<P, V, A>
 where
     P: fmt::Display + Permutation,
+    A: Action<P, OrbitT = usize>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // TODO: Once specialization is done, fix this
         write!(f, "[base := {}, {}]", self.base() + 1, self.group())
     }
 }
@@ -182,33 +199,38 @@ mod tests {
     use super::*;
     use crate::group::orbit::transversal::Transversal;
 
-    fn check_well_formed_chain<P: Permutation, V: TransversalResolver<P>>(s: &Stabchain<P, V>) {
+    fn check_well_formed_chain<P, V, A>(s: &Stabchain<P, V, A>)
+    where
+        P: Permutation,
+        V: TransversalResolver<P, A>,
+        A: Action<P>,
+        A::OrbitT: std::fmt::Debug,
+    {
+        let applicator = A::default();
         let mut previous = None;
-        for record in s.chain.iter() {
+        for record in s.iter() {
             let gens = record.group();
             let transversal = record.transversal();
 
             // Check the computed transversal, and the one computed from generators agree
             // We do not directly check the transversal since representatives are not unique
-            assert_eq!(transversal.orbit(), gens.orbit(record.base));
+            assert_eq!(
+                transversal.orbit(),
+                gens.orbit_of_action(record.base.clone(), &applicator)
+            );
 
-            for elem in transversal.orbit().iter().copied() {
-                assert_eq!(
-                    elem,
-                    transversal
-                        .representative(elem)
-                        .unwrap()
-                        .apply(record.base())
-                );
+            for elem in transversal.orbit().iter().cloned() {
+                let repr = transversal.representative(elem.clone()).unwrap();
+                assert_eq!(elem, applicator.apply(&repr, record.base().clone()));
             }
 
             // Check that everything is stabilized correctly
             if !previous.is_none() {
                 let stabilized = previous.unwrap();
-                assert_eq!(gens.orbit(stabilized).len(), 1);
+                assert_eq!(gens.orbit_of_action(stabilized, &applicator).len(), 1);
             }
 
-            previous = Some(record.base);
+            previous = Some(record.base.clone());
         }
     }
 

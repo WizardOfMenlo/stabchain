@@ -13,8 +13,8 @@ use std::collections::{HashMap, VecDeque};
 /// memory intensive. In applications please use FactoredTransversal
 /// (After some testing, it seems that it is also slower computationally,
 /// so don't use unless wanting some pain)
-pub type SimpleTransversal<P, OrbitT = usize> =
-    TransversalSkeleton<P, SimpleTransversalResolver, OrbitT>;
+pub type SimpleTransversal<P, A = SimpleApplication<P>> =
+    TransversalSkeleton<P, SimpleTransversalResolver, A>;
 
 impl<P> SimpleTransversal<P>
 where
@@ -24,22 +24,19 @@ where
     pub fn new(g: &Group<P>, base: usize) -> Self {
         Self::from_raw(
             base,
-            transversal(g, base, SimpleApplication::default()),
+            transversal(g, base, &SimpleApplication::default()),
             SimpleTransversalResolver,
         )
     }
 }
 
-impl<P, OrbitT> SimpleTransversal<P, OrbitT>
+impl<P, A> SimpleTransversal<P, A>
 where
     P: Permutation,
-    OrbitT: std::hash::Hash + Eq + Clone,
+    A: Action<P>,
 {
     /// Create from the group
-    pub fn new_with_strategy<A>(g: &Group<P>, base: OrbitT, strategy: A) -> Self
-    where
-        A: Action<P, OrbitT = OrbitT>,
-    {
+    pub fn new_with_strategy(g: &Group<P>, base: A::OrbitT, strategy: &A) -> Self {
         Self::from_raw(
             base.clone(),
             transversal(g, base, strategy),
@@ -75,7 +72,7 @@ where
 
 // Needed since entry requires &mut
 #[allow(clippy::map_entry)]
-pub fn transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: A) -> HashMap<A::OrbitT, P>
+pub fn transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: &A) -> HashMap<A::OrbitT, P>
 where
     P: Permutation,
     A: Action<P>,
@@ -114,7 +111,7 @@ where
 pub fn transversal_complete_opt<P, A>(
     g: &Group<P>,
     base: A::OrbitT,
-    strat: A,
+    strat: &A,
 ) -> HashMap<A::OrbitT, P>
 where
     P: Permutation,

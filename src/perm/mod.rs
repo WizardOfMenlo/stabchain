@@ -1,4 +1,4 @@
-//! Digraphs
+//! Permutations on integers
 //!
 //! This crate implements permutations on integers
 
