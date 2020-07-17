@@ -123,8 +123,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 .keys()
                 .choose(&mut self.rng.clone())
                 .map(|point| {
-                    representative_raw_as_word(&record.transversal, record.base, point.clone())
-                        .unwrap()
+                    representative_raw_as_word(&record.transversal, record.base, *point).unwrap()
                 })
                 .expect("should be present")
         })
@@ -217,7 +216,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         let gens = self
             .current_chain()
             .flat_map(|record| record.gens.generators())
-            .map(|f| f.clone())
+            .cloned()
             .collect::<Vec<Permutation>>();
         //Random products of the form gw
         let mut random_gens = self.random_schrier_generators_as_word(C1, C2, &gens[..]);
@@ -240,7 +239,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .keys()
                         .choose_multiple(&mut self.rng, BASE_BOUND)
                         .into_iter()
-                        .map(|x| x.clone())
+                        .copied()
                         .collect()
                 } else {
                     record
@@ -248,7 +247,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .keys()
                         .choose_multiple(&mut self.rng, b_star.len())
                         .into_iter()
-                        .map(|x| x.clone())
+                        .copied()
                         .collect()
                 };
                 //If any point is not fixed by the residue
@@ -315,7 +314,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         let gens = self
             .current_chain()
             .flat_map(|record| record.gens.generators())
-            .map(|f| f.clone())
+            .cloned()
             .collect::<Vec<Permutation>>();
         //Create an iterator that first has the original generators, and then the random schrier generators.
         let products: Vec<Vec<Permutation>> = self.chain[0]
@@ -333,7 +332,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.current_pos = original_position;
     }
 
-    fn sgt_test(&mut self, p: &Vec<Permutation>) {
+    fn sgt_test(&mut self, p: &[Permutation]) {
         let (sift, residue) = residue_as_words_from_words(self.current_chain(), p);
         let original_position = self.current_pos;
         //This acts trivially on the current orbit.
@@ -359,14 +358,14 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     /// Wrapper function to check all points of the permutation domain.
-    fn is_trivial_residue_all_points(&self, p_as_words: &Vec<Permutation>) -> bool {
+    fn is_trivial_residue_all_points(&self, p_as_words: &[Permutation]) -> bool {
         self.is_trivial_residue(p_as_words, 0..self.n)
     }
 
     /// Check if a residue acts trivially on a set of points.
     fn is_trivial_residue(
         &self,
-        p_as_words: &Vec<Permutation>,
+        p_as_words: &[Permutation],
         points: impl IntoIterator<Item = usize>,
     ) -> bool {
         points

@@ -113,7 +113,7 @@ where
 /// Sift the permutation word through the chain, returning the residue it generates.
 pub fn residue_as_words_from_words<'a, V>(
     it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
-    p: &Vec<Permutation>,
+    p: &[Permutation],
 ) -> (bool, Vec<Permutation>)
 where
     V: 'a + TransversalResolver,
@@ -124,8 +124,8 @@ where
         return (true, Vec::new());
     }
 
-    let mut res = p.clone();
-    let mut g = p.clone();
+    let mut res = p.to_vec();
+    let mut g = p.to_vec();
     for record in it {
         let base = record.base;
         //TODO Perhaps instead apply res to cut down on permutation applications.
