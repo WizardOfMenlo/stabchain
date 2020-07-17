@@ -175,8 +175,7 @@ use std::fmt;
 impl<P, V, A> fmt::Display for Stabchain<P, V, A>
 where
     P: fmt::Display + Permutation,
-    A: Action<P>,
-    A::OrbitT: std::fmt::Display,
+    A: Action<P, OrbitT = usize>,
     V: TransversalResolver<P, A>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -191,12 +190,11 @@ where
 impl<P, V, A> fmt::Display for StabchainRecord<P, V, A>
 where
     P: fmt::Display + Permutation,
-    A: Action<P>,
-    A::OrbitT: fmt::Display,
+    A: Action<P, OrbitT = usize>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // TODO: Once specialization is done, fix this
-        write!(f, "[base := {} + 1, {}]", self.base(), self.group())
+        write!(f, "[base := {}, {}]", self.base() + 1, self.group())
     }
 }
 
