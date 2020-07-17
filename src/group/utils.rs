@@ -19,17 +19,17 @@ pub fn random_subproduct_full<T: Rng>(rng: &mut T, gens: &[Permutation]) -> Perm
 }
 
 /// Apply a point to permutations stored as a word.
-pub fn apply_permutation_word<'a>(
-    perm_word: impl IntoIterator<Item = &'a Permutation>,
+pub fn apply_permutation_word(
+    perm_word: &impl IntoIterator<Item = Permutation>,
     x: usize,
 ) -> usize {
     perm_word.into_iter().fold(x, |accum, p| p.apply(accum))
 }
 
 /// Convert from a permutation stored as a word, into a single permutation.
-pub fn collapse_perm_word<'a>(p: impl IntoIterator<Item = &'a Permutation>) -> Permutation {
+pub fn collapse_perm_word<'a>(p: &impl IntoIterator<Item = Permutation>) -> Permutation {
     p.into_iter()
-        .fold(Permutation::id(), |accum, perm| accum.multiply(perm))
+        .fold(Permutation::id(), |accum, perm| accum.multiply(&perm))
 }
 
 /// Generate a random subproduct of a random k sized subset of the given generators.
@@ -128,18 +128,18 @@ mod tests {
     fn test_apply_permutation_word() {
         //Test an empty word.
         let empty_word = vec![];
-        assert_eq!(3, apply_permutation_word(empty_word, 3));
+        assert_eq!(3, apply_permutation_word(&empty_word, 3));
         let perm_word: Vec<Permutation> = vec![
             CyclePermutation::single_cycle(&[1, 2, 4]).into(),
             CyclePermutation::single_cycle(&[3, 5, 8]).into(),
             CyclePermutation::single_cycle(&[7, 9]).into(),
             CyclePermutation::single_cycle(&[1, 5, 6, 9]).into(),
         ];
-        let collapsed_word = collapse_perm_word(perm_word.iter());
+        let collapsed_word = collapse_perm_word(&perm_word);
         for i in 0..9 {
             assert_eq!(
                 collapsed_word.apply(i),
-                apply_permutation_word(perm_word.iter(), i)
+                apply_permutation_word(&perm_word, i)
             );
         }
     }

@@ -223,7 +223,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
         random_gens.iter_mut().for_each(|gw| {
             //Get the residue of this word
-            let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), &gw);
+            let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), &gw.clone());
             //Append the inverse of the residue to the word, to get a schrier generator.
             gw.extend(gw_bar.iter().map(|p| p.inv()).rev());
         });
@@ -327,13 +327,13 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .collect();
         //Sift the original generators, and all products of the form g*w_{1,2}.
         for p in products {
-            self.sgt_test(&p);
+            self.sgt_test(p);
         }
         self.current_pos = original_position;
     }
 
-    fn sgt_test(&mut self, p: &[Permutation]) {
-        let (sift, residue) = residue_as_words_from_words(self.current_chain(), p);
+    fn sgt_test(&mut self, p: impl IntoIterator<Item = Permutation>) {
+        let (sift, residue) = residue_as_words_from_words(self.current_chain(), &p);
         let original_position = self.current_pos;
         //This acts trivially on the current orbit.
         if self.is_trivial_residue_all_points(&residue) {
@@ -342,7 +342,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 return;
             }
             //Find the position at which this acted non-trivially.
-            let j = self.current_pos + residue.len() - p.len();
+            let j = self.current_pos + residue.len() + p.into_iter().count();
             self.current_pos = j;
         } else {
             //This acts non-trivially on the current orbit.
@@ -350,7 +350,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             self.chain[self.current_pos]
                 .gens
                 .generators
-                .push(collapse_perm_word(p));
+                .push(collapse_perm_word(&p));
         }
         self.sgc();
         //Reset the position.
@@ -358,19 +358,22 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     /// Wrapper function to check all points of the permutation domain.
-    fn is_trivial_residue_all_points(&self, p_as_words: &[Permutation]) -> bool {
+    fn is_trivial_residue_all_points(
+        &self,
+        p_as_words: &impl IntoIterator<Item = Permutation>,
+    ) -> bool {
         self.is_trivial_residue(p_as_words, 0..self.n)
     }
 
     /// Check if a residue acts trivially on a set of points.
     fn is_trivial_residue(
         &self,
-        p_as_words: &[Permutation],
+        p_as_words: &impl IntoIterator<Item = Permutation>,
         points: impl IntoIterator<Item = usize>,
     ) -> bool {
         points
             .into_iter()
-            .all(|x| apply_permutation_word(p_as_words.iter(), x) == x)
+            .all(|x| apply_permutation_word(p_as_words, x) == x)
     }
 }
 

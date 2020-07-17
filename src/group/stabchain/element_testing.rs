@@ -113,23 +113,17 @@ where
 /// Sift the permutation word through the chain, returning the residue it generates.
 pub fn residue_as_words_from_words<'a, V>(
     it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
-    p: &[Permutation],
+    p: &impl IntoIterator<Item = Permutation>,
 ) -> (bool, Vec<Permutation>)
 where
     V: 'a + TransversalResolver,
 {
-    // Early exit
-    if p.is_empty() {
-        // The empty product is the identity
-        return (true, Vec::new());
-    }
-
-    let mut res = p.to_vec();
-    let mut g = p.to_vec();
+    let mut res: Vec<Permutation> = p.into_iter().collect();
+    let mut g: Vec<Permutation> = p.into_iter().collect();
     for record in it {
         let base = record.base;
         //TODO Perhaps instead apply res to cut down on permutation applications.
-        let application = apply_permutation_word(g.iter(), base);
+        let application = apply_permutation_word(g, base);
 
         if !record.transversal.contains_key(&application) {
             return (false, res);
