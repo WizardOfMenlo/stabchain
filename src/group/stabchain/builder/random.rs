@@ -223,11 +223,10 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         let mut random_gens = self.random_schrier_generators_as_word(C1, C2, &gens[..]);
         //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
         random_gens.iter_mut().for_each(|gw| {
-            //Take the inverse of the word we have
-            let gw_inv = gw.iter().map(|p| p.inv()).rev().collect();
-            //Then get the residue of the inverse, adding it onto our schrier generator.
-            let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), &gw_inv);
-            gw.extend(gw_bar);
+            //Get the residue of this word
+            let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), &gw);
+            //Append the inverse of the residue to the word, to get a schrier generator.
+            gw.extend(gw_bar.iter().map(|p| p.inv()).rev());
         });
         for h in random_gens {
             let (sift, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
@@ -292,11 +291,11 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 //Consider the chain now up to date below level j.
                 self.up_to_date = j;
             }
-            if all_discarded {
-                self.up_to_date = self.current_pos - 1;
-                //Really is setting this to i - 1, but as the position is zero indexed it would be doing (i - 1 + 1).
-                self.up_to_date = self.current_pos;
-            }
+        }
+        if all_discarded {
+            println!("All Discarded");
+            //Really is setting this to i - 1, but as the position is zero indexed it would be doing (i - 1 + 1).
+            self.up_to_date = self.current_pos;
         }
         self.sgt();
         //SGC terminates if it is up to date at position 0; otherwise moving onto the next layers.
