@@ -11,7 +11,7 @@ pub struct MapPermutation {
 
 impl MapPermutation {
     pub fn from_vec(images: &[usize]) -> Self {
-        crate::perm::utils::validate_images(images).unwrap();
+        crate::perm::utils::valid_images(images).unwrap();
         Self::from_vec_unchecked(images)
     }
 
