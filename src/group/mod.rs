@@ -16,10 +16,12 @@ use crate::perm::export::CyclePermutation;
 use crate::perm::utils::order_n_permutation;
 use crate::perm::*;
 
+use serde::{Deserialize, Serialize};
+
 use std::iter::FromIterator;
 
 /// The main struct exported. It stores a group as a list of generators.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Group<P = DefaultPermutation> {
     generators: Vec<P>,
 }
@@ -263,6 +265,7 @@ where
     }
 
     /// Used particularly to switch a group representation to any which uses a different permutation type
+    /// Or to export a group when the permutation type is serializable
     pub fn map<F, T>(self, func: F) -> Group<T>
     where
         F: FnMut(P) -> T,
