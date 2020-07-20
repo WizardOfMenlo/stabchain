@@ -13,6 +13,8 @@ use moved_point_selector::MovedPointSelector;
 
 use std::collections::HashMap;
 
+use num::BigUint;
+
 /// A stabilizer chain. Each level of the chain represents a subgroup of the
 /// preceding group, which usually fixes a single point.
 pub struct Stabchain<P, V, A = SimpleApplication<P>>
@@ -65,16 +67,16 @@ where
     }
 
     /// Calculate the order of the group this stabilizer chain represents.
-    pub fn order(&self) -> usize {
+    pub fn order(&self) -> BigUint {
         self.order_subgroup(0)
     }
 
     /// Calculate the order of the subgroupgroup this stabilizer chain represents.
-    pub fn order_subgroup(&self, layer: usize) -> usize {
+    pub fn order_subgroup(&self, layer: usize) -> BigUint {
         //The order is the product of the orbit lengths.
         self.get_chain_at_layer(layer)
-            .map(|record| record.transversal.len())
-            .product::<usize>()
+            .map(|record| BigUint::from(record.transversal.len()))
+            .product()
     }
 
     /// Get the base corresponding to this stabilizer chain
@@ -270,12 +272,16 @@ mod tests {
         valid_stabchain(&chain).unwrap();
     }
 
+    fn i(x: usize) -> BigUint {
+        BigUint::from(x)
+    }
+
     #[test]
     fn dihedral_chain() {
         let g = Group::dihedral_2n(3);
         let chain = g.stabchain();
         valid_stabchain(&chain).unwrap();
-        assert_eq!(6, chain.order());
+        assert_eq!(i(6), chain.order());
     }
 
     #[test]
@@ -283,7 +289,7 @@ mod tests {
         let g = Group::alternating(5);
         let chain = g.stabchain();
         valid_stabchain(&chain).unwrap();
-        assert_eq!(60, chain.order());
+        assert_eq!(i(60), chain.order());
     }
 
     #[test]
@@ -291,7 +297,7 @@ mod tests {
         let g = Group::symmetric(10);
         let chain = g.stabchain();
         valid_stabchain(&chain).unwrap();
-        assert_eq!(3628800, chain.order())
+        assert_eq!(i(3628800), chain.order())
     }
 
     #[test]

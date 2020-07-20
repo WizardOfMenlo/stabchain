@@ -65,6 +65,7 @@ fn test_transversals() {
 fn test_stabilizer() {
     general_test("stabilizer", |g| {
         let stabilizer = g.group().stabchain();
+        assert_eq!(&stabilizer.order(), g.order());
         valid_stabchain(&stabilizer)
     });
 }
@@ -81,6 +82,7 @@ fn test_stabilizer_ift() {
             LmpSelector::default(),
         ));
 
+        assert_eq!(&stabilizer.order(), g.order());
         valid_stabchain(&stabilizer)
     });
 }

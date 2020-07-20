@@ -28,4 +28,8 @@ impl<P> DecoratedGroup<P> {
     pub fn group(&self) -> &Group<P> {
         &self.group
     }
+
+    pub fn order(&self) -> &BigUint {
+        &self.size
+    }
 }
