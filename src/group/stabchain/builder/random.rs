@@ -192,10 +192,12 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     fn sgc(&mut self) {
-        println!("SGC {}", self.current_pos);
+        println!("SGC {}/{}", self.current_pos, self.chain.len());
+        dbg!(&self.base);
         let mut record = self.chain[self.current_pos].clone();
         //If the transvesal hasn't been calculated, then calculate it. If the generators are non-empty, then the orbit should be larger than 1.
         if record.transversal.len() == 1 && !record.group().generators().is_empty() {
+            println!("Calculating Orbit");
             record.transversal.extend(factored_transversal_complete_opt(
                 &record.group(),
                 record.base,
@@ -251,6 +253,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .copied()
                         .collect()
                 };
+                println!("{:?}", evaluated_points);
                 //If any point is not fixed by the residue
                 if !self.is_trivial_residue(&h_residue, evaluated_points) {
                     //Not all permutations have been discarded
@@ -281,6 +284,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     println!("Discarded");
                 }
             } else {
+                println!("Adding new generator");
                 let h_star = h_residue
                     .iter()
                     .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
@@ -340,12 +344,15 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         if self.is_trivial_residue_all_points(&residue) {
             //Can exit if the point sifted through, as it is the identity.
             if self.sifted(drop_out_level) {
+                println!("Case 3");
                 return;
             }
+            println!("Case 2");
             //Find the position at which this acted non-trivially.
             let j = self.current_pos + drop_out_level;
             self.current_pos = j;
         } else {
+            println!("Case 1");
             //This acts non-trivially on the current orbit.
             //Add this permutation to the generators of the current orbit, then invoke the strong generator constructor.
             self.chain[self.current_pos]
