@@ -143,6 +143,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     /// Check if adding a new element modifies the current layer of the chain.
     fn check_transversal_augmentation(&mut self, p: Permutation) {
         let mut record = self.chain[self.current_pos].clone();
+        debug_assert!(record.gens.generators().contains(&p));
         // If this element is already a generator, then we can exit
         let mut to_check = VecDeque::from_iter(record.transversal.keys().copied());
         let mut new_transversal = HashMap::new();
@@ -349,8 +350,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             }
             println!("Case 2");
             //Find the position at which this acted non-trivially.
-            let j = self.current_pos + drop_out_level;
-            self.current_pos = j;
+            self.current_pos = self.current_pos + drop_out_level;
         } else {
             println!("Case 1");
             //This acts non-trivially on the current orbit.
