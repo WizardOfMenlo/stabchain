@@ -5,9 +5,9 @@ use lazy_static::lazy_static;
 
 use rand::seq::IteratorRandom;
 
+use stabchain::group::group_library::DecoratedGroup;
 use stabchain::group::orbit::transversal::valid_transversal;
 use stabchain::group::stabchain::valid_stabchain;
-use stabchain::group::Group;
 use stabchain::perm::export::ExportablePermutation;
 use stabchain::perm::DefaultPermutation;
 
@@ -15,20 +15,21 @@ use stabchain::perm::DefaultPermutation;
 const LIMIT: usize = 1000;
 
 lazy_static! {
-    static ref GROUP_LIBRARY: Vec<Group<ExportablePermutation>> = group_library();
+    static ref GROUP_LIBRARY: Vec<DecoratedGroup<ExportablePermutation>> = group_library();
 }
 
-fn group_library() -> Vec<Group<ExportablePermutation>> {
+fn group_library() -> Vec<DecoratedGroup<ExportablePermutation>> {
     let input = File::open("data/groups.json").unwrap();
     let input = BufReader::new(input);
 
-    let groups: Vec<Group<ExportablePermutation>> = serde_json::from_reader(input).unwrap();
+    let groups: Vec<DecoratedGroup<ExportablePermutation>> =
+        serde_json::from_reader(input).unwrap();
     groups.into_iter().collect()
 }
 
 fn general_test<F, E>(name: &str, mut validator: F)
 where
-    F: FnMut(Group) -> Result<(), E>,
+    F: FnMut(DecoratedGroup) -> Result<(), E>,
     E: std::fmt::Debug,
 {
     let mut rng = rand::thread_rng();
@@ -43,7 +44,7 @@ where
         if validation.is_err() {
             let err = validation.unwrap_err();
             println!("[{}] Error {:?}", name, &err);
-            println!("[{}] Error on {}", name, g);
+            println!("[{}] Error on {}", name, g.group());
             errors.push((g, err));
         }
     }
@@ -55,7 +56,7 @@ where
 #[test]
 fn test_transversals() {
     general_test("transversal", |g| {
-        let transversal = g.transversal(0);
+        let transversal = g.group().transversal(0);
         valid_transversal(&transversal)
     })
 }
@@ -63,7 +64,7 @@ fn test_transversals() {
 #[test]
 fn test_stabilizer() {
     general_test("stabilizer", |g| {
-        let stabilizer = g.stabchain();
+        let stabilizer = g.group().stabchain();
         valid_stabchain(&stabilizer)
     });
 }
@@ -75,7 +76,7 @@ fn test_stabilizer_ift() {
     use stabchain::perm::actions::SimpleApplication;
 
     general_test("ift_stabilizer", |g| {
-        let stabilizer = g.stabchain_with_strategy(IFTBuilderStrategy::new(
+        let stabilizer = g.group().stabchain_with_strategy(IFTBuilderStrategy::new(
             SimpleApplication::default(),
             LmpSelector::default(),
         ));

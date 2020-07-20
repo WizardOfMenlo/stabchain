@@ -1,6 +1,7 @@
 //! Mod with various operations and utilities for working with groups
 
 pub mod brute_force;
+pub mod group_library;
 pub mod orbit;
 pub mod random_perm;
 pub mod stabchain;
