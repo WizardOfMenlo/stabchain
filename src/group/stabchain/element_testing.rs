@@ -110,33 +110,35 @@ where
     res
 }
 
-/// Sift the permutation word through the chain, returning the residue it generates.
+/// Sift the permutation word through the chain, returning the residue it generates and the drop out level.
 pub fn residue_as_words_from_words<'a, V>(
     it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
-    p: &impl IntoIterator<Item = Permutation>,
-) -> (bool, Vec<Permutation>)
+    p: impl IntoIterator<Item = Permutation>,
+) -> (usize, Vec<Permutation>)
 where
     V: 'a + TransversalResolver,
 {
-    let mut res: Vec<Permutation> = p.into_iter().collect();
+    //This permutation word will store the resulting residue.
     let mut g: Vec<Permutation> = p.into_iter().collect();
+    //This counts how many layers of the chain the permutation sifts through.
+    let k = 0;
     for record in it {
         let base = record.base;
-        //TODO Perhaps instead apply res to cut down on permutation applications.
-        let application = apply_permutation_word(g, base);
+        let application = apply_permutation_word(&g, base);
 
+        //There is a missing point, so this permutation has not sifted through.
         if !record.transversal.contains_key(&application) {
-            return (false, res);
+            break;
         }
-
+        //Already check the point is present, so there should be a representative.
         let representative = record
             .resolver()
             .representative(&record.transversal, base, application)
             .unwrap();
-        res.push(representative.clone());
         g.push(representative.inv());
+        k += 1;
     }
-    (true, res)
+    (k, g)
 }
 
 #[cfg(test)]
