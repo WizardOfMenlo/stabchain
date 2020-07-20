@@ -223,13 +223,14 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
         random_gens.iter_mut().for_each(|gw| {
             //Get the residue of this word
-            let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), &gw.clone());
+            let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), gw.clone());
             //Append the inverse of the residue to the word, to get a schrier generator.
             gw.extend(gw_bar.iter().map(|p| p.inv()).rev());
         });
         for h in random_gens {
-            let (sift, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
-            if sift {
+            //TODO remove this clone
+            let (drop_out_level, h_residue) = residue_as_words_from_words(self.current_chain(), h);
+            if self.sifted(drop_out_level) {
                 //Pick the points that should be evaluated.
                 let evaluated_points: Vec<usize> = if record.transversal.len() <= ORBIT_BOUND {
                     record.transversal.keys().cloned().collect()
@@ -286,7 +287,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 //Add as a generator and update the transversal.
                 self.check_transversal_augmentation(h_star);
                 //Find the position at which this didn't sift through.
-                let j = self.current_pos + h_residue.len() - h.len() + 1;
+                let j = self.current_pos + drop_out_level + 1;
                 //Consider the chain now up to date below level j.
                 self.up_to_date = j;
             }
@@ -333,16 +334,16 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     fn sgt_test(&mut self, p: impl IntoIterator<Item = Permutation>) {
-        let (sift, residue) = residue_as_words_from_words(self.current_chain(), &p);
+        let (drop_out_level, residue) = residue_as_words_from_words(self.current_chain(), p);
         let original_position = self.current_pos;
         //This acts trivially on the current orbit.
         if self.is_trivial_residue_all_points(&residue) {
             //Can exit if the point sifted through, as it is the identity.
-            if sift {
+            if self.sifted(drop_out_level) {
                 return;
             }
             //Find the position at which this acted non-trivially.
-            let j = self.current_pos + residue.len() + p.into_iter().count();
+            let j = self.current_pos + drop_out_level;
             self.current_pos = j;
         } else {
             //This acts non-trivially on the current orbit.
@@ -374,6 +375,11 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         points
             .into_iter()
             .all(|x| apply_permutation_word(p_as_words, x) == x)
+    }
+
+    //Utility function to check if a given drop out level is the bottom of the chain.
+    fn sifted(&self, drop_out_level: usize) -> bool {
+        self.current_pos + drop_out_level == self.chain.len()
     }
 }
 
