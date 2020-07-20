@@ -58,3 +58,23 @@ fn test_stabilizer() {
     println!("{} errors out of {}", errors, LIMIT);
     assert_eq!(errors, 0);
 }
+
+#[test]
+fn test_stabilizer_ift() {
+    use stabchain::group::stabchain::builder::IFTBuilderStrategy;
+    use stabchain::group::stabchain::moved_point_selector::LmpSelector;
+    use stabchain::perm::actions::SimpleApplication;
+
+    let mut errors = 0;
+    for g in GROUP_LIBRARY.iter().cloned().map(|g| g.map(DefaultPermutation::from)) {
+        let transversal = g.stabchain_with_strategy(IFTBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default()));
+        let validation = valid_stabchain(&transversal);
+        if validation.is_err() {
+            errors += 1;
+            println!("{:?}", validation.unwrap_err());
+        } 
+    }
+
+    println!("{} errors out of {}", errors, LIMIT);
+    assert_eq!(errors, 0);
+}
