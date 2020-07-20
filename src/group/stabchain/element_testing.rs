@@ -93,7 +93,6 @@ where
     let mut g = p.clone();
     for record in it {
         let base = record.base;
-        //TODO Perhaps instead apply res to cut down on permutation applications.
         let application = g.apply(base);
 
         if !record.transversal.contains_key(&application) {
