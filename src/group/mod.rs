@@ -101,9 +101,25 @@ impl Group {
 }
 
 impl<P> Group<P> {
+    /// To be used when the element is not a permutation. Note this does not check id
+    pub fn from_list<T: IntoIterator<Item = P>>(iter: T) -> Group<P> {
+        Group {
+            generators: iter.into_iter().collect(),
+        }
+    }
+
     /// Get a reference to the generators of the group
     pub fn generators(&self) -> &[P] {
         &self.generators[..]
+    }
+
+    /// Used particularly to switch a group representation to any which uses a different permutation type
+    /// Or to export a group when the permutation type is serializable
+    pub fn map<F, T>(self, func: F) -> Group<T>
+    where
+        F: FnMut(P) -> T,
+    {
+        Group::from_list(self.generators.into_iter().map(func))
     }
 }
 
@@ -262,16 +278,6 @@ where
             .chain(g2.generators().iter().map(|p| p.shift(n)));
 
         Group::from_iter(it)
-    }
-
-    /// Used particularly to switch a group representation to any which uses a different permutation type
-    /// Or to export a group when the permutation type is serializable
-    pub fn map<F, T>(self, func: F) -> Group<T>
-    where
-        F: FnMut(P) -> T,
-        T: Permutation,
-    {
-        Group::from_iter(self.generators.into_iter().map(func))
     }
 }
 
