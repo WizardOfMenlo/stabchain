@@ -232,8 +232,7 @@ where
         valid_transversal(&transversal).map_err(StabchainError::TransversalError)?;
 
         // Check that everything is stabilized correctly
-        if !previous.is_none() {
-            let stabilized = previous.unwrap();
+        if let Some(stabilized) = previous {
             if gens.orbit_of_action(stabilized.clone(), &applicator).len() != 1 {
                 return Err(StabchainError::BasePointNotStabilized(stabilized));
             }
