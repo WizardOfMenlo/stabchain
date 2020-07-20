@@ -231,7 +231,6 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             gw.extend(gw_bar.iter().map(|p| p.inv()).rev());
         });
         for h in random_gens {
-            //TODO remove this clone
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if self.sifted(drop_out_level) {
                 //Pick the points that should be evaluated.
