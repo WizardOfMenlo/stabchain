@@ -113,13 +113,13 @@ where
 /// Sift the permutation word through the chain, returning the residue it generates and the drop out level.
 pub fn residue_as_words_from_words<'a, V>(
     it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
-    p: impl IntoIterator<Item = Permutation>,
+    p: impl IntoIterator<Item = &'a Permutation>,
 ) -> (usize, Vec<Permutation>)
 where
     V: 'a + TransversalResolver,
 {
     //This permutation word will store the resulting residue.
-    let mut g: Vec<Permutation> = p.into_iter().collect();
+    let mut g: Vec<Permutation> = p.into_iter().cloned().collect();
     //This counts how many layers of the chain the permutation sifts through.
     let mut k = 0;
     for record in it {

@@ -19,15 +19,15 @@ pub fn random_subproduct_full<T: Rng>(rng: &mut T, gens: &[Permutation]) -> Perm
 }
 
 /// Apply a point to permutations stored as a word.
-pub fn apply_permutation_word(
-    perm_word: &impl IntoIterator<Item = Permutation>,
+pub fn apply_permutation_word<'a>(
+    perm_word: impl IntoIterator<Item = &'a Permutation>,
     x: usize,
 ) -> usize {
     perm_word.into_iter().fold(x, |accum, p| p.apply(accum))
 }
 
 /// Convert from a permutation stored as a word, into a single permutation.
-pub fn collapse_perm_word<'a>(p: &impl IntoIterator<Item = Permutation>) -> Permutation {
+pub fn collapse_perm_word<'a>(p: impl IntoIterator<Item = &'a Permutation>) -> Permutation {
     p.into_iter()
         .fold(Permutation::id(), |accum, perm| accum.multiply(&perm))
 }
@@ -127,7 +127,7 @@ mod tests {
     #[test]
     fn test_apply_permutation_word() {
         //Test an empty word.
-        let empty_word = vec![];
+        let empty_word: Vec<Permutation> = vec![];
         assert_eq!(3, apply_permutation_word(&empty_word, 3));
         let perm_word: Vec<Permutation> = vec![
             CyclePermutation::single_cycle(&[1, 2, 4]).into(),
