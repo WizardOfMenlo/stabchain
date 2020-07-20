@@ -26,7 +26,7 @@ fn group_library() -> Vec<Group<ExportablePermutation>> {
     groups.into_iter().collect()
 }
 
-fn general_test<F, E>(mut validator: F)
+fn general_test<F, E>(name: &str, mut validator: F)
 where
     F: FnMut(Group) -> Result<(), E>,
     E: std::fmt::Debug,
@@ -39,21 +39,22 @@ where
         .map(|g| g.map(DefaultPermutation::from))
         .choose_multiple(&mut rng, LIMIT)
     {
-        let validation = validator(g);
+        let validation = validator(g.clone());
         if validation.is_err() {
             let err = validation.unwrap_err();
-            println!("{:?}", &err);
-            errors.push(err);
+            println!("[{}] Error {:?}", name, &err);
+            println!("[{}] Error on {}", name, g);
+            errors.push((g, err));
         }
     }
 
-    println!("{} errors out of {}", errors.len(), LIMIT);
+    println!("[{}] {} errors out of {}", name, errors.len(), LIMIT);
     assert_eq!(errors.len(), 0);
 }
 
 #[test]
 fn test_transversals() {
-    general_test(|g| {
+    general_test("transversal", |g| {
         let transversal = g.transversal(0);
         valid_transversal(&transversal)
     })
@@ -61,7 +62,7 @@ fn test_transversals() {
 
 #[test]
 fn test_stabilizer() {
-    general_test(|g| {
+    general_test("stabilizer", |g| {
         let stabilizer = g.stabchain();
         valid_stabchain(&stabilizer)
     });
@@ -73,7 +74,7 @@ fn test_stabilizer_ift() {
     use stabchain::group::stabchain::moved_point_selector::LmpSelector;
     use stabchain::perm::actions::SimpleApplication;
 
-    general_test(|g| {
+    general_test("ift_stabilizer", |g| {
         let stabilizer = g.stabchain_with_strategy(IFTBuilderStrategy::new(
             SimpleApplication::default(),
             LmpSelector::default(),
