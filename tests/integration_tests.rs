@@ -3,6 +3,8 @@ use std::io::BufReader;
 
 use lazy_static::lazy_static;
 
+use rand::seq::IteratorRandom;
+
 use stabchain::group::orbit::transversal::valid_transversal;
 use stabchain::group::stabchain::valid_stabchain;
 use stabchain::group::Group;
@@ -21,47 +23,48 @@ fn group_library() -> Vec<Group<ExportablePermutation>> {
     let input = BufReader::new(input);
 
     let groups: Vec<Group<ExportablePermutation>> = serde_json::from_reader(input).unwrap();
-    groups.into_iter().take(LIMIT).collect()
+    groups.into_iter().collect()
+}
+
+fn general_test<F, E>(mut validator: F)
+where
+    F: FnMut(Group) -> Result<(), E>,
+    E: std::fmt::Debug,
+{
+    let mut rng = rand::thread_rng();
+    let mut errors = Vec::new();
+    for g in GROUP_LIBRARY
+        .iter()
+        .cloned()
+        .map(|g| g.map(DefaultPermutation::from))
+        .choose_multiple(&mut rng, LIMIT)
+    {
+        let validation = validator(g);
+        if validation.is_err() {
+            let err = validation.unwrap_err();
+            println!("{:?}", &err);
+            errors.push(err);
+        }
+    }
+
+    println!("{} errors out of {}", errors.len(), LIMIT);
+    assert_eq!(errors.len(), 0);
 }
 
 #[test]
 fn test_transversals() {
-    let mut errors = 0;
-    for g in GROUP_LIBRARY
-        .iter()
-        .cloned()
-        .map(|g| g.map(DefaultPermutation::from))
-    {
+    general_test(|g| {
         let transversal = g.transversal(0);
-        let validation = valid_transversal(&transversal);
-        if validation.is_err() {
-            errors += 1;
-            println!("{:?}", validation.unwrap_err());
-        }
-    }
-
-    println!("{} errors out of {}", errors, LIMIT);
-    assert_eq!(errors, 0);
+        valid_transversal(&transversal)
+    })
 }
 
 #[test]
 fn test_stabilizer() {
-    let mut errors = 0;
-    for g in GROUP_LIBRARY
-        .iter()
-        .cloned()
-        .map(|g| g.map(DefaultPermutation::from))
-    {
-        let transversal = g.stabchain();
-        let validation = valid_stabchain(&transversal);
-        if validation.is_err() {
-            errors += 1;
-            println!("{:?}", validation.unwrap_err());
-        }
-    }
-
-    println!("{} errors out of {}", errors, LIMIT);
-    assert_eq!(errors, 0);
+    general_test(|g| {
+        let stabilizer = g.stabchain();
+        valid_stabchain(&stabilizer)
+    });
 }
 
 #[test]
@@ -70,23 +73,12 @@ fn test_stabilizer_ift() {
     use stabchain::group::stabchain::moved_point_selector::LmpSelector;
     use stabchain::perm::actions::SimpleApplication;
 
-    let mut errors = 0;
-    for g in GROUP_LIBRARY
-        .iter()
-        .cloned()
-        .map(|g| g.map(DefaultPermutation::from))
-    {
-        let transversal = g.stabchain_with_strategy(IFTBuilderStrategy::new(
+    general_test(|g| {
+        let stabilizer = g.stabchain_with_strategy(IFTBuilderStrategy::new(
             SimpleApplication::default(),
             LmpSelector::default(),
         ));
-        let validation = valid_stabchain(&transversal);
-        if validation.is_err() {
-            errors += 1;
-            println!("{:?}", validation.unwrap_err());
-        }
-    }
 
-    println!("{} errors out of {}", errors, LIMIT);
-    assert_eq!(errors, 0);
+        valid_stabchain(&stabilizer)
+    });
 }
