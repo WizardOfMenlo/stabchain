@@ -121,7 +121,7 @@ where
     //This permutation word will store the resulting residue.
     let mut g: Vec<Permutation> = p.into_iter().collect();
     //This counts how many layers of the chain the permutation sifts through.
-    let k = 0;
+    let mut k = 0;
     for record in it {
         let base = record.base;
         let application = apply_permutation_word(&g, base);
