@@ -201,7 +201,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     fn sgc(&mut self) {
-        println!("SGC {}/{}", self.current_pos, self.chain.len());
+        println!("SGC {}/{}", self.current_pos, self.chain.len() - 1);
         dbg!(&self.base);
         let mut record = self.chain[self.current_pos].clone();
         //If the transvesal hasn't been calculated, then calculate it. If the generators are non-empty, then the orbit should be larger than 1.
@@ -358,14 +358,15 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 //TODO check if this is correct?
                 //If this point sifted through but isn't trivial, then we need a new record and base point.
                 if self.sifted(drop_out_level) {
-                    let moved_point = self.selector.moved_point(&collapsed_residue);
-                    let record = StabchainRecord::new(
-                        moved_point,
-                        Group::new(&[collapsed_residue]),
-                        [(moved_point, Permutation::id())].iter().cloned().collect(),
-                    );
-                    self.base.push(moved_point);
-                    self.chain.push(record);
+                    return;
+                    // let moved_point = self.selector.moved_point(&collapsed_residue);
+                    // let record = StabchainRecord::new(
+                    //     moved_point,
+                    //     Group::new(&[collapsed_residue]),
+                    //     [(moved_point, Permutation::id())].iter().cloned().collect(),
+                    // );
+                    // self.base.push(moved_point);
+                    // self.chain.push(record);
                 }
                 //Find the position at which this acted non-trivially, and invoke the SGC on that level.
                 self.current_pos += drop_out_level;
@@ -458,11 +459,10 @@ mod tests {
         assert!(chain.is_empty());
     }
 
-    //Test fails, remove once it passes.
-    #[ignore]
     #[test]
     fn symmetric_chain() {
         let g = Group::symmetric(4);
+        println!("{}", g);
         let mut builder = StabchainBuilderRandom::new(FmpSelector);
         builder.construct_strong_generating_set(&g);
         println!("{:?}", builder.base.clone());
