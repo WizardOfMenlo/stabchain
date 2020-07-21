@@ -143,7 +143,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     /// Check if adding a new element modifies the current layer of the chain.
     fn check_transversal_augmentation(&mut self, p: Permutation) {
         let mut record = self.chain[self.current_pos].clone();
-        debug_assert!(record.gens.generators().contains(&p));
+        //debug_assert!(record.gens.generators().contains(&p));
         // If this element is already a generator, then we can exit
         let mut to_check = VecDeque::from_iter(record.transversal.keys().copied());
         let mut new_transversal = HashMap::new();
@@ -258,14 +258,12 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 if !self.is_trivial_residue(&h_residue, evaluated_points) {
                     //Not all permutations have been discarded
                     all_discarded = false;
-                    let h_star = h_residue
-                        .iter()
-                        .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
-                    //TODO check if this is the correct location
+                    let h_star = collapse_perm_word(&h_residue);
+                    println!("Non trivial_residue {}", h_star);
                     //Add a new base point, along with a new record for that base point.
                     let new_base_point = self.selector.moved_point(&h_star);
                     println!("{}", &h_star);
-                    self.check_transversal_augmentation(h_star);
+                    //self.check_transversal_augmentation(h_star);
                     dbg!(new_base_point);
                     debug_assert!(!self.base.contains(&new_base_point));
                     self.base.push(new_base_point);
@@ -278,16 +276,21 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                             .collect(),
                     );
                     self.chain.push(record);
+                    let current_pos = self.current_pos;
+                    self.current_pos = self.chain.len() - 1;
+                    self.check_transversal_augmentation(h_star);
+                    self.current_pos = current_pos;
                     //Now up to date beneath the newly added point.
                     self.up_to_date = self.base.len() + 1;
                 } else {
                     println!("Discarded");
                 }
             } else {
-                println!("Adding new generator");
-                let h_star = h_residue
-                    .iter()
-                    .fold(Permutation::id(), |accum, perm| accum.multiply(perm));
+                let h_star = collapse_perm_word(&h_residue);
+                println!(
+                    "Adding new generator {}, from a drop out at level {}. Original generator was {}",
+                    h_star, drop_out_level, collapse_perm_word(&h)
+                );
                 //Add as a generator and update the transversal.
                 self.check_transversal_augmentation(h_star);
                 //Find the position at which this didn't sift through.
@@ -301,9 +304,9 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             //Really is setting this to i - 1, but as the position is zero indexed it would be doing (i - 1 + 1).
             self.up_to_date = self.current_pos;
         }
-        self.sgt();
-        //SGC terminates if it is up to date at position 0; otherwise moving onto the next layers.
-        if self.up_to_date != 0 {
+        //self.sgt();
+        //SGC terminates if it is up to date at position 0; otherwise moving onto the next layers. Stop if we have reached the bottom of the chain with the position.
+        if self.up_to_date != 0 && self.current_pos != self.chain.len() - 1 {
             self.current_pos += 1;
             self.sgc();
         }
