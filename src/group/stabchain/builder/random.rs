@@ -267,19 +267,11 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     dbg!(new_base_point);
                     debug_assert!(!self.base.contains(&new_base_point));
                     self.base.push(new_base_point);
-                    let record = StabchainRecord::new(
-                        new_base_point,
-                        Group::new(&[]),
-                        [(new_base_point, Permutation::id())]
-                            .iter()
-                            .cloned()
-                            .collect(),
-                    );
+                    //Fields for the new record.
+                    let gens = Group::new(&[h_star]);
+                    let transversal = factored_transversal_complete_opt(&gens, new_base_point);
+                    let record = StabchainRecord::new(new_base_point, gens, transversal);
                     self.chain.push(record);
-                    let current_pos = self.current_pos;
-                    self.current_pos = self.chain.len() - 1;
-                    self.check_transversal_augmentation(h_star);
-                    self.current_pos = current_pos;
                     //Now up to date beneath the newly added point.
                     self.up_to_date = self.base.len() + 1;
                 } else {
