@@ -192,6 +192,14 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.chain[self.current_pos] = record;
     }
 
+    ///Check if the permutation augments the orbit at a level, resetting the position afterwards.
+    fn check_transversal_augmentation_at_level(&mut self, level: usize, p: Permutation) {
+        let previous_pos = self.current_pos;
+        self.current_pos = level;
+        self.check_transversal_augmentation(p);
+        self.current_pos = previous_pos;
+    }
+
     fn sgc(&mut self) {
         println!("SGC {}/{}", self.current_pos, self.chain.len());
         dbg!(&self.base);
@@ -253,7 +261,6 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .copied()
                         .collect()
                 };
-                println!("{:?}", evaluated_points);
                 //If any point is not fixed by the residue
                 if !self.is_trivial_residue(&h_residue, evaluated_points) {
                     //Not all permutations have been discarded
@@ -274,8 +281,6 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     self.chain.push(record);
                     //Now up to date beneath the newly added point.
                     self.up_to_date = self.base.len() + 1;
-                } else {
-                    println!("Discarded");
                 }
             } else {
                 let h_star = collapse_perm_word(&h_residue);
@@ -283,12 +288,12 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     "Adding new generator {}, from a drop out at level {}. Original generator was {}",
                     h_star, drop_out_level, collapse_perm_word(&h)
                 );
-                //Add as a generator and update the transversal.
-                self.check_transversal_augmentation(h_star);
                 //Find the position at which this didn't sift through.
-                let j = self.current_pos + drop_out_level + 1;
-                //Consider the chain now up to date below level j.
-                self.up_to_date = j;
+                let j = self.current_pos + drop_out_level;
+                //Add as a generator and update the transversal.
+                self.check_transversal_augmentation_at_level(j, h_star);
+                //Consider the chain now up to date below level j + 1. The +1 is for 1 indexing.
+                self.up_to_date = j + 1;
             }
         }
         if all_discarded {
@@ -296,8 +301,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             //Really is setting this to i - 1, but as the position is zero indexed it would be doing (i - 1 + 1).
             self.up_to_date = self.current_pos;
         }
-        //self.sgt();
-        //SGC terminates if it is up to date at position 0; otherwise moving onto the next layers. Stop if we have reached the bottom of the chain with the position.
+        self.sgt();
+        //SGC terminates if it is up to date at position 0; otherwise moving onto the next layers. Stop if we have reached the bottom of the chain
         if self.up_to_date != 0 && self.current_pos != self.chain.len() - 1 {
             self.current_pos += 1;
             self.sgc();
@@ -349,10 +354,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             println!("Case 1");
             //This acts non-trivially on the current orbit.
             //Add this permutation to the generators of the current orbit, then invoke the strong generator constructor.
-            self.chain[self.current_pos]
-                .gens
-                .generators
-                .push(collapse_perm_word(p));
+            self.check_transversal_augmentation(collapse_perm_word(&residue));
         }
         self.sgc();
         //Reset the position.
