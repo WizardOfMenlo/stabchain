@@ -84,7 +84,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         let initial_record = StabchainRecord::new(
             moved_point,
             group.clone(),
-            [(moved_point, Permutation::id())].iter().cloned().collect(),
+            factored_transversal_complete_opt(&group, moved_point),
         );
         self.base.push(moved_point);
         self.chain.push(initial_record);
@@ -203,18 +203,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     fn sgc(&mut self) {
         println!("SGC {}/{}", self.current_pos, self.chain.len() - 1);
         dbg!(&self.base);
-        let mut record = self.chain[self.current_pos].clone();
-        //If the transvesal hasn't been calculated, then calculate it. If the generators are non-empty, then the orbit should be larger than 1.
-        if record.transversal.len() == 1 && !record.group().generators().is_empty() {
-            println!("Calculating Orbit");
-            record.transversal.extend(factored_transversal_complete_opt(
-                &record.group(),
-                record.base,
-            ));
-            //Early update for later part of algorithm
-            //TODO find a better solution
-            self.chain[self.current_pos] = record.clone();
-        }
+        let record = self.chain[self.current_pos].clone();
         //To see if all generators are discarded.
         let mut all_discarded = true;
         //Number of base points than are in the current orbit.
