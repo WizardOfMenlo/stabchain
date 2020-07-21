@@ -340,23 +340,38 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     fn sgt_test<'a>(&mut self, p: &[Permutation]) {
         let (drop_out_level, residue) = residue_as_words_from_words(self.current_chain(), p);
         let original_position = self.current_pos;
-        //This acts trivially on the current orbit.
-        if self.is_trivial_residue_all_points(&residue) {
-            //Can exit if the point sifted through, as it is the identity.
-            if self.sifted(drop_out_level) {
-                println!("Case 3");
-                return;
-            }
-            println!("Case 2");
-            //Find the position at which this acted non-trivially.
-            self.current_pos = self.current_pos + drop_out_level;
-        } else {
-            println!("Case 1");
+        //Check if this is a non-trivial residue. If it is then the output of the SGC is correct for this element.
+        if !self.is_trivial_residue_all_points(&residue) {
+            let collapsed_residue = collapse_perm_word(&residue);
             //This acts non-trivially on the current orbit.
-            //Add this permutation to the generators of the current orbit, then invoke the strong generator constructor.
-            self.check_transversal_augmentation(collapse_perm_word(&residue));
+            if drop_out_level == 0 {
+                println!("Case 1");
+                //This acts non-trivially on the current orbit.
+                //Add this permutation to the generators of the current orbit, then invoke the strong generator constructor.
+                self.check_transversal_augmentation(collapsed_residue);
+            } else {
+                println!(
+                    "Case 2: drop out at {} from element {}",
+                    drop_out_level,
+                    collapse_perm_word(&residue)
+                );
+                //TODO check if this is correct?
+                //If this point sifted through but isn't trivial, then we need a new record and base point.
+                if self.sifted(drop_out_level) {
+                    let moved_point = self.selector.moved_point(&collapsed_residue);
+                    let record = StabchainRecord::new(
+                        moved_point,
+                        Group::new(&[collapsed_residue]),
+                        [(moved_point, Permutation::id())].iter().cloned().collect(),
+                    );
+                    self.base.push(moved_point);
+                    self.chain.push(record);
+                }
+                //Find the position at which this acted non-trivially, and invoke the SGC on that level.
+                self.current_pos += drop_out_level;
+            }
+            self.sgc();
         }
-        self.sgc();
         //Reset the position.
         self.current_pos = original_position;
     }
