@@ -30,7 +30,7 @@ impl StandardPermutation {
     }
 
     pub fn from_vec(vals: Vec<usize>) -> Self {
-        crate::perm::utils::validate_images(&vals[..]).unwrap();
+        crate::perm::utils::valid_images(&vals[..]).unwrap();
         StandardPermutation::from_vec_unchecked(vals)
     }
 

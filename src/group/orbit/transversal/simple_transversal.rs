@@ -2,7 +2,7 @@
 
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
-use crate::perm::{Action, Permutation};
+use crate::perm::*;
 
 use super::skeleton::TransversalSkeleton;
 use super::Transversal;
@@ -15,7 +15,7 @@ use std::collections::{HashMap, VecDeque};
 /// memory intensive. In applications please use FactoredTransversal
 /// (After some testing, it seems that it is also slower computationally,
 /// so don't use unless wanting some pain)
-pub type SimpleTransversal<P, A = SimpleApplication<P>> =
+pub type SimpleTransversal<P = DefaultPermutation, A = SimpleApplication<P>> =
     TransversalSkeleton<P, SimpleTransversalResolver, A>;
 
 impl<P> SimpleTransversal<P>
@@ -150,58 +150,4 @@ where
     }
 
     transversal
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::perm::DefaultPermutation;
-
-    #[test]
-    fn id_transveral() {
-        let g = Group::trivial();
-        let fc = SimpleTransversal::new(&g, 3);
-        assert_eq!(fc.base(), 3);
-        assert!(fc.in_orbit(3));
-        assert!(!fc.in_orbit(2));
-        assert!(!fc.in_orbit(1));
-        //check orbit size
-        assert_eq!(1, fc.len());
-    }
-
-    #[test]
-    fn id_representatives() {
-        let g = Group::trivial();
-        let fc = SimpleTransversal::new(&g, 3);
-        assert_eq!(DefaultPermutation::id(), fc.representative(3).unwrap());
-        assert_eq!(None, fc.representative(2))
-    }
-
-    #[test]
-    /// Test with a small permutation as the only generator.
-    fn small_fc() {
-        let perm = DefaultPermutation::from_images(&[0, 3, 2, 1]);
-        let g = Group::new(&[perm]);
-        let fc = SimpleTransversal::new(&g, 1);
-        assert_eq!(fc.base(), 1);
-        assert!(fc.in_orbit(1));
-        assert!(fc.in_orbit(3));
-        assert!(!fc.in_orbit(0));
-        assert!(!fc.in_orbit(2));
-        //check orbit size
-        assert_eq!(2, fc.len());
-    }
-
-    #[test]
-    /// Test with a permutation of 4 points that is a 4-cycle.
-    fn full_cycle() {
-        let perm = DefaultPermutation::from_images(&[1, 2, 3, 0]);
-        let g = Group::new(&[perm]);
-        let fc = SimpleTransversal::new(&g, 3);
-        for i in 0_usize..=3 {
-            assert!(fc.in_orbit(i));
-            assert_eq!(i, fc.representative(i).unwrap().apply(3));
-        }
-        assert_eq!(4, fc.len());
-    }
 }

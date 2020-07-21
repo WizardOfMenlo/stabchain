@@ -57,7 +57,7 @@ impl Permutation for BasedPermutation {
     }
 
     fn from_images(images: &[usize]) -> Self {
-        crate::perm::utils::validate_images(images).unwrap();
+        crate::perm::utils::valid_images(images).unwrap();
         BasedPermutation::from_vec_unchecked(images)
     }
 

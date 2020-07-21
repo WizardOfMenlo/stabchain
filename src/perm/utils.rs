@@ -33,7 +33,7 @@ pub enum ImageError {
 }
 
 /// Check that an array is in the right format
-pub fn validate_images(images: &[usize]) -> Result<(), ImageError> {
+pub fn valid_images(images: &[usize]) -> Result<(), ImageError> {
     use std::cmp::Ordering;
 
     let mut vec: Vec<_> = images.into();
@@ -71,30 +71,36 @@ mod tests {
 
     #[test]
     fn order_n_order() {
-        use crate::perm::builder::PermBuilder;
         let perm = order_n_permutation::<DefaultPermutation>(10, 25);
         for i in 1..25 {
-            assert!(!perm.build_pow(i).collapse().is_id());
+            assert!(!perm.pow(i).is_id());
         }
 
-        assert!(perm.build_pow(25).collapse().is_id())
+        assert!(perm.pow(25).is_id())
+    }
+
+    #[test]
+    fn order_and_order() {
+        for i in 1..25 {
+            assert_eq!(order_n_permutation::<DefaultPermutation>(1, i).order(), i)
+        }
     }
 
     #[test]
     fn validate_images_missing_first() {
-        let parse_res = validate_images(&[1, 2, 4, 3]);
+        let parse_res = valid_images(&[1, 2, 4, 3]);
         assert!(parse_res.is_err());
     }
 
     #[test]
     fn validate_images_missing_middle() {
-        let parse_res = validate_images(&[0, 1, 3, 2, 5, 7, 6]);
+        let parse_res = valid_images(&[0, 1, 3, 2, 5, 7, 6]);
         assert!(parse_res.is_err());
     }
 
     #[test]
     fn validate_images_duplicated() {
-        let parse_res = validate_images(&[0, 1, 2, 3, 5, 4, 2]);
+        let parse_res = valid_images(&[0, 1, 2, 3, 5, 4, 2]);
         assert!(parse_res.is_err());
     }
 }

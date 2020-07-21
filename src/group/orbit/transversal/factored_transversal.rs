@@ -4,7 +4,7 @@ use super::skeleton::TransversalSkeleton;
 use crate::group::orbit::transversal::Transversal;
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
-use crate::perm::{Action, Permutation};
+use crate::perm::{Action, DefaultPermutation, Permutation};
 
 use std::collections::HashMap;
 use std::collections::VecDeque;
@@ -13,7 +13,7 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 
 ///Represents a Factored Traversal/Schrier Vector of an elements orbit.
 /// Contains the base of this traversal, and a factored traversal of the orbit.
-pub type FactoredTransversal<P, A = SimpleApplication<P>> =
+pub type FactoredTransversal<P = DefaultPermutation, A = SimpleApplication<P>> =
     TransversalSkeleton<P, FactoredTransversalResolver<A>, A>;
 
 pub(crate) fn representative_raw<P, S, A>(
@@ -182,60 +182,6 @@ mod tests {
     use super::{FactoredTransversal, Transversal};
     use crate::perm::{DefaultPermutation, Permutation};
 
-    #[test]
-    /// Test the Factored Traversal of an empty set of generators.
-    /// Each orbit should be a singleton, as the generators don't move any points.
-    fn id_transveral() {
-        let fc = FactoredTransversal::<DefaultPermutation>::from_generators(3, &[]);
-        assert_eq!(fc.base(), 3);
-        assert!(fc.in_orbit(3));
-        assert!(!fc.in_orbit(2));
-        assert!(!fc.in_orbit(1));
-        //check orbit size
-        assert_eq!(1, fc.len());
-    }
-
-    #[test]
-    /// Test the representatives for the elements in the orbit of the empty set of generators.
-    /// The only representative should be the identity permutation, as the orbit only has a single element.
-    fn id_representatives() {
-        let fc = FactoredTransversal::from_generators(3, &[]);
-        // The orbit for the base point should be 1.
-        assert_eq!(DefaultPermutation::id(), fc.representative(3).unwrap());
-        // The orbit will only contain the base element, as the group generated is the identity
-        assert_eq!(None, fc.representative(2))
-    }
-
-    #[test]
-    /// Test with a small permutation as the only generator.
-    fn small_fc() {
-        // This permutation is equivalent to (1, 3)
-        let perm = DefaultPermutation::from_images(&[0, 3, 2, 1]);
-        let fc = FactoredTransversal::from_generators(1, &[perm]);
-        assert_eq!(fc.base(), 1);
-        // As the permutation is (1, 3), only 1 and 3 should be in the orbit of 1.
-        assert!(fc.in_orbit(1));
-        assert!(fc.in_orbit(3));
-        assert!(!fc.in_orbit(0));
-        assert!(!fc.in_orbit(2));
-        //check orbit size
-        assert_eq!(2, fc.len());
-    }
-
-    #[test]
-    /// Test with a permutation of 4 points that is a 4-cycle.
-    fn full_cycle() {
-        // This permutation is equivalent to (1, 2, 3, 4)
-        let perm = DefaultPermutation::from_images(&[1, 2, 3, 0]);
-        let fc = FactoredTransversal::from_generators(3, &[perm]);
-        // Every element should be in the orbit, and it's representative should move the base to that point.
-        for i in 0_usize..=3 {
-            assert!(fc.in_orbit(i));
-            assert_eq!(i, fc.representative(i).unwrap().apply(3));
-        }
-        //check orbit size
-        assert_eq!(4, fc.len());
-    }
     /// Test the factored transversal calculation for a generating set with multiple generators.
     #[test]
     fn multiple_generators() {
