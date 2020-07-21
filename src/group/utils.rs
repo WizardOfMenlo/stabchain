@@ -56,7 +56,7 @@ pub fn random_subproduct_word_subset<T: Rng>(
 ) -> Vec<Permutation> {
     gens.choose_multiple(rng, k)
         .filter(|_| rng.gen::<bool>())
-        .map(|p| p.clone())
+        .cloned()
         .collect::<Vec<Permutation>>()
 }
 
