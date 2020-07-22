@@ -27,9 +27,9 @@ where
 /// Apply a point to permutations stored as a word.
 pub fn apply_permutation_word<'a, P, A>(
     perm_word: impl IntoIterator<Item = &'a P>,
-    x: usize,
+    x: A::OrbitT,
     strat: &A,
-) -> usize
+) -> A::OrbitT
 where
     P: 'a + Permutation,
     A: Action<P>,
@@ -88,7 +88,9 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::perm::actions::SimpleApplication;
     use crate::perm::export::CyclePermutation;
+    use crate::perm::impls::standard::StandardPermutation;
     use rand::thread_rng;
 
     #[test]
@@ -118,7 +120,7 @@ mod tests {
     #[test]
     fn test_random_subproduct_full() {
         let mut rng = thread_rng();
-        let g = Group::new(&[
+        let g = Group::<StandardPermutation>::new(&[
             CyclePermutation::single_cycle(&[1, 2, 4]).into(),
             CyclePermutation::single_cycle(&[3, 5, 8]).into(),
             CyclePermutation::single_cycle(&[7, 9]).into(),
@@ -132,7 +134,7 @@ mod tests {
     #[test]
     fn test_random_subproduct_subset() {
         let mut rng = thread_rng();
-        let g = Group::new(&[
+        let g = Group::<StandardPermutation>::new(&[
             CyclePermutation::single_cycle(&[1, 2, 4]).into(),
             CyclePermutation::single_cycle(&[3, 5, 8]).into(),
             CyclePermutation::single_cycle(&[7, 9]).into(),
@@ -148,9 +150,9 @@ mod tests {
     fn test_apply_permutation_word() {
         //Test an empty word.
         let empty_word = vec![];
-        let strat = Action::default();
+        let strat = SimpleApplication::default();
         assert_eq!(3, apply_permutation_word(&empty_word, 3, &strat));
-        let perm_word = vec![
+        let perm_word: Vec<StandardPermutation> = vec![
             CyclePermutation::single_cycle(&[1, 2, 4]).into(),
             CyclePermutation::single_cycle(&[3, 5, 8]).into(),
             CyclePermutation::single_cycle(&[7, 9]).into(),
