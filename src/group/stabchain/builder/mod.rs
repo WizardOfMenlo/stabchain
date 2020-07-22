@@ -108,22 +108,28 @@ where
 
 /// Schreir Sims with factored transversal. Much more memory friendly,
 /// yet much slower
-pub struct RandomBuilderStrategy<M>(M);
+pub struct RandomBuilderStrategy<A, S> {
+    selector: S,
+    action: A,
+}
 
-impl<M> RandomBuilderStrategy<M> {
-    pub fn new(m: M) -> Self {
-        RandomBuilderStrategy(m)
+impl<A, S> RandomBuilderStrategy<A, S> {
+    pub fn new(action: A, selector: S) -> Self {
+        RandomBuilderStrategy { action, selector }
     }
 }
 
-impl<M> Strategy for RandomBuilderStrategy<M>
+impl<P, S, A> BuilderStrategy<P> for RandomBuilderStrategy<A, S>
 where
-    M: MovedPointSelector,
+    P: Permutation,
+    A: Action<P>,
+    S: MovedPointSelector<P, A::OrbitT>,
 {
-    type Transversal = FactoredTransversalResolver;
-    type BuilderT = random::StabchainBuilderRandom<M>;
+    type Action = A;
+    type Transversal = FactoredTransversalResolver<A>;
+    type BuilderT = random::StabchainBuilderRandom<P, S, A>;
 
     fn make_builder(self) -> Self::BuilderT {
-        random::StabchainBuilderRandom::new(self.0)
+        random::StabchainBuilderRandom::new(self.selector, self.action)
     }
 }

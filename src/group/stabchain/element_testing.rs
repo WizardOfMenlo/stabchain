@@ -100,13 +100,12 @@ where
         // The empty product is the identity
         return Vec::new();
     }
-
+    let applicator = A::default();
     let mut res = vec![p.clone()];
     let mut g = p.clone();
     for record in it {
         let base = record.base;
-        let application = g.apply(base);
-
+        let application = applicator.apply(&g, base);
         if !record.transversal.contains_key(&application) {
             break;
         }
@@ -128,14 +127,14 @@ pub fn residue_as_words_from_words<'a, 'b, V, A, P>(
 ) -> (usize, Vec<P>)
 where
     V: 'a + TransversalResolver<P, A>,
-    P: 'a + Permutation,
+    P: 'a + 'b + Permutation,
     A: 'a + Action<P>,
 {
     //This permutation word will store the resulting residue.
     let mut g: Vec<P> = p.into_iter().cloned().collect();
     //This counts how many layers of the chain the permutation sifts through.
     let mut k = 0;
-    let applicator = Action::default();
+    let applicator = A::default();
     for record in it {
         let base = record.base;
         let application = apply_permutation_word(&g, base, &applicator);

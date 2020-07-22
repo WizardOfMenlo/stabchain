@@ -9,7 +9,8 @@ use crate::group::utils::{
     random_subproduct_word_subset,
 };
 use crate::group::Group;
-use crate::perm::Permutation;
+use crate::perm::actions::SimpleApplication;
+use crate::perm::{Action, Permutation};
 use itertools::Itertools;
 use rand::rngs::ThreadRng;
 use rand::seq::IteratorRandom;
@@ -29,25 +30,35 @@ const C4: usize = 10;
 
 // Helper struct, used to build the stabilizer chain
 
-pub struct StabchainBuilderRandom<T: MovedPointSelector> {
+pub struct StabchainBuilderRandom<P, S, A = SimpleApplication<P>>
+where
+    A: Action<P>,
+{
     current_pos: usize,
-    chain: Vec<StabchainRecord<FactoredTransversalResolver>>,
-    selector: T,
+    chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
+    selector: S,
+    action: A,
     n: usize,
-    base: Vec<usize>,
+    base: Vec<A::OrbitT>,
     rng: ThreadRng,
     //The chain is zero indexed, but this field is 1 indexed.
     //This is due to the end condition being when the chain is up to date below the index of the first record position, and this would be -1 with zero indexing.
     //For zero indexing this would have to be a signed type, which doesn't really seem worth it just to require one negative value at the end condition.
     up_to_date: usize,
 }
-#[allow(dead_code)] //TODO remove
-impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
-    pub fn new(selector: T) -> Self {
+
+impl<P, S, A> StabchainBuilderRandom<P, S, A>
+where
+    P: Permutation,
+    S: MovedPointSelector<P, A::OrbitT>,
+    A: Action<P>,
+{
+    pub fn new(selector: S, action: A) -> Self {
         StabchainBuilderRandom {
             current_pos: 0,
             chain: Vec::new(),
             selector,
+            action,
             n: 0,
             base: Vec::new(),
             rng: thread_rng(),
@@ -59,15 +70,17 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.current_pos == self.chain.len()
     }
 
-    fn current_chain(&self) -> impl Iterator<Item = &StabchainRecord<FactoredTransversalResolver>> {
+    fn current_chain(
+        &self,
+    ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
         self.chain.iter().skip(self.current_pos)
     }
 
-    pub(super) fn build(self) -> Stabchain<FactoredTransversalResolver> {
+    pub(super) fn build(self) -> Stabchain<P, FactoredTransversalResolver<A>, A> {
         Stabchain { chain: self.chain }
     }
 
-    fn construct_strong_generating_set(&mut self, group: &Group) {
+    fn construct_strong_generating_set(&mut self, group: &Group<P>) {
         //Edge case for trivial group.
         if group.generators().is_empty() {
             return;
@@ -80,13 +93,13 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .max()
             .unwrap_or(0);
         //TODO Check if this is fine?
-        let moved_point = 0;
+        let moved_point = self.selector.moved_point(&group.generators()[0]);
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let initial_record = StabchainRecord::new(
             moved_point,
             group.clone(),
-            factored_transversal_complete_opt(&group, moved_point),
+            factored_transversal_complete_opt(&group, moved_point, &self.action),
         );
         self.base.push(moved_point);
         self.chain.push(initial_record);
@@ -98,8 +111,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         &self,
         subproducts: usize,
         coset_representatives: usize,
-        gens: &[Permutation],
-    ) -> Vec<Vec<Permutation>> {
+        gens: &[P],
+    ) -> Vec<Vec<P>> {
         //Sum of all "depths". In reality the transversal doesn't have a depth, so we use this as a upper bound.
         let t = self
             .current_chain()
@@ -116,7 +129,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             repeat_with(|| random_subproduct_word_subset(&mut self.rng.clone(), &gens[..], k))
                 .take(subproducts);
         //Iterleave the two iterators.
-        let subproduct_iter: Vec<Vec<Permutation>> =
+        let subproduct_iter: Vec<Vec<P>> =
             subproduct_w1_iter.interleave(subproduct_w2_iter).collect();
         // Iterator of random coset representatives.
         let g_iter = repeat_with(|| {
@@ -125,7 +138,13 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 .keys()
                 .choose(&mut self.rng.clone())
                 .map(|point| {
-                    representative_raw_as_word(&record.transversal, record.base, *point).unwrap()
+                    representative_raw_as_word(
+                        &record.transversal,
+                        record.base,
+                        *point,
+                        &self.action,
+                    )
+                    .unwrap()
                 })
                 .expect("should be present")
         })
@@ -143,15 +162,15 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     /// Check if adding a new element modifies the current layer of the chain.
-    fn check_transversal_augmentation(&mut self, p: Permutation) {
+    fn check_transversal_augmentation(&mut self, p: P) {
         let mut record = self.chain[self.current_pos].clone();
         //debug_assert!(record.gens.generators().contains(&p));
         // If this element is already a generator, then we can exit
-        let mut to_check = VecDeque::from_iter(record.transversal.keys().copied());
+        let mut to_check = VecDeque::from_iter(record.transversal.keys().cloned());
         let mut new_transversal = HashMap::new();
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
-            let new_image = p.apply(orbit_element);
+            let new_image = self.action.apply(&p, orbit_element);
 
             // If we haven't seen this element.
             if !(record.transversal.contains_key(&new_image)
@@ -162,7 +181,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         }
 
         // We now want to check all the newly added elements
-        let mut to_check = VecDeque::from_iter(new_transversal.keys().copied());
+        let mut to_check = VecDeque::from_iter(new_transversal.keys().cloned());
 
         // Update the record
         record.transversal.extend(new_transversal);
@@ -173,7 +192,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             let orbit_element = to_check.pop_back().unwrap();
             // For each generator (and p)
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
-                let new_image = generator.apply(orbit_element);
+                let new_image = self.action.apply(&generator, orbit_element);
 
                 // If we haven't already seen the image
                 if !record.transversal.contains_key(&new_image) {
@@ -195,7 +214,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     ///Check if the permutation augments the orbit at a level, resetting the position afterwards.
-    fn check_transversal_augmentation_at_level(&mut self, level: usize, p: Permutation) {
+    fn check_transversal_augmentation_at_level(&mut self, level: usize, p: P) {
         let previous_pos = self.current_pos;
         self.current_pos = level;
         self.check_transversal_augmentation(p);
@@ -204,7 +223,6 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
 
     fn sgc(&mut self) {
         println!("SGC {}/{}", self.current_pos, self.chain.len() - 1);
-        dbg!(&self.base);
         let record = self.chain[self.current_pos].clone();
         //To see if all generators are discarded.
         let mut all_discarded = true;
@@ -214,12 +232,12 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .iter()
             .filter(|&b| record.transversal.contains_key(b))
             .cloned()
-            .collect::<Vec<usize>>();
+            .collect::<Vec<A::OrbitT>>();
         let gens = self
             .current_chain()
             .flat_map(|record| record.gens.generators())
             .cloned()
-            .collect::<Vec<Permutation>>();
+            .collect::<Vec<P>>();
         //Random products of the form gw
         let mut random_gens = self.random_schrier_generators_as_word(C1, C2, &gens[..]);
         //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
@@ -233,7 +251,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if self.sifted(drop_out_level) {
                 //Pick the points that should be evaluated. This is a heuristic to speed up run times.
-                let evaluated_points: Vec<usize> = if record.transversal.len() <= ORBIT_BOUND {
+                let evaluated_points: Vec<A::OrbitT> = if record.transversal.len() <= ORBIT_BOUND {
                     //Evaluate on all points of the current orbit.
                     record.transversal.keys().cloned().collect()
                 } else if self.base.len() <= BASE_BOUND {
@@ -243,7 +261,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .keys()
                         .choose_multiple(&mut self.rng, BASE_BOUND)
                         .into_iter()
-                        .copied()
+                        .cloned()
                         .collect()
                 } else {
                     //Evaluate on b_star randomly chosen points.
@@ -252,7 +270,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .keys()
                         .choose_multiple(&mut self.rng, b_star.len())
                         .into_iter()
-                        .copied()
+                        .cloned()
                         .collect()
                 };
                 //If any point is not fixed by the residue, then we add the residue as a generator.
@@ -260,17 +278,15 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     //Not all permutations have been discarded
                     all_discarded = false;
                     let h_star = collapse_perm_word(&h_residue);
-                    println!("Non trivial_residue {}", h_star);
                     //Add a new base point, along with a new record for that base point.
                     let new_base_point = self.selector.moved_point(&h_star);
-                    println!("{}", &h_star);
                     //self.check_transversal_augmentation(h_star);
-                    dbg!(new_base_point);
                     debug_assert!(!self.base.contains(&new_base_point));
                     self.base.push(new_base_point);
                     //Fields for the new record.
                     let gens = Group::new(&[h_star]);
-                    let transversal = factored_transversal_complete_opt(&gens, new_base_point);
+                    let transversal =
+                        factored_transversal_complete_opt(&gens, new_base_point, &self.action);
                     let record = StabchainRecord::new(new_base_point, gens, transversal);
                     self.chain.push(record);
                     //Now up to date beneath the newly added point.
@@ -279,10 +295,6 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             } else {
                 //We have found a residue that has not sifted through, so we add a new base point with this point as a generator.
                 let h_star = collapse_perm_word(&h_residue);
-                println!(
-                    "Adding new generator {}, from a drop out at level {}. Original generator was {}",
-                    h_star, drop_out_level, collapse_perm_word(&h)
-                );
                 //Find the position at which this didn't sift through.
                 let j = self.current_pos + drop_out_level;
                 //Add as a generator and update the transversal.
@@ -316,9 +328,9 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .iter()
             .flat_map(|record| record.gens.generators())
             .cloned()
-            .collect::<Vec<Permutation>>();
+            .collect::<Vec<P>>();
         //Create an iterator that first has the original generators, and then the random schrier generators.
-        let products: Vec<Vec<Permutation>> = self.chain[0]
+        let products: Vec<Vec<P>> = self.chain[0]
             .gens
             .generators
             .clone()
@@ -338,7 +350,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.current_pos = original_position;
     }
 
-    fn sgt_test<'a>(&mut self, p: &[Permutation]) -> Option<usize> {
+    fn sgt_test<'a>(&mut self, p: &[P]) -> Option<usize> {
         let (drop_out_level, residue) = residue_as_words_from_words(self.current_chain(), p);
         //Check if this is a non-trivial residue. If it is then the output of the SGC is correct for this element.
         if !self.is_trivial_residue_all_points(&residue) {
@@ -366,7 +378,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     /// Wrapper function to check all points of the permutation domain.
-    fn is_trivial_residue_all_points(&self, p_as_words: &[Permutation]) -> bool {
+    fn is_trivial_residue_all_points(&self, p_as_words: &[P]) -> bool {
         self.is_trivial_residue(p_as_words, 0..self.n)
     }
 
@@ -374,12 +386,12 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     /// This is just done by checking that the given permutation fixes all given points.
     fn is_trivial_residue(
         &self,
-        p_as_words: &[Permutation],
-        points: impl IntoIterator<Item = usize>,
+        p_as_words: &[P],
+        points: impl IntoIterator<Item = A::OrbitT>,
     ) -> bool {
         points
             .into_iter()
-            .all(|x| apply_permutation_word(p_as_words, x) == x)
+            .all(|x| apply_permutation_word(p_as_words, x, &self.action) == x)
     }
 
     //Utility function to check if a given drop out level is the bottom of the chain.
@@ -388,15 +400,18 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 }
 
-impl<M> super::Builder<FactoredTransversalResolver> for StabchainBuilderRandom<M>
+impl<P, S, A> super::Builder<P, FactoredTransversalResolver<A>, A>
+    for StabchainBuilderRandom<P, S, A>
 where
-    M: MovedPointSelector,
+    P: Permutation,
+    A: Action<P>,
+    S: MovedPointSelector<P, A::OrbitT>,
 {
-    fn set_generators(&mut self, gens: &Group) {
+    fn set_generators(&mut self, gens: &Group<P>) {
         self.construct_strong_generating_set(gens);
     }
 
-    fn build(self) -> Stabchain<FactoredTransversalResolver> {
+    fn build(self) -> Stabchain<P, FactoredTransversalResolver<A>, A> {
         Stabchain { chain: self.chain }
     }
 }
@@ -404,47 +419,19 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::group::orbit::abstraction::TransversalResolver;
-    use crate::group::orbit::transversal::Transversal;
     use crate::group::stabchain::moved_point_selector::FmpSelector;
-    fn check_well_formed_chain<V: TransversalResolver>(s: &Stabchain<V>) {
-        let mut previous = None;
-        for record in s.chain.iter() {
-            let gens = record.group();
-            let transversal = record.transversal();
-
-            // Check the computed transversal, and the one computed from generators agree
-            // We do not directly check the transversal since representatives are not unique
-            assert_eq!(transversal.orbit(), gens.orbit(record.base));
-
-            for elem in transversal.orbit().iter().copied() {
-                assert_eq!(
-                    elem,
-                    transversal
-                        .representative(elem)
-                        .unwrap()
-                        .apply(record.base())
-                );
-            }
-
-            // Check that everything is stabilized correctly
-            if !previous.is_none() {
-                let stabilized = previous.unwrap();
-                assert_eq!(gens.orbit(stabilized).len(), 1);
-            }
-
-            previous = Some(record.base);
-        }
-    }
+    use crate::group::stabchain::valid_stabchain;
+    use crate::perm::actions::SimpleApplication;
 
     #[test]
     fn trivial_chain() {
         let g = Group::trivial();
-        let mut builder = StabchainBuilderRandom::new(FmpSelector);
+        let application = SimpleApplication::default();
+        let mut builder = StabchainBuilderRandom::new(FmpSelector, application);
         builder.construct_strong_generating_set(&g);
         let chain = builder.build();
         println!("{}", &chain);
-        check_well_formed_chain(&chain);
+        valid_stabchain(&chain);
         assert!(chain.is_empty());
     }
 
@@ -452,12 +439,13 @@ mod tests {
     fn symmetric_chain() {
         let g = Group::symmetric(4);
         println!("{}", g);
-        let mut builder = StabchainBuilderRandom::new(FmpSelector);
+        let application = SimpleApplication::default();
+        let mut builder = StabchainBuilderRandom::new(FmpSelector, application);
         builder.construct_strong_generating_set(&g);
         println!("{:?}", builder.base.clone());
         let chain = builder.build();
-        check_well_formed_chain(&chain);
+        valid_stabchain(&chain);
         println!("{}", chain);
-        assert_eq!(24, chain.order())
+        assert_eq!(num_bigint::BigUint::from(24_u32), chain.order())
     }
 }
