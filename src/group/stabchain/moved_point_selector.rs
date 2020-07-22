@@ -56,10 +56,11 @@ impl<P, T> MovedPointSelector<P, T> for FixedBaseSelector<T> {
     }
 }
 ///Struct for a base point selector that takes the first point to be moved.
+#[derive(Default, Debug, Copy, Clone)]
 pub(crate) struct FmpSelector;
 
-impl MovedPointSelector for FmpSelector {
-    fn moved_point(&mut self, p: &Permutation) -> usize {
+impl<P> MovedPointSelector<P, usize> for FmpSelector {
+    fn moved_point(&mut self, p: &P) -> usize {
         //Find the first point that isn't fixed.
         p.as_vec()
             .iter()
