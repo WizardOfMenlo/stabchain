@@ -2,8 +2,8 @@ use std::fs::File;
 use std::io::BufReader;
 
 use lazy_static::lazy_static;
-
 use rand::seq::IteratorRandom;
+use rayon::prelude::*;
 
 use stabchain::group::group_library::DecoratedGroup;
 use stabchain::group::orbit::transversal::valid_transversal;
@@ -15,44 +15,47 @@ use stabchain::perm::impls::sync::SyncPermutation;
 const LIMIT: usize = 1000;
 
 lazy_static! {
-    static ref GROUP_LIBRARY: Vec<DecoratedGroup<ExportablePermutation>> =
+    static ref GROUP_LIBRARY: Vec<DecoratedGroup<SyncPermutation>> =
         load_libraries(&["data/small.json", "data/transitive.json"]);
 }
 
-fn load_libraries(paths: &[&str]) -> Vec<DecoratedGroup<ExportablePermutation>> {
+fn load_libraries(paths: &[&str]) -> Vec<DecoratedGroup<SyncPermutation>> {
     paths.iter().map(|p| group_library(*p)).flatten().collect()
 }
 
-fn group_library(path: &str) -> impl IntoIterator<Item = DecoratedGroup<ExportablePermutation>> {
+fn group_library(path: &str) -> impl IntoIterator<Item = DecoratedGroup<SyncPermutation>> {
     let input = File::open(path).unwrap();
     let input = BufReader::new(input);
 
     let groups: Vec<DecoratedGroup<ExportablePermutation>> =
         serde_json::from_reader(input).unwrap();
-    groups.into_iter()
+    groups.into_iter().map(|g| g.map(SyncPermutation::from))
 }
 
-fn general_test<F, E>(name: &str, mut validator: F)
+fn general_test<F, E>(name: &str, validator: F)
 where
-    F: FnMut(DecoratedGroup<SyncPermutation>) -> Result<(), E>,
-    E: std::fmt::Debug,
+    F: Fn(DecoratedGroup<SyncPermutation>) -> Result<(), E> + Send + Sync,
+    E: std::fmt::Debug + Send,
 {
     let mut rng = rand::thread_rng();
-    let mut errors = Vec::new();
-    for g in GROUP_LIBRARY
+    let errors = GROUP_LIBRARY
         .iter()
-        .cloned()
-        .map(|g| g.map(SyncPermutation::from))
         .choose_multiple(&mut rng, LIMIT)
-    {
-        let validation = validator(g.clone());
-        if validation.is_err() {
-            let err = validation.unwrap_err();
-            println!("[{}] Error {:?}", name, &err);
-            println!("[{}] Error on {}", name, g.group());
-            errors.push((g, err));
-        }
-    }
+        .par_iter()
+        .cloned()
+        .map(|g| {
+            let validation = validator(g.clone());
+            if validation.is_err() {
+                let err = validation.unwrap_err();
+                println!("[{}] Error {:?}", name, &err);
+                println!("[{}] Error on {}", name, g.group());
+                Some((g, err))
+            } else {
+                None
+            }
+        })
+        .flatten()
+        .collect::<Vec<_>>();
 
     println!("[{}] {} errors out of {}", name, errors.len(), LIMIT);
     assert_eq!(errors.len(), 0);
