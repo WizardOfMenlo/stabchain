@@ -59,13 +59,14 @@ impl<P, T> MovedPointSelector<P, T> for FixedBaseSelector<T> {
 #[derive(Default, Debug, Copy, Clone)]
 pub(crate) struct FmpSelector;
 
-impl<P> MovedPointSelector<P, usize> for FmpSelector {
+impl<P> MovedPointSelector<P, usize> for FmpSelector
+where
+    P: Permutation,
+{
     fn moved_point(&mut self, p: &P) -> usize {
         //Find the first point that isn't fixed.
-        p.as_vec()
-            .iter()
-            .enumerate()
-            .position(|(i, x)| i != *x)
+        (0..p.lmp().expect(ID_ERROR))
+            .find(|&x| p.apply(x) != x)
             .expect(ID_ERROR)
     }
 }
@@ -103,8 +104,8 @@ mod tests {
 
     #[test]
     fn fmp_test() {
-        let p1 = Permutation::from_vec(vec![0, 1, 3, 2]);
-        let p2 = Permutation::from_vec(vec![1, 0]);
+        let p1 = DefaultPermutation::from_vec(vec![0, 1, 3, 2]);
+        let p2 = DefaultPermutation::from_vec(vec![1, 0]);
         let mut selector = FmpSelector;
         assert_eq!(selector.moved_point(&p1), 2);
         assert_eq!(selector.moved_point(&p2), 0);
@@ -115,7 +116,7 @@ mod tests {
     /// The selector should not be passed the ID, and will panic otherwise.
     fn fmp_test_id() {
         let mut selector = FmpSelector;
-        let id = Permutation::id();
+        let id = DefaultPermutation::id();
         selector.moved_point(&id);
     }
 }
