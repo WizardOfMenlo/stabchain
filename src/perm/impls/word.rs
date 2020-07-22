@@ -13,6 +13,11 @@ impl<P> WordPermutation<P>
 where
     P: Permutation,
 {
+    /// Make from a slice
+    pub fn from_slice(perms: &[P]) -> Self {
+        Self::from_iter(perms.iter().cloned())
+    }
+
     /// Get an underlying permutation
     pub fn evaluate(&self) -> P {
         self.word.iter().fold(P::id(), |acc, p| acc.multiply(p))
@@ -76,9 +81,8 @@ fn lmp_finder(candidate: usize, mut appl: impl FnMut(usize) -> usize) -> Option<
     (0..=candidate)
         .rev()
         .map(|i| (i, appl(i)))
-        .filter(|(i, j)| i != j)
+        .find(|(i, j)| i != j)
         .map(|r| r.0)
-        .next()
 }
 
 impl<P> Permutation for WordPermutation<P>
@@ -97,12 +101,8 @@ where
         Self::from_iter(iter::once(P::from_images(images)))
     }
 
-    fn apply(&self, mut x: usize) -> usize {
-        for p in &self.word {
-            x = p.apply(x);
-        }
-
-        x
+    fn apply(&self, x: usize) -> usize {
+        self.word.iter().fold(x, |x, p| p.apply(x))
     }
 
     fn multiply(&self, other: &Self) -> Self {
@@ -119,15 +119,17 @@ where
         // Then this is the identity
         let candidate = candidate?;
 
-        // If no duplicates, then the max is unique and no cancellation can occur
+        // Build an iterator over the duplicates, then get the second element. If it is some, then the lmp is not unique and
+        // so we have a duplicate
         let duplicates = self
             .word
             .iter()
             .flat_map(|p| p.lmp())
             .filter(|&lmp| lmp == candidate)
-            .count();
+            .nth(1)
+            .is_some();
 
-        if duplicates > 1 {
+        if duplicates {
             lmp_finder(candidate, |x| self.apply(x))
         } else {
             Some(candidate)
@@ -176,6 +178,16 @@ mod tests {
         let perm = WordPermutation::from_iter(perms);
         assert!(perm.lmp_upper().unwrap() >= perm.lmp().unwrap_or(0));
         assert!(perm.lmp_upper().unwrap() >= 4);
+        assert!(perm.is_id());
+        assert!(perm.lmp().is_none());
+    }
+
+    #[test]
+    fn lmp_not_eq_ub_inv() {
+        let perm = DefaultPermutation::from_images(&[1, 2, 3, 4, 5, 0]);
+        let perm = WordPermutation::from_slice(&[perm.inv(), perm]);
+        assert!(perm.lmp_upper().unwrap() >= perm.lmp().unwrap_or(0));
+        assert!(perm.lmp_upper().unwrap() >= 5);
         assert!(perm.is_id());
         assert!(perm.lmp().is_none());
     }
