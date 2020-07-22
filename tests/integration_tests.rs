@@ -12,11 +12,15 @@ use stabchain::perm::export::ExportablePermutation;
 use stabchain::perm::impls::sync::SyncPermutation;
 
 // We use this to limit the number of groups to test
-const LIMIT: usize = 1000;
+const DEFAULT_LIMIT: usize = 1000;
 
 lazy_static! {
     static ref GROUP_LIBRARY: Vec<DecoratedGroup<SyncPermutation>> =
         load_libraries(&["data/small.json", "data/transitive.json"]);
+    static ref LIMIT: usize = std::env::var("STABCHAIN_GROUP_TESTING_LIMIT")
+        .ok()
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap_or(DEFAULT_LIMIT);
 }
 
 fn load_libraries(paths: &[&str]) -> Vec<DecoratedGroup<SyncPermutation>> {
@@ -40,7 +44,7 @@ where
     let mut rng = rand::thread_rng();
     let errors = GROUP_LIBRARY
         .iter()
-        .choose_multiple(&mut rng, LIMIT)
+        .choose_multiple(&mut rng, *LIMIT)
         .par_iter()
         .cloned()
         .map(|g| {
@@ -57,7 +61,7 @@ where
         .flatten()
         .collect::<Vec<_>>();
 
-    println!("[{}] {} errors out of {}", name, errors.len(), LIMIT);
+    println!("[{}] {} errors out of {}", name, errors.len(), *LIMIT);
     assert_eq!(errors.len(), 0);
 }
 
