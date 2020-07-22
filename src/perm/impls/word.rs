@@ -13,18 +13,26 @@ impl<P> WordPermutation<P>
 where
     P: Permutation,
 {
+    /// Get an underlying permutation
     pub fn evaluate(&self) -> P {
         self.word.iter().fold(P::id(), |acc, p| acc.multiply(p))
     }
 
+    /// Check for equality on a general iterator. Note that equality on 0..=self.lmp() <= self.lmp_upper() will imply actual equality
     pub fn eq_on_iter(&self, other: &Self, iter: impl IntoIterator<Item = usize>) -> bool {
         iter.into_iter()
             .map(|i| (self.apply(i), other.apply(i)))
             .all(|(i, j)| i == j)
     }
 
+    /// Check for equality on the given base.
     pub fn eq_on_base(&self, other: &Self, base: &[usize]) -> bool {
         self.eq_on_iter(other, base.iter().copied())
+    }
+
+    /// Get an upper bound on the lmp. Note lmp_upper == None => self == id
+    pub fn lmp_upper(&self) -> Option<usize> {
+        self.word.iter().flat_map(|p| p.lmp()).max()
     }
 }
 
@@ -48,10 +56,9 @@ where
         let lmp_o = other.lmp();
 
         match (lmp_s, lmp_o) {
-            (Some(n), Some(m)) => self.eq_on_iter(other, 0..=std::cmp::max(n, m)),
-            (Some(_), None) => self.is_id(),
-            (None, Some(_)) => other.is_id(),
+            (Some(m), Some(n)) if m == n => self.eq_on_iter(other, 0..=n),
             (None, None) => true,
+            (_, _) => false,
         }
     }
 }
@@ -65,6 +72,15 @@ where
     }
 }
 
+fn lmp_finder(candidate: usize, mut appl: impl FnMut(usize) -> usize) -> Option<usize> {
+    (0..=candidate)
+        .rev()
+        .map(|i| (i, appl(i)))
+        .filter(|(i, j)| i != j)
+        .map(|r| r.0)
+        .next()
+}
+
 impl<P> Permutation for WordPermutation<P>
 where
     P: Permutation,
@@ -74,13 +90,7 @@ where
     }
 
     fn is_id(&self) -> bool {
-        if self.word.is_empty() {
-            return true;
-        }
-
-        (0..=self.lmp().unwrap())
-            .map(|i| (i, self.apply(i)))
-            .all(|(i, j)| i == j)
+        self.lmp().is_none()
     }
 
     fn from_images(images: &[usize]) -> Self {
@@ -104,7 +114,24 @@ where
     }
 
     fn lmp(&self) -> Option<usize> {
-        self.word.iter().flat_map(|p| p.lmp()).max()
+        let candidate = self.lmp_upper();
+
+        // Then this is the identity
+        let candidate = candidate?;
+
+        // If no duplicates, then the max is unique and no cancellation can occur
+        let duplicates = self
+            .word
+            .iter()
+            .flat_map(|p| p.lmp())
+            .filter(|&lmp| lmp == candidate)
+            .count();
+
+        if duplicates > 1 {
+            lmp_finder(candidate, |x| self.apply(x))
+        } else {
+            Some(candidate)
+        }
     }
 
     fn shift(&self, pos: usize) -> Self {
