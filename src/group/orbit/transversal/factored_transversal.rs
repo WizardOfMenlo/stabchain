@@ -45,11 +45,17 @@ where
     }
 }
 
-pub(crate) fn representative_raw_as_word<S: std::hash::BuildHasher>(
-    transversal: &HashMap<usize, Permutation, S>,
-    base: usize,
-    point: usize,
-) -> Option<Vec<Permutation>> {
+pub(crate) fn representative_raw_as_word<P, S, A>(
+    transversal: &HashMap<A::OrbitT, P, S>,
+    base: A::OrbitT,
+    point: A::OrbitT,
+    strat: &A,
+) -> Option<Vec<P>>
+where
+    P: Permutation,
+    S: std::hash::BuildHasher,
+    A: Action<P>,
+{
     // Check if the element is in the orbit.
     if !transversal.contains_key(&point) {
         None
@@ -60,7 +66,7 @@ pub(crate) fn representative_raw_as_word<S: std::hash::BuildHasher>(
         while orbit_point != base {
             let g_inv = transversal.get(&orbit_point).unwrap();
             rep.push(g_inv.inv());
-            orbit_point = g_inv.apply(orbit_point);
+            orbit_point = strat.apply(&g_inv, orbit_point);
         }
         Some(rep)
     }
