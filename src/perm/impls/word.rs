@@ -138,3 +138,45 @@ where
         Self::from_iter(self.word.iter().map(|p| p.shift(pos)))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::perm::{DefaultPermutation, Permutation};
+
+    #[test]
+    fn lmp_identity() {
+        let id = WordPermutation::<DefaultPermutation>::id();
+        assert_eq!(id.lmp_upper(), None);
+        assert_eq!(id.lmp(), None);
+    }
+
+    #[test]
+    fn lmp_upper_bound() {
+        let images = vec![
+            vec![0, 2, 1],
+            vec![0, 1, 2, 4, 3],
+            vec![0, 1, 2, 3, 4, 5, 7, 6],
+        ];
+        let perms = images
+            .iter()
+            .map(|arr| DefaultPermutation::from_images(arr));
+        let perm = WordPermutation::from_iter(perms);
+        assert!(perm.lmp_upper().unwrap() >= perm.lmp().unwrap());
+        assert!(perm.lmp_upper().unwrap() >= 7);
+        assert_eq!(perm.lmp().unwrap(), 7);
+    }
+
+    #[test]
+    fn lmp_not_eq_ub() {
+        let images = vec![vec![0, 1, 2, 4, 3], vec![0, 1, 2, 4, 3]];
+        let perms = images
+            .iter()
+            .map(|arr| DefaultPermutation::from_images(arr));
+        let perm = WordPermutation::from_iter(perms);
+        assert!(perm.lmp_upper().unwrap() >= perm.lmp().unwrap_or(0));
+        assert!(perm.lmp_upper().unwrap() >= 4);
+        assert!(perm.is_id());
+        assert!(perm.lmp().is_none());
+    }
+}
