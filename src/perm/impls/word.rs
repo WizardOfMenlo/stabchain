@@ -1,7 +1,7 @@
 use crate::perm::*;
 use std::iter::{self, FromIterator};
 
-#[derive(Debug, Clone, Eq, Hash)]
+#[derive(Debug, Clone, Eq)]
 pub struct WordPermutation<P = DefaultPermutation>
 where
     P: Permutation,
@@ -56,6 +56,15 @@ where
     }
 }
 
+impl<P> std::hash::Hash for WordPermutation<P>
+where
+    P: Permutation,
+{
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        (0..self.lmp().unwrap_or(0)).for_each(|x| self.apply(x).hash(state))
+    }
+}
+
 impl<P> Permutation for WordPermutation<P>
 where
     P: Permutation,
@@ -99,6 +108,6 @@ where
     }
 
     fn shift(&self, pos: usize) -> Self {
-        Self::from_iter(self.word.iter().map(|p| p.shift(pos).clone()))
+        Self::from_iter(self.word.iter().map(|p| p.shift(pos)))
     }
 }
