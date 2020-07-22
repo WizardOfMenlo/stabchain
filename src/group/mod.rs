@@ -1,4 +1,7 @@
+//! Mod with various operations and utilities for working with groups
+
 pub mod brute_force;
+pub mod group_library;
 pub mod orbit;
 pub mod random_perm;
 pub mod stabchain;
@@ -7,127 +10,34 @@ pub mod utils;
 use self::stabchain::builder::DefaultStrategy;
 use self::stabchain::moved_point_selector::FixedBaseSelector;
 use crate::group::orbit::abstraction::TransversalResolver;
-use crate::group::stabchain::builder::Strategy;
+use crate::group::stabchain::builder::BuilderStrategy;
+use crate::group::stabchain::moved_point_selector::MovedPointSelector;
+use crate::perm::actions::SimpleApplication;
 use crate::perm::export::CyclePermutation;
 use crate::perm::utils::order_n_permutation;
-use crate::perm::Permutation;
+use crate::perm::*;
+
+use serde::{Deserialize, Serialize};
 
 use std::iter::FromIterator;
 
-#[derive(Debug, Clone)]
-pub struct Group {
-    generators: Vec<Permutation>,
+/// The main struct exported. It stores a group as a list of generators.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Group<P = DefaultPermutation> {
+    generators: Vec<P>,
 }
 
 impl Group {
-    /// Instantiate the group from some generators
-    pub fn new(generators: &[Permutation]) -> Self {
-        Self::from_iter(generators.iter().cloned())
-    }
-
-    /// Get a reference to the generators of the group
-    pub fn generators(&self) -> &[Permutation] {
-        &self.generators[..]
-    }
-
-    /// Computes the orbit of the generator.
-    /// Note that in most cases factored_transversal is a better choice
-    /// As it allows to compute representatives with only marginally more work
-    pub fn orbit(&self, base: usize) -> orbit::Orbit {
-        orbit::Orbit::new(self, base)
-    }
-
-    /// Computes the transversal from the group generators (use factored transversal instead for memory efficience)
-    pub fn transversal(&self, base: usize) -> impl orbit::transversal::Transversal {
-        orbit::transversal::SimpleTransversal::new(self, base)
-    }
-
-    /// Computes the factored transversal from the group generators
-    pub fn factored_transversal(&self, base: usize) -> impl orbit::transversal::Transversal {
-        orbit::transversal::FactoredTransversal::new(self, base)
-    }
-
-    /// Computes a stabilizer chain for this group
-    pub fn stabchain(&self) -> stabchain::Stabchain<impl TransversalResolver> {
-        use self::stabchain::moved_point_selector::DefaultSelector;
-        stabchain::Stabchain::new_with_strategy(
-            self,
-            DefaultStrategy::new(DefaultSelector::default()),
-        )
-    }
-
-    /// Computes a stabilizer chain for this group with a base
-    pub fn stabchain_base(&self, base: &[usize]) -> stabchain::Stabchain<impl TransversalResolver> {
-        stabchain::Stabchain::new_with_strategy(
-            self,
-            DefaultStrategy::new(FixedBaseSelector::new(base)),
-        )
-    }
-
-    /// Computes a stabilizer chain for this group with a strategy
-    pub fn stabchain_with_strategy<S: Strategy>(
-        &self,
-        strat: S,
-    ) -> stabchain::Stabchain<S::Transversal> {
-        stabchain::Stabchain::new_with_strategy(self, strat)
-    }
-
-    /// Bruteforce the elements to get all elements in the group
-    /// Unless time is a very cheap commodity, do not do on large groups
-    pub fn bruteforce_elements(&self) -> Vec<Permutation> {
-        brute_force::group_elements(self)
-    }
-
-    /// Computes the smallest n s.t. G <= S_n
-    pub fn symmetric_super_order(&self) -> usize {
-        self.generators
-            .iter()
-            .flat_map(|g| g.lmp())
-            .max()
-            .unwrap_or(0)
-            + 1
-    }
-
-    /// Conjugate the generators by this permutation
-    pub fn conjugate_gens(&self, p: &Permutation) -> Self {
-        Group::from_iter(
-            self.generators()
-                .iter()
-                .map(|g| p.inv().multiply(g).multiply(p)),
-        )
-    }
-
-    /// Computes the direct product of two groups
-    pub fn product(g1: &Group, g2: &Group) -> Group {
-        if g1.generators.is_empty() {
-            return g2.clone();
-        }
-
-        if g2.generators.is_empty() {
-            return g1.clone();
-        }
-
-        let n = g1.symmetric_super_order();
-        let it = g1
-            .generators()
-            .iter()
-            .cloned()
-            .chain(g2.generators().iter().map(|p| p.shift(n)));
-
-        Group::from_iter(it)
-    }
-
     /// Generates the trivial group, which only contains the identity
     pub fn trivial() -> Self {
-        // TODO: Should we include the identity here?
         Group::new(&[])
     }
 
     /// Creates the Klein 4 group
     pub fn klein_4() -> Self {
         Group::new(&[
-            CyclePermutation::single_cycle(&[1, 2]).into(),
-            CyclePermutation::single_cycle(&[3, 4]).into(),
+            CyclePermutation::single_cycle(&[1, 2]).into_perm(),
+            CyclePermutation::single_cycle(&[3, 4]).into_perm(),
         ])
     }
 
@@ -151,7 +61,7 @@ impl Group {
             // (2, 2k + 1)...(k + 1, k+2)
             CyclePermutation::from_vec((2..=(k + 1)).map(|i| vec![i, 2 * k - i + 3]).collect())
         }
-        .into();
+        .into_perm();
 
         Group::new(&[reflection_perm, order_n_permutation(1, n)])
     }
@@ -172,7 +82,7 @@ impl Group {
         }
 
         // Alternating group is generated by the 3-cycles
-        let it = (3..=n).map(|n| CyclePermutation::single_cycle(&[1, 2, n]).into());
+        let it = (3..=n).map(|n| CyclePermutation::single_cycle(&[1, 2, n]).into_perm());
         Group::from_iter(it)
     }
 
@@ -185,45 +95,208 @@ impl Group {
         }
 
         Group::new(&[
-            CyclePermutation::single_cycle(&[1, 2]).into(),
+            CyclePermutation::single_cycle(&[1, 2]).into_perm(),
             order_n_permutation(1, n),
         ])
     }
+}
 
-    /// Make this useful group for benchmarking
-    pub fn make_row_col_symmetry(x: usize, y: usize) -> Self {
-        let mut perms = Vec::new();
-        for i in 0..x {
-            let mut l = Vec::from_iter(0..x * y);
-            for j in 1..y {
-                l[i + (j - 1) * x] = (i + 1) + (j - 1) * y;
-                l[(i + 1) + (j - 1) * x] = i + (j - 1) * y;
-            }
-            perms.push(Permutation::from_vec(l));
+impl<P> Group<P> {
+    /// To be used when the element is not a permutation. Note this does not check id
+    pub fn from_list<T: IntoIterator<Item = P>>(iter: T) -> Group<P> {
+        Group {
+            generators: iter.into_iter().collect(),
         }
+    }
 
-        for j in 1..y {
-            let mut l = Vec::from_iter(0..x * y);
-            for i in 0..x {
-                l[i + j * x] = i + (j - 1) * x;
-                l[i + (j - 1) * x] = i + j * x;
-            }
-            perms.push(Permutation::from_vec(l));
-        }
+    /// Get a reference to the generators of the group
+    pub fn generators(&self) -> &[P] {
+        &self.generators[..]
+    }
 
-        Group::new(&perms[..])
+    /// Used particularly to switch a group representation to any which uses a different permutation type
+    /// Or to export a group when the permutation type is serializable
+    pub fn map<F, T>(self, func: F) -> Group<T>
+    where
+        F: FnMut(P) -> T,
+    {
+        Group::from_list(self.generators.into_iter().map(func))
     }
 }
 
-impl FromIterator<Permutation> for Group {
-    fn from_iter<T: IntoIterator<Item = Permutation>>(iter: T) -> Group {
+impl<P> Group<P>
+where
+    P: Permutation,
+{
+    /// Instantiate the group from some generators
+    pub fn new(generators: &[P]) -> Self {
+        Self::from_iter(generators.iter().cloned())
+    }
+
+    /// Computes the orbit of the generator.
+    /// Note that in most cases factored_transversal is a better choice
+    /// As it allows to compute representatives with only marginally more work
+    pub fn orbit(&self, base: usize) -> orbit::Orbit {
+        orbit::Orbit::new(self, base)
+    }
+
+    /// Create a random generator for elements of the group
+    pub fn rng(&self) -> random_perm::RandPerm<P> {
+        random_perm::RandPerm::from_generators(11, self.generators(), 50)
+    }
+
+    /// Computes the orbit of a particular action
+    pub fn orbit_of_action<A>(&self, base: A::OrbitT, strat: &A) -> orbit::Orbit<A::OrbitT>
+    where
+        A: Action<P>,
+    {
+        orbit::Orbit::new_with_action(self, base, strat)
+    }
+
+    /// Computes the transversal from the group generators (use factored transversal instead for memory efficience)
+    pub fn transversal(
+        &self,
+        base: usize,
+    ) -> impl orbit::transversal::Transversal<P, SimpleApplication<P>> {
+        orbit::transversal::SimpleTransversal::new(self, base)
+    }
+
+    /// Compute the transversal w.r.t. to a given action
+    pub fn transversal_of_action<A>(
+        &self,
+        base: A::OrbitT,
+        strat: A,
+    ) -> impl orbit::transversal::Transversal<P, A>
+    where
+        A: Action<P>,
+    {
+        orbit::transversal::SimpleTransversal::new_with_action(self, base, &strat)
+    }
+
+    /// Computes the factored transversal from the group generators
+    pub fn factored_transversal(
+        &self,
+        base: usize,
+    ) -> impl orbit::transversal::Transversal<P, SimpleApplication<P>> {
+        orbit::transversal::FactoredTransversal::new(self, base)
+    }
+
+    /// Compute the factored transversal w.r.t. to a given action
+    pub fn factored_transversal_of_action<A>(
+        &self,
+        base: A::OrbitT,
+        strat: A,
+    ) -> impl orbit::transversal::Transversal<P, A>
+    where
+        A: Action<P>,
+    {
+        orbit::transversal::FactoredTransversal::new_with_action(self, base, &strat)
+    }
+
+    /// Computes a stabilizer chain for this group
+    pub fn stabchain(&self) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
+        use self::stabchain::moved_point_selector::DefaultSelector;
+        stabchain::Stabchain::new_with_strategy(
+            self,
+            DefaultStrategy::new(SimpleApplication::default(), DefaultSelector::default()),
+        )
+    }
+
+    /// Computes a stabilizer chain for this group with a base
+    pub fn stabchain_base(
+        &self,
+        base: &[usize],
+    ) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
+        stabchain::Stabchain::new_with_strategy(
+            self,
+            DefaultStrategy::new(SimpleApplication::default(), FixedBaseSelector::new(base)),
+        )
+    }
+
+    /// Computes a stabilizer chain for this group with a strategy
+    pub fn stabchain_with_strategy<S: BuilderStrategy<P>>(
+        &self,
+        strat: S,
+    ) -> stabchain::Stabchain<P, S::Transversal, S::Action> {
+        stabchain::Stabchain::new_with_strategy(self, strat)
+    }
+
+    /// Computes a stabilizer chain for this group with a chosen selector
+    pub fn stabchain_with_selector(
+        &self,
+        selector: impl MovedPointSelector<P>,
+    ) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
+        stabchain::Stabchain::new_with_strategy(
+            self,
+            DefaultStrategy::new(SimpleApplication::default(), selector),
+        )
+    }
+
+    /// Bruteforce the elements to get all elements in the group using an orbit strategy
+    /// Unless time is a very cheap commodity, do not do on large groups
+    pub fn bruteforce_elements(&self) -> Vec<P> {
+        self.orbit_of_action(
+            P::id(),
+            &crate::perm::actions::MultiplicationAction::default(),
+        )
+        .iter()
+        .cloned()
+        .collect()
+    }
+
+    /// Computes the smallest n s.t. G <= S_n
+    pub fn symmetric_super_order(&self) -> usize {
+        self.generators
+            .iter()
+            .flat_map(|g| g.lmp())
+            .max()
+            .unwrap_or(0)
+            + 1
+    }
+
+    /// Conjugate the generators by this permutation
+    pub fn conjugate_gens(&self, p: &P) -> Self {
+        use crate::perm::actions::ConjugationAction;
+        let c = ConjugationAction::default();
+        self.clone().map(|g| c.apply(p, g))
+    }
+
+    /// Computes the direct product of two groups
+    pub fn product(g1: &Group<P>, g2: &Group<P>) -> Group<P> {
+        if g1.generators.is_empty() {
+            return g2.clone();
+        }
+
+        if g2.generators.is_empty() {
+            return g1.clone();
+        }
+
+        let n = g1.symmetric_super_order();
+        let it = g1
+            .generators()
+            .iter()
+            .cloned()
+            .chain(g2.generators().iter().map(|p| p.shift(n)));
+
+        Group::from_iter(it)
+    }
+}
+
+impl<P> FromIterator<P> for Group<P>
+where
+    P: Permutation,
+{
+    fn from_iter<T: IntoIterator<Item = P>>(iter: T) -> Group<P> {
         let v = iter.into_iter().filter(|p| !p.is_id()).collect();
         Group { generators: v }
     }
 }
 
 use std::fmt;
-impl fmt::Display for Group {
+impl<P> fmt::Display for Group<P>
+where
+    P: fmt::Display,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.generators.is_empty() {
             return write!(f, "[Group: gens := <>]");
@@ -282,10 +355,10 @@ mod tests {
     #[test]
     fn test_product() {
         use crate::perm::export::CyclePermutation;
-        use crate::perm::Permutation;
+        use crate::perm::DefaultPermutation;
         use std::collections::HashSet;
 
-        let perm: Permutation = CyclePermutation::single_cycle(&[1, 2, 3]).into();
+        let perm: DefaultPermutation = CyclePermutation::single_cycle(&[1, 2, 3]).into();
 
         let g = Group::new(&[perm.clone()]);
         let prod = Group::product(&g, &g);
@@ -301,12 +374,5 @@ mod tests {
         let prod = Group::product(&Group::symmetric(4), &Group::symmetric(3));
         let expanded = prod.bruteforce_elements();
         assert_eq!(expanded.len(), 24 * 6);
-    }
-
-    #[test]
-    #[ignore]
-    fn test_row_col_symm() {
-        let g = Group::make_row_col_symmetry(60, 60);
-        assert_eq!(g.generators.len(), 118);
     }
 }

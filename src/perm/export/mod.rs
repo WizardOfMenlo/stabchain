@@ -1,19 +1,27 @@
 mod classic;
 mod cycles;
 
-use super::Permutation;
 use serde::{Deserialize, Serialize};
 
 pub use classic::ClassicalPermutation;
 pub use cycles::CyclePermutation;
 
+use super::impls::standard::StandardPermutation;
+
 /// A permutation that is easy to export
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ExportablePermutation(Vec<usize>);
 
-impl From<Permutation> for ExportablePermutation {
-    fn from(perm: Permutation) -> Self {
+impl From<StandardPermutation> for ExportablePermutation {
+    fn from(perm: StandardPermutation) -> Self {
         ClassicalPermutation::from(perm).into()
+    }
+}
+
+impl From<ExportablePermutation> for StandardPermutation {
+    fn from(perm: ExportablePermutation) -> Self {
+        use std::iter::FromIterator;
+        StandardPermutation::from_iter(perm.0.iter().map(|i| i - 1))
     }
 }
 

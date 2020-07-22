@@ -1,10 +1,10 @@
-use super::Permutation;
+use super::impls::standard::StandardPermutation;
 
 /// The implementation of inverse, to be used mostly for benchmarking
-pub fn inv(p: &Permutation) -> Permutation {
-    let vals = &p.vals;
+pub fn inv(p: &StandardPermutation) -> StandardPermutation {
+    let vals = p.as_vec();
     let inv = inv_unchecked(vals);
-    Permutation::from_vec_unchecked(inv)
+    StandardPermutation::from_vec_unchecked(inv)
 }
 
 pub(super) fn inv_unchecked(vals: &[usize]) -> Vec<usize> {

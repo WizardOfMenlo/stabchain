@@ -1,4 +1,7 @@
 use super::ClassicalPermutation;
+use crate::perm::impls::{
+    based::BasedPermutation, map::MapPermutation, standard::StandardPermutation,
+};
 use crate::perm::Permutation;
 use serde::{Deserialize, Serialize};
 
@@ -58,17 +61,36 @@ impl CyclePermutation {
     pub fn cycles(&self) -> &[Vec<usize>] {
         &self.cycles[..]
     }
+
+    pub fn into_perm<P: Permutation>(self) -> P {
+        let int: StandardPermutation = self.into();
+        P::from_images(int.as_vec())
+    }
 }
 
-impl From<Permutation> for CyclePermutation {
-    fn from(perm: Permutation) -> Self {
+impl From<StandardPermutation> for CyclePermutation {
+    fn from(perm: StandardPermutation) -> Self {
         CyclePermutation::from(ClassicalPermutation::from(perm))
     }
 }
 
-impl From<CyclePermutation> for Permutation {
+impl From<CyclePermutation> for StandardPermutation {
     fn from(perm: CyclePermutation) -> Self {
         let int: ClassicalPermutation = perm.into();
+        int.into()
+    }
+}
+
+impl From<CyclePermutation> for BasedPermutation {
+    fn from(perm: CyclePermutation) -> Self {
+        let int: StandardPermutation = perm.into();
+        int.into()
+    }
+}
+
+impl From<CyclePermutation> for MapPermutation {
+    fn from(perm: CyclePermutation) -> Self {
+        let int: StandardPermutation = perm.into();
         int.into()
     }
 }

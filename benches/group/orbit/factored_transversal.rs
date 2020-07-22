@@ -6,6 +6,7 @@ use stabchain::group::orbit::transversal::factored_transversal::{
     factored_transversal, factored_transversal_complete_opt,
 };
 use stabchain::group::Group;
+use stabchain::perm::actions::SimpleApplication;
 
 // Comparing orbit optimizations
 
@@ -15,11 +16,11 @@ fn transversal_vs_optmized_transversal_complete(c: &mut Criterion) {
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("transversal", i), i, |b, i| {
             let g = Group::symmetric(*i);
-            b.iter(|| factored_transversal(&g, 0));
+            b.iter(|| factored_transversal(&g, 0, &SimpleApplication::default()));
         });
         group.bench_with_input(BenchmarkId::new("transversal_optmized", i), i, |b, i| {
             let g = Group::symmetric(*i);
-            b.iter(|| factored_transversal_complete_opt(&g, 0));
+            b.iter(|| factored_transversal_complete_opt(&g, 0, &SimpleApplication::default()));
         });
     }
     group.finish();
@@ -32,11 +33,11 @@ fn transversal_vs_optmized_transversal_complete_many_generators(c: &mut Criterio
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("transversal", i), i, |b, i| {
             let g = Group::alternating(*i);
-            b.iter(|| factored_transversal(&g, 0));
+            b.iter(|| factored_transversal(&g, 0, &SimpleApplication::default()));
         });
         group.bench_with_input(BenchmarkId::new("transversal_optmized", i), i, |b, i| {
             let g = Group::alternating(*i);
-            b.iter(|| factored_transversal_complete_opt(&g, 0));
+            b.iter(|| factored_transversal_complete_opt(&g, 0, &SimpleApplication::default()));
         });
     }
     group.finish();
@@ -50,11 +51,11 @@ fn transversal_vs_optmized_transversal_uncomplete(c: &mut Criterion) {
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("transversal", i), i, |b, i| {
             let g = copies_of_cyclic(&[*i, 20, 20]);
-            b.iter(|| factored_transversal(&g, 0));
+            b.iter(|| factored_transversal(&g, 0, &SimpleApplication::default()));
         });
         group.bench_with_input(BenchmarkId::new("transversal_optmized", i), i, |b, i| {
             let g = copies_of_cyclic(&[*i, 20, 20]);
-            b.iter(|| factored_transversal_complete_opt(&g, 0));
+            b.iter(|| factored_transversal_complete_opt(&g, 0, &SimpleApplication::default()));
         });
     }
     group.finish();

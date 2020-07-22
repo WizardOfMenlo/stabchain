@@ -1,25 +1,31 @@
+//! Utilities for testing element membership and coset representatives
+
 use super::StabchainRecord;
 use crate::group::orbit::abstraction::TransversalResolver;
 use crate::group::utils::apply_permutation_word;
-use crate::perm::Permutation;
+use crate::perm::{Action, Permutation};
 
 /// Given a stabilizer chain, computes whether the given element is in the group
-pub fn is_in_group<'a, V>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
-    p: &Permutation,
+pub fn is_in_group<'a, P, A, V>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
+    p: &P,
 ) -> bool
 where
-    V: 'a + TransversalResolver,
+    P: 'a + Permutation,
+    A: 'a + Action<P>,
+    V: 'a + TransversalResolver<P, A>,
 {
     // Early exit
     if p.is_id() {
         return true;
     }
 
+    let applicator = A::default();
+
     let mut g = p.clone();
     for record in it {
-        let base = record.base;
-        let application = g.apply(base);
+        let base = record.base.clone();
+        let application = applicator.apply(&g, base.clone());
 
         if !record.transversal.contains_key(&application) {
             return false;
@@ -37,12 +43,14 @@ where
 
 /// Given a stabilizer chain, computes a list of coset representatives of the given element if it is in the group
 /// So that p == s_m s_m-1 ... s_1
-pub fn coset_representative<'a, V>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<V>>,
-    p: &Permutation,
-) -> Option<Vec<Permutation>>
+pub fn coset_representative<'a, P, A, V>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
+    p: &P,
+) -> Option<Vec<P>>
 where
-    V: 'a + TransversalResolver,
+    P: 'a + Permutation,
+    A: 'a + Action<P>,
+    V: 'a + TransversalResolver<P, A>,
 {
     // Early exit
     if p.is_id() {
@@ -50,11 +58,13 @@ where
         return Some(Vec::new());
     }
 
+    let applicator = A::default();
+
     let mut res = Vec::new();
     let mut g = p.clone();
     for record in it {
-        let base = record.base;
-        let application = g.apply(base);
+        let base = record.base.clone();
+        let application = applicator.apply(&g, base.clone());
 
         if !record.transversal.contains_key(&application) {
             return None;
@@ -144,12 +154,13 @@ where
 mod tests {
     use super::*;
     use crate::group::Group;
+    use crate::perm::DefaultPermutation;
 
     #[test]
     fn id_test() {
         let g = Group::trivial();
         let stab = g.stabchain();
-        assert!(is_in_group(stab.iter(), &Permutation::id()));
+        assert!(is_in_group(stab.iter(), &DefaultPermutation::id()));
     }
 
     #[test]
@@ -165,6 +176,7 @@ mod tests {
 
     #[test]
     fn book_example() {
+        use super::super::moved_point_selector::FixedBaseSelector;
         use crate::perm::export::CyclePermutation;
 
         let g = Group::new(&[
@@ -172,9 +184,10 @@ mod tests {
             CyclePermutation::single_cycle(&[2, 3, 4]).into(),
         ]);
 
-        let chain = g.stabchain_base(&[0, 1]);
+        let chain = g.stabchain_with_selector(FixedBaseSelector::new(&[0, 1]));
 
-        let perm = CyclePermutation::from_vec(vec![vec![1, 2], vec![3, 4]]).into();
+        let perm: DefaultPermutation =
+            CyclePermutation::from_vec(vec![vec![1, 2], vec![3, 4]]).into();
 
         assert!(is_in_group(chain.iter(), &perm));
     }
@@ -185,7 +198,6 @@ mod tests {
 
         let g = Group::symmetric(5);
         let chain = g.stabchain();
-        println!("{}", chain);
 
         assert!(is_in_group(
             chain.iter(),
@@ -197,14 +209,15 @@ mod tests {
 
     #[test]
     fn book_example_complete_test() {
+        use super::super::moved_point_selector::FixedBaseSelector;
         use crate::perm::export::CyclePermutation;
 
-        let g = Group::new(&[
+        let g = Group::<DefaultPermutation>::new(&[
             CyclePermutation::single_cycle(&[1, 2, 3]).into(),
             CyclePermutation::single_cycle(&[2, 3, 4]).into(),
         ]);
 
-        let chain = g.stabchain_base(&[0, 1]);
+        let chain = g.stabchain_with_selector(FixedBaseSelector::new(&[0, 1]));
 
         let elements = g.bruteforce_elements();
         for el in elements {
@@ -218,7 +231,7 @@ mod tests {
 
         let g = Group::symmetric(5);
         let stab = g.stabchain();
-        assert!(is_in_group(stab.iter(), &Permutation::id()));
+        assert!(is_in_group(stab.iter(), &DefaultPermutation::id()));
 
         for _ in 0..50 {
             let perm = random_permutation(5);
@@ -226,38 +239,32 @@ mod tests {
         }
     }
 
-    #[ignore]
     #[test]
     //Brute force to check if all elements of the symmetric group are in the resulting stabilizer chain.
     fn perm_in_symmetric_brute_force() {
-        use crate::group::brute_force::group_elements;
         let g = Group::symmetric(6);
         let chain = g.stabchain();
-        for perm in group_elements(&g) {
+        for perm in g.bruteforce_elements() {
             assert!(chain.in_group(&perm));
         }
     }
 
-    #[ignore]
     #[test]
     //Brute force to check if all element of the alternating group are in the resulting stabilizer chain.
     fn perm_in_alternating_brute_force() {
-        use crate::group::brute_force::group_elements;
         let g = Group::alternating(6);
         let chain = g.stabchain();
-        for perm in group_elements(&g) {
+        for perm in g.bruteforce_elements() {
             assert!(chain.in_group(&perm));
         }
     }
 
-    #[ignore]
     #[test]
     //Brute force to check if all element of the alternating group are in the resulting stabilizer chain.
     fn perm_in_dihedral_brute_force() {
-        use crate::group::brute_force::group_elements;
         let g = Group::dihedral_2n(50);
         let chain = g.stabchain();
-        for perm in group_elements(&g) {
+        for perm in g.bruteforce_elements() {
             assert!(chain.in_group(&perm));
         }
     }
@@ -280,10 +287,13 @@ mod tests {
     fn trivial_repr() {
         let g = Group::trivial();
         let stab = g.stabchain();
-        let repr = coset_representative(stab.iter(), &Permutation::id());
+        let repr = coset_representative(stab.iter(), &DefaultPermutation::id());
         assert!(repr.is_some());
         assert_eq!(repr.unwrap().len(), 0);
-        assert!(coset_representative(stab.iter(), &Permutation::from_vec(vec![1, 2, 0])).is_none());
+        assert!(
+            coset_representative(stab.iter(), &DefaultPermutation::from_images(&[1, 2, 0]))
+                .is_none()
+        );
     }
 
     #[test]
@@ -297,7 +307,7 @@ mod tests {
         assert!(repr.is_some());
         let mut repr = repr.unwrap();
         assert_eq!(repr.len(), stab.len());
-        let mut acc = Permutation::id();
+        let mut acc = DefaultPermutation::id();
         while !repr.is_empty() {
             let elem = repr.pop().unwrap();
             acc = acc.multiply(&elem);

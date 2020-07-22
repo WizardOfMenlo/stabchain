@@ -1,28 +1,39 @@
+//! Mod which contains the definition of a stabilizer chain, complete with all the ways of creating such a chain
+
 pub mod builder;
 pub mod element_testing;
 pub mod moved_point_selector;
 
 use crate::group::orbit::abstraction::TransversalResolver;
 use crate::group::Group;
-use crate::perm::Permutation;
-use builder::{Builder, Strategy};
+use crate::perm::actions::SimpleApplication;
+use crate::perm::*;
+use builder::{Builder, BuilderStrategy};
 use moved_point_selector::MovedPointSelector;
 
 use std::collections::HashMap;
 
-#[derive(Debug)]
-pub struct Stabchain<V> {
-    chain: Vec<StabchainRecord<V>>,
+use num::BigUint;
+
+/// A stabilizer chain. Each level of the chain represents a subgroup of the
+/// preceding group, which usually fixes a single point.
+pub struct Stabchain<P, V, A = SimpleApplication<P>>
+where
+    A: Action<P>,
+{
+    chain: Vec<StabchainRecord<P, V, A>>,
 }
 
-impl<V> Stabchain<V>
+impl<P, V, A> Stabchain<P, V, A>
 where
-    V: TransversalResolver,
+    P: Permutation,
+    A: Action<P>,
+    V: TransversalResolver<P, A>,
 {
     /// Creates a stabilizer chain, using a selected strategy.
-    pub fn new_with_strategy<S, B: Builder<V>>(g: &Group, build_strategy: S) -> Self
+    pub fn new_with_strategy<S, B: Builder<P, V, A>>(g: &Group<P>, build_strategy: S) -> Self
     where
-        S: Strategy<Transversal = V, BuilderT = B>,
+        S: BuilderStrategy<P, Action = A, Transversal = V, BuilderT = B>,
     {
         let mut builder = build_strategy.make_builder();
         builder.set_generators(g);
@@ -30,38 +41,47 @@ where
     }
 
     // Utility to get the chain
-    fn get_chain_at_layer(&self, n: usize) -> impl Iterator<Item = &StabchainRecord<V>> {
+    fn get_chain_at_layer(&self, n: usize) -> impl Iterator<Item = &StabchainRecord<P, V, A>> {
         self.chain.iter().skip(n)
     }
 
     /// Is the element in the group?
-    pub fn in_group(&self, g: &Permutation) -> bool {
+    pub fn in_group(&self, g: &P) -> bool {
         self.in_subgroup(g, 0)
     }
 
     /// Check membership at the subgroup
-    pub fn in_subgroup(&self, g: &Permutation, layer: usize) -> bool {
+    pub fn in_subgroup(&self, g: &P, layer: usize) -> bool {
         element_testing::is_in_group(self.get_chain_at_layer(layer), g)
     }
 
     /// Get representatives that multiply to g
     /// TODO: If there is something useful to do with these, make a struct for Vec<Permutation>
-    pub fn coset_representatives(&self, g: &Permutation) -> Option<Vec<Permutation>> {
+    pub fn coset_representatives(&self, g: &P) -> Option<Vec<P>> {
         self.coset_representatives_in_subgroup(g, 0)
     }
 
     /// Get representatives that multiply to g
-    pub fn coset_representatives_in_subgroup(
-        &self,
-        g: &Permutation,
-        layer: usize,
-    ) -> Option<Vec<Permutation>> {
+    pub fn coset_representatives_in_subgroup(&self, g: &P, layer: usize) -> Option<Vec<P>> {
         element_testing::coset_representative(self.get_chain_at_layer(layer), g)
     }
 
+    /// Calculate the order of the group this stabilizer chain represents.
+    pub fn order(&self) -> BigUint {
+        self.order_subgroup(0)
+    }
+
+    /// Calculate the order of the subgroupgroup this stabilizer chain represents.
+    pub fn order_subgroup(&self, layer: usize) -> BigUint {
+        //The order is the product of the orbit lengths.
+        self.get_chain_at_layer(layer)
+            .map(|record| BigUint::from(record.transversal.len()))
+            .product()
+    }
+
     /// Get the base corresponding to this stabilizer chain
-    pub fn base(&self) -> Vec<usize> {
-        self.chain.iter().map(|g| g.base).collect()
+    pub fn base(&self) -> Vec<A::OrbitT> {
+        self.chain.iter().map(|g| &g.base).cloned().collect()
     }
 
     /// Get chain length
@@ -72,31 +92,25 @@ where
 
     /// Is the chain empty (i.e. originary group was trivial)
     pub fn is_empty(&self) -> bool {
-        self.len() == 0
+        self.chain.is_empty()
     }
 
     /// Get G^(n)
-    pub fn layer(&self, n: usize) -> Option<&StabchainRecord<V>> {
+    pub fn layer(&self, n: usize) -> Option<&StabchainRecord<P, V, A>> {
         self.chain.get(n)
     }
 
     /// Get an iterator over the records
-    pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord<V>> {
+    pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord<P, V, A>> {
         self.chain.iter()
-    }
-
-    /// Calculate the order of the group this stabilizer chain represents.
-    pub fn order(&self) -> usize {
-        //The order is the product of the orbit lengths.
-        self.chain
-            .iter()
-            .map(|record| record.transversal.len())
-            .product::<usize>()
     }
 }
 
-impl<V> IntoIterator for Stabchain<V> {
-    type Item = StabchainRecord<V>;
+impl<P, V, A> IntoIterator for Stabchain<P, V, A>
+where
+    A: Action<P>,
+{
+    type Item = StabchainRecord<P, V, A>;
     type IntoIter = std::vec::IntoIter<Self::Item>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -106,30 +120,38 @@ impl<V> IntoIterator for Stabchain<V> {
 
 /// All the information stored in a layer of the stabilizer chain
 #[derive(Debug, Clone)]
-pub struct StabchainRecord<V> {
-    base: usize,
-    gens: Group,
-    transversal: HashMap<usize, Permutation>,
+pub struct StabchainRecord<P, V, A = SimpleApplication<P>>
+where
+    A: Action<P>,
+{
+    base: A::OrbitT,
+    gens: Group<P>,
+    transversal: HashMap<A::OrbitT, P>,
     resolver: V,
 }
 
-impl<V> StabchainRecord<V> {
+impl<P, V, A> StabchainRecord<P, V, A>
+where
+    A: Action<P>,
+{
     /// Get the associated group
-    pub fn group(&self) -> &Group {
+    pub fn group(&self) -> &Group<P> {
         &self.gens
     }
 
     /// Get the base of this layer, i.e. the element that the next layer stabilizes
-    pub fn base(&self) -> usize {
-        self.base
+    pub fn base(&self) -> &A::OrbitT {
+        &self.base
     }
 }
 
-impl<V> StabchainRecord<V>
+impl<P, V, A> StabchainRecord<P, V, A>
 where
-    V: TransversalResolver,
+    P: Permutation,
+    A: Action<P>,
+    V: TransversalResolver<P, A>,
 {
-    pub(crate) fn new(base: usize, gens: Group, transversal: HashMap<usize, Permutation>) -> Self {
+    pub(crate) fn new(base: A::OrbitT, gens: Group<P>, transversal: HashMap<A::OrbitT, P>) -> Self {
         StabchainRecord {
             base,
             gens,
@@ -146,15 +168,17 @@ where
     /// Get the resolver of the record
     pub fn transversal(&self) -> V::AssociatedTransversal {
         self.resolver
-            .into_transversal(self.transversal.clone(), self.base)
+            .into_transversal(self.transversal.clone(), self.base.clone())
     }
 }
 
 use std::fmt;
 
-impl<V> fmt::Display for Stabchain<V>
+impl<P, V, A> fmt::Display for Stabchain<P, V, A>
 where
-    V: TransversalResolver,
+    P: fmt::Display + Permutation,
+    A: Action<P, OrbitT = usize>,
+    V: TransversalResolver<P, A>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "[Stabchain: ")?;
@@ -165,52 +189,72 @@ where
     }
 }
 
-impl<V> fmt::Display for StabchainRecord<V> {
+impl<P, V, A> fmt::Display for StabchainRecord<P, V, A>
+where
+    P: fmt::Display + Permutation,
+    A: Action<P, OrbitT = usize>,
+{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // TODO: Once specialization is done, fix this
         write!(f, "[base := {}, {}]", self.base() + 1, self.group())
     }
+}
+
+use crate::group::orbit::transversal::TransversalError;
+
+#[derive(Debug)]
+pub enum StabchainError<P, OrbitT> {
+    InvalidComputedOrbit,
+    TransversalError(TransversalError<P, OrbitT>),
+    BasePointNotStabilized(OrbitT),
+}
+
+pub fn valid_stabchain<P, V, A>(s: &Stabchain<P, V, A>) -> Result<(), StabchainError<P, A::OrbitT>>
+where
+    P: Permutation,
+    V: TransversalResolver<P, A>,
+    A: Action<P>,
+    A::OrbitT: std::fmt::Debug,
+{
+    use crate::group::orbit::transversal::{valid_transversal, Transversal};
+
+    let applicator = A::default();
+
+    let mut previous: Option<A::OrbitT> = None;
+    for record in s.iter() {
+        let gens = record.group();
+        let transversal = record.transversal();
+
+        // Check the computed transversal, and the one computed from generators agree
+        // We do not directly check the transversal since representatives are not unique
+        if transversal.orbit() != gens.orbit_of_action(record.base.clone(), &applicator) {
+            return Err(StabchainError::InvalidComputedOrbit);
+        }
+
+        valid_transversal(&transversal).map_err(StabchainError::TransversalError)?;
+
+        // Check that everything is stabilized correctly
+        if let Some(stabilized) = previous {
+            if gens.orbit_of_action(stabilized.clone(), &applicator).len() != 1 {
+                return Err(StabchainError::BasePointNotStabilized(stabilized));
+            }
+        }
+
+        previous = Some(record.base.clone());
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::group::orbit::transversal::Transversal;
-
-    fn check_well_formed_chain<V: TransversalResolver>(s: &Stabchain<V>) {
-        let mut previous = None;
-        for record in s.chain.iter() {
-            let gens = record.group();
-            let transversal = record.transversal();
-
-            // Check the computed transversal, and the one computed from generators agree
-            // We do not directly check the transversal since representatives are not unique
-            assert_eq!(transversal.orbit(), gens.orbit(record.base));
-
-            for elem in transversal.orbit().iter().copied() {
-                assert_eq!(
-                    elem,
-                    transversal
-                        .representative(elem)
-                        .unwrap()
-                        .apply(record.base())
-                );
-            }
-
-            // Check that everything is stabilized correctly
-            if !previous.is_none() {
-                let stabilized = previous.unwrap();
-                assert_eq!(gens.orbit(stabilized).len(), 1);
-            }
-
-            previous = Some(record.base);
-        }
-    }
 
     #[test]
     fn trivial_chain() {
         let g = Group::trivial();
         let chain = g.stabchain();
-        check_well_formed_chain(&chain);
+        valid_stabchain(&chain).unwrap();
         assert!(chain.is_empty());
     }
 
@@ -218,54 +262,58 @@ mod tests {
     fn klein4_chain() {
         let g = Group::klein_4();
         let chain = g.stabchain();
-        check_well_formed_chain(&chain);
+        valid_stabchain(&chain).unwrap();
     }
 
     #[test]
     fn cyclic_chain() {
         let g = Group::cyclic(100);
         let chain = g.stabchain();
-        check_well_formed_chain(&chain);
+        valid_stabchain(&chain).unwrap();
+    }
+
+    fn i(x: usize) -> BigUint {
+        BigUint::from(x)
     }
 
     #[test]
     fn dihedral_chain() {
         let g = Group::dihedral_2n(3);
         let chain = g.stabchain();
-        check_well_formed_chain(&chain);
-        assert_eq!(6, chain.order());
+        valid_stabchain(&chain).unwrap();
+        assert_eq!(i(6), chain.order());
     }
 
     #[test]
     fn alternating_chain() {
         let g = Group::alternating(5);
         let chain = g.stabchain();
-        check_well_formed_chain(&chain);
-        assert_eq!(60, chain.order());
+        valid_stabchain(&chain).unwrap();
+        assert_eq!(i(60), chain.order());
     }
 
     #[test]
     fn symmetric_chain() {
         let g = Group::symmetric(10);
         let chain = g.stabchain();
-        check_well_formed_chain(&chain);
-        assert_eq!(3628800, chain.order())
+        valid_stabchain(&chain).unwrap();
+        assert_eq!(i(3628800), chain.order())
     }
 
     #[test]
     fn product_chain() {
         let g = Group::product(&Group::symmetric(15), &Group::symmetric(15));
         let chain = g.stabchain();
-        check_well_formed_chain(&chain);
+        valid_stabchain(&chain).unwrap();
     }
 
     #[test]
     fn single_non_trivial_layer() {
         use crate::perm::export::CyclePermutation;
 
-        let g = Group::new(&[CyclePermutation::single_cycle(&[1, 2]).into()]);
+        let g = Group::<DefaultPermutation>::new(&[CyclePermutation::single_cycle(&[1, 2]).into()]);
         let chain = g.stabchain();
-        check_well_formed_chain(&chain);
+        valid_stabchain(&chain).unwrap();
     }
 
     // #[test]

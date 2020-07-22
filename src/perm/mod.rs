@@ -1,458 +1,72 @@
-//! Digraphs
+//! Permutations on integers
 //!
 //! This crate implements permutations on integers
 
+pub mod actions;
 pub mod algos;
 pub mod builder;
 pub mod export;
+pub mod impls;
 pub mod utils;
 
-use builder::PermBuilder;
+use std::hash::Hash;
 
-use std::cell::RefCell;
-use std::cmp::max;
-use std::fmt;
-use std::rc::Rc;
+/// The DefaultPermutation type. It is the permutation that, trough our testing,
+/// seems to perform better
+pub type DefaultPermutation = impls::standard::StandardPermutation;
 
-/// Represents a permutation
-/// The vals are reference counted and stored to allow for easy copy
-/// The inverse is also stored in an option, so it can be cached.
-/// The RefCell is needed to ensure interior mutability and compliance
-/// with the Permutation API
-#[derive(Clone, Debug, Eq)]
-pub struct Permutation {
-    vals: Rc<Vec<usize>>,
-    invvals: RefCell<Option<Rc<Vec<usize>>>>,
+/// A trait encapsulating what being a permutation is like (permutation on points ndr)
+pub trait Permutation: Clone + Eq + Hash {
+    /// Given some images, build a permutation
+    fn from_images(images: &[usize]) -> Self;
+
+    /// Get the identity
+    fn id() -> Self;
+
+    /// Is the permutation the identity
+    fn is_id(&self) -> bool;
+
+    /// Apply the permutation to a point
+    fn apply(&self, x: usize) -> usize;
+
+    /// Inverse of the permutation
+    fn inv(&self) -> Self;
+
+    /// Multiply two permutations
+    fn multiply(&self, other: &Self) -> Self;
+
+    /// Exponentiate this permutation
+    fn pow(&self, pow: isize) -> Self {
+        let perm = if pow < 0 { self.inv() } else { self.clone() };
+
+        builder::pow::pow(perm, pow.abs() as usize)
+    }
+
+    /// Shift the permutation some places on the right
+    fn shift(&self, pos: usize) -> Self;
+
+    /// Get the order of the permutation
+    fn order(&self) -> usize {
+        let mut acc = Self::id();
+        let mut counter = 0;
+        while !acc.is_id() {
+            acc = acc.multiply(self);
+            counter += 1;
+        }
+        counter
+    }
+
+    fn divide(&self, other: &Self) -> Self {
+        self.multiply(&other.inv())
+    }
+
+    /// Get the smallest moved point
+    fn lmp(&self) -> Option<usize>;
 }
 
-impl Permutation {
-    /// Get the identity permutation
-    pub fn id() -> Self {
-        Self {
-            vals: Rc::new(Vec::new()),
-            invvals: RefCell::new(Some(Rc::new(Vec::new()))),
-        }
-    }
+/// Trait to select which action does the permutation induce
+pub trait Action<P>: Default + Clone {
+    type OrbitT: Hash + Eq + Clone;
 
-    /// Shifts a permutation on S_n to one on S_{n + k} where the first k points are fixed
-    /// Equivalent to take p sigma q where p maps i to i - k and q maps i to i + k
-    /// ```
-    /// use stabchain::perm::export::CyclePermutation;
-    /// use stabchain::perm::Permutation;
-    /// let perm : Permutation = CyclePermutation::single_cycle(&[2, 3, 4]).into();
-    /// assert_eq!(perm.shift(5), CyclePermutation::single_cycle(&[7, 8, 9]).into())
-    /// ```
-    pub fn shift(&self, k: usize) -> Permutation {
-        if self.is_id() {
-            return Permutation::id();
-        }
-
-        let mut images: Vec<_> = (0..k).collect();
-        let new_images = self.vals.iter().map(|i| i + k);
-        images.extend(new_images);
-        Permutation::from_vec_unchecked(images)
-    }
-
-    /// Tests if the permutation is the identity
-    /// ```
-    /// use stabchain::perm::Permutation;
-    /// assert!(Permutation::id().is_id());
-    /// let a = Permutation::from_vec(vec![1, 0]);
-    /// assert!(a.multiply(&a).is_id());
-    /// ```
-    pub fn is_id(&self) -> bool {
-        self.vals.is_empty()
-    }
-
-    /// Get the vector representation of the permutation
-    pub fn as_vec(&self) -> &[usize] {
-        &self.vals[..]
-    }
-
-    // Helper to make the inverse
-    fn make_inverse(vals: Rc<Vec<usize>>, invvals: Rc<Vec<usize>>) -> Self {
-        Self {
-            vals: invvals,
-            invvals: RefCell::new(Some(vals)),
-        }
-    }
-
-    /// Applies the permutation to a point
-    /// ```
-    /// use stabchain::perm::Permutation;
-    /// assert_eq!(Permutation::id().apply(1), 1);
-    /// ```
-    pub fn apply(&self, x: usize) -> usize {
-        if x < self.vals.len() {
-            self.vals[x]
-        } else {
-            x
-        }
-    }
-
-    /// Create a permutation based on `vals`.
-    /// Produces a permutation which maps i to vals\[i\], and acts as the
-    /// identity for i >= vals.len()
-    /// Requires: vals is a permutation on 0..vals.len()
-    /// ```
-    /// use stabchain::perm::Permutation;
-    /// let a = Permutation::from_vec(vec![1, 0]);
-    /// ```
-    pub fn from_vec(vals: Vec<usize>) -> Self {
-        let mut copy = vals.clone();
-        let perm = Permutation::from_vec_unchecked(vals);
-
-        copy.sort();
-        for i in copy.into_iter().enumerate() {
-            if i.0 != i.1 {
-                panic!("Invalid Representation");
-            }
-        }
-
-        perm
-    }
-
-    fn from_vec_unchecked(mut vals: Vec<usize>) -> Self {
-        while !vals.is_empty() && vals[vals.len() - 1] == vals.len() - 1 {
-            vals.pop();
-        }
-
-        Self {
-            vals: Rc::new(vals),
-            invvals: RefCell::new(None),
-        }
-    }
-
-    /// Computes the inverse of a permutation.
-    /// Note this also lazily caches the inverse, so subsequent calls should
-    /// be extremely quick
-    /// ```
-    /// use stabchain::perm::Permutation;
-    /// let a = Permutation::from_vec(vec![1, 0]);
-    /// assert_eq!(a, a.inv());
-    /// ```
-    pub fn inv(&self) -> Self {
-        if self.invvals.borrow().is_some() {
-            return Permutation::make_inverse(
-                self.vals.clone(),
-                self.invvals.borrow().clone().unwrap(),
-            );
-        }
-
-        let v = algos::inv_unchecked(&self.vals[..]);
-
-        let ptr = Rc::new(v);
-
-        *self.invvals.borrow_mut() = Some(ptr.clone());
-
-        Permutation::make_inverse(self.vals.clone(), ptr)
-    }
-
-    /// Multiplies two permutations
-    /// ```
-    /// use stabchain::perm::Permutation;
-    /// let a = Permutation::from_vec(vec![0, 2, 1]);
-    /// let b = a.inv();
-    /// assert_eq!(a.multiply(&b), Permutation::id());
-    /// assert_eq!(b.multiply(&a), Permutation::id());
-    /// ```
-    pub fn multiply(&self, other: &Permutation) -> Self {
-        if self.is_id() {
-            if other.is_id() {
-                return self.clone();
-            }
-            let size = other.lmp().unwrap();
-            Permutation::from_vec_unchecked((0..=size).map(|x| other.apply(x)).collect())
-        } else if other.is_id() {
-            self.clone()
-        } else {
-            let size = max(self.lmp().unwrap_or(0), other.lmp().unwrap_or(0));
-            debug_assert!(size > 0);
-            let v = (0..=size).map(|x| other.apply(self.apply(x))).collect();
-            Permutation::from_vec_unchecked(v)
-        }
-    }
-
-    /// Computes the n-th power of a a permutation
-    /// ```
-    /// use stabchain::perm::Permutation;
-    /// let a = Permutation::from_vec(vec![2, 0, 1]);
-    /// assert_eq!(a.pow(3), Permutation::id());
-    /// assert_eq!(a.pow(-1), a.inv());
-    /// ```
-    pub fn pow(&self, pow: isize) -> Self {
-        self.build_pow(pow).collapse()
-    }
-
-    /// Computes the order of the permutation
-    /// ```
-    /// use stabchain::perm::Permutation;
-    /// let a = Permutation::from_vec(vec![2, 0, 1]);
-    /// assert_eq!(a.pow(a.order() as isize), Permutation::id());
-    /// ```
-    pub fn order(&self) -> usize {
-        // TODO: If we ever use order in resource heavy context, optmize here
-        use crate::perm::export::CyclePermutation;
-        CyclePermutation::from(self.clone()).order()
-    }
-
-    /// Computes f * g^-1
-    pub fn divide(&self, other: &Permutation) -> Self {
-        self.build_divide(other).collapse()
-    }
-
-    pub fn lmp(&self) -> Option<usize> {
-        if self.vals.is_empty() {
-            None
-        } else {
-            Some(self.vals.len() - 1)
-        }
-    }
-}
-
-impl PermBuilder for Permutation {
-    fn build_apply(&self, x: usize) -> usize {
-        if x < self.vals.len() {
-            self.vals[x]
-        } else {
-            x
-        }
-    }
-
-    fn collapse(&self) -> Permutation {
-        self.clone()
-    }
-}
-
-impl fmt::Display for Permutation {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use export::CyclePermutation;
-        write!(f, "{}", CyclePermutation::from(self.clone()))
-    }
-}
-
-impl PartialEq for Permutation {
-    fn eq(&self, other: &Self) -> bool {
-        self.vals == other.vals
-    }
-}
-
-impl PartialOrd for Permutation {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.vals.cmp(&other.vals))
-    }
-}
-
-impl std::hash::Hash for Permutation {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.vals.hash(state);
-    }
-}
-
-impl From<Vec<usize>> for Permutation {
-    fn from(v: Vec<usize>) -> Self {
-        Permutation::from_vec(v)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    #[test]
-    #[should_panic]
-    fn invalid_missing_0() {
-        Permutation::from_vec(vec![1, 2, 3]);
-    }
-
-    #[test]
-    #[should_panic]
-    fn invalid_double_value() {
-        Permutation::from_vec(vec![0, 1, 2, 2]);
-    }
-
-    use super::Permutation;
-    #[test]
-    fn id_perm() {
-        assert_eq!(Permutation::id(), Permutation::id());
-        assert_eq!(Permutation::id(), Permutation::from_vec(vec![0, 1, 2]));
-    }
-
-    #[test]
-    fn test_is_id() {
-        let perm = Permutation::from_vec(vec![0, 1, 2]);
-        assert!(perm.is_id());
-        let perm = Permutation::from_vec(vec![0, 2, 1, 4, 3]);
-        assert!(perm.multiply(&perm.inv()).is_id())
-    }
-
-    #[test]
-    fn leq_perm() {
-        assert!(Permutation::id() <= Permutation::id());
-        assert!(!(Permutation::id() < Permutation::id()));
-        assert!(Permutation::id() <= Permutation::from_vec(vec![0, 1, 2]));
-        assert!(!(Permutation::id() < Permutation::from_vec(vec![0, 1, 2])));
-
-        let id = Permutation::id();
-        let cycle = Permutation::from_vec(vec![1, 2, 0]);
-        assert!(id < cycle);
-        assert!(!(id > cycle));
-    }
-
-    #[test]
-    fn not_eq_perm() {
-        assert_ne!(Permutation::id(), Permutation::from_vec(vec![2, 1, 0]));
-        assert_ne!(Permutation::from_vec(vec![2, 1, 0]), Permutation::id());
-    }
-
-    #[test]
-    fn apply_perm() {
-        let id = Permutation::id();
-        let cycle = Permutation::from_vec(vec![1, 2, 0]);
-
-        assert_eq!(0, id.apply(0));
-        assert_eq!(1, id.apply(1));
-        assert_eq!(1, cycle.apply(0));
-        assert_eq!(2, cycle.apply(1));
-        assert_eq!(0, cycle.apply(2));
-        assert_eq!(3, cycle.apply(3));
-    }
-
-    #[test]
-    fn mult_perm() {
-        let id = Permutation::id();
-        let cycle = Permutation::from_vec(vec![1, 2, 0]);
-        let cycle2 = Permutation::from_vec(vec![2, 0, 1]);
-
-        let id = &id;
-        let cycle = &cycle;
-        let cycle2 = &cycle2;
-
-        assert_eq!(*id, id.multiply(id));
-        assert_eq!(*cycle, cycle.multiply(id));
-        assert_eq!(*cycle, id.multiply(cycle));
-        assert_eq!(*cycle2, cycle.multiply(cycle));
-        assert_eq!(*id, cycle.multiply(cycle).multiply(cycle));
-        assert_ne!(*cycle, cycle.multiply(cycle));
-        assert_eq!(*cycle, cycle.pow(1));
-        assert_eq!(cycle.pow(-1), cycle.multiply(cycle));
-        assert_eq!(cycle.pow(-2), *cycle);
-        assert_eq!(cycle.pow(3), *id);
-        assert_eq!(cycle.pow(10), *cycle);
-    }
-
-    /// Check that multiplication is correct for non-commuting elements.
-    #[test]
-    fn mult_perm_non_commutative() {
-        let perm1 = Permutation::from(vec![1, 0]);
-        let perm2 = Permutation::from(vec![0, 2, 1]);
-        let expected_perm = Permutation::from(vec![2, 0, 1]);
-        assert_eq!(perm1.multiply(&perm2), expected_perm);
-        // Should not be the same when order is reveresed.
-        assert_ne!(perm2.multiply(&perm1), expected_perm);
-        let perm1 = Permutation::from(vec![1, 2, 3, 0]);
-        let perm2 = Permutation::from(vec![0, 2, 1]);
-        let expected_perm = Permutation::from(vec![2, 1, 3, 0]);
-        assert_eq!(perm1.multiply(&perm2), expected_perm);
-        // Should not be the same when order is reveresed.
-        assert_ne!(perm2.multiply(&perm1), expected_perm);
-    }
-
-    /// Check that the multiplication is associative
-    #[test]
-    fn mult_perm_associative() {
-        let perm1 = Permutation::from(vec![1, 5, 4, 0, 2, 3]);
-        let perm2 = Permutation::from(vec![3, 2, 0, 1]);
-        let perm3 = Permutation::from(vec![6, 5, 4, 3, 2, 1, 0]);
-        assert_eq!(
-            perm1.multiply(&perm2).multiply(&perm3),
-            perm1.multiply(&perm2.multiply(&perm3))
-        );
-    }
-
-    /// Test that multiplication for the lazy or eager implementaions are identical
-    #[test]
-    fn mult_perm_lazy_eager() {
-        use crate::perm::builder::PermBuilder;
-        let perm1 = Permutation::from(vec![2, 3, 0, 1]);
-        let perm2 = Permutation::from(vec![2, 1, 0]);
-        assert_eq!(
-            perm1.multiply(&perm2),
-            perm1.build_multiply(&perm2).collapse()
-        )
-    }
-
-    /// Test inverse for the indentity.
-    #[test]
-    fn invert_perm_id() {
-        let id = Permutation::id();
-        assert_eq!(id, id.inv());
-        assert_eq!(id, id.inv().inv());
-    }
-    /// Test inverting permutation for normal cases.
-    #[test]
-    fn invert_perm() {
-        let id = Permutation::id();
-        //Permutation that is its own inverse
-        let perm1 = Permutation::from(vec![5, 4, 2, 6, 1, 0, 3]);
-        assert_eq!(perm1, perm1.inv());
-        assert_eq!(perm1.multiply(&perm1.inv()), id);
-        // n-cycle permutations
-        let perm2 = Permutation::from(vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 0]);
-        let perm2_inv = Permutation::from(vec![9, 0, 1, 2, 3, 4, 5, 6, 7, 8]);
-        assert_ne!(perm2, perm2_inv);
-        assert_eq!(perm2_inv, perm2.inv());
-        assert_eq!(perm2, perm2.inv().inv());
-        assert_eq!(perm2, perm2_inv.inv());
-        assert_eq!(perm2.multiply(&perm2_inv), id);
-        assert_eq!(perm2_inv.multiply(&perm2), id);
-        //Permutations with more than one cycle.
-        let perm3 = Permutation::from(vec![2, 5, 4, 6, 0, 3, 1]);
-        let perm3_inv = Permutation::from(vec![4, 6, 0, 5, 2, 1, 3]);
-        assert_ne!(perm3, perm3_inv);
-        assert_eq!(perm3_inv, perm3.inv());
-        assert_eq!(perm3, perm3.inv().inv());
-        assert_eq!(perm3, perm3_inv.inv());
-        assert_eq!(perm3.multiply(&perm3_inv), id);
-        assert_eq!(perm3_inv.multiply(&perm3), id);
-    }
-
-    #[test]
-    fn trailing_end_edge() {
-        let a = Permutation::from_vec(vec![1, 3, 2, 0]);
-        let b = Permutation::from_vec(vec![3, 2, 0, 1]);
-        a.multiply(&b).inv();
-    }
-
-    #[test]
-    fn div_perm() {
-        let id = Permutation::id();
-        let cycle = Permutation::from_vec(vec![1, 2, 0]);
-        let cycle2 = Permutation::from_vec(vec![2, 0, 1]);
-
-        let id = &id;
-        let cycle = &cycle;
-        let cycle2 = &cycle2;
-
-        assert_eq!(*id, id.divide(id));
-        assert_eq!(*cycle, cycle.divide(id));
-        assert_eq!(*cycle2, id.divide(cycle));
-        assert_eq!(*cycle, id.divide(cycle2));
-        assert_eq!(*id, cycle.divide(cycle));
-        assert_eq!(*cycle, id.divide(cycle2));
-        assert_eq!(*cycle2, id.divide(cycle));
-    }
-
-    #[test]
-    fn test_shift_identity() {
-        let p = Permutation::id();
-        assert!(p.shift(3).is_id())
-    }
-
-    #[test]
-    fn test_shift() {
-        use crate::perm::export::CyclePermutation;
-        let perm: Permutation = CyclePermutation::single_cycle(&[1, 2, 3]).into();
-        let shifted: Permutation = CyclePermutation::single_cycle(&[4, 5, 6]).into();
-        assert_eq!(perm.shift(3), shifted)
-    }
+    fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT;
 }

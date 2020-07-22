@@ -1,3 +1,5 @@
+//! Group utilities which I was not sure where to place
+
 use super::Group;
 use crate::perm::Permutation;
 use rand::seq::SliceRandom;

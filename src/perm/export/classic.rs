@@ -1,15 +1,15 @@
 use super::cycles::CyclePermutation;
-use crate::perm::Permutation;
+use crate::perm::{impls::standard::StandardPermutation, Permutation};
 
 /// A permutation, that is on the integral set [1, n].
 /// It is called classical as classically this is how permutations are stored
 #[derive(Debug, PartialEq)]
-pub struct ClassicalPermutation(Permutation);
+pub struct ClassicalPermutation(StandardPermutation);
 
 impl ClassicalPermutation {
     /// Get a identity permutation
     pub fn id() -> Self {
-        ClassicalPermutation(Permutation::id())
+        ClassicalPermutation(StandardPermutation::id())
     }
 
     /// Is this permutation the identity?
@@ -28,14 +28,14 @@ impl ClassicalPermutation {
     /// range [1, n]. Panics otherwise
     pub fn from_slice(images: &[usize]) -> Self {
         assert!(images.iter().all(|&x| x != 0));
-        ClassicalPermutation(Permutation::from_vec(
-            images.iter().map(|i| i - 1).collect(),
+        ClassicalPermutation(StandardPermutation::from_images(
+            &images.iter().map(|i| i - 1).collect::<Vec<_>>()[..],
         ))
     }
 
     /// Gets the images of this permutation
     pub(crate) fn images(&self) -> Vec<usize> {
-        self.0.vals.iter().map(|i| i + 1).collect()
+        self.0.as_vec().iter().map(|i| i + 1).collect()
     }
 
     pub fn lmp(&self) -> Option<usize> {
@@ -43,8 +43,8 @@ impl ClassicalPermutation {
     }
 }
 
-impl From<Permutation> for ClassicalPermutation {
-    fn from(perm: Permutation) -> Self {
+impl From<StandardPermutation> for ClassicalPermutation {
+    fn from(perm: StandardPermutation) -> Self {
         ClassicalPermutation(perm)
     }
 }
@@ -78,7 +78,7 @@ impl From<CyclePermutation> for ClassicalPermutation {
     }
 }
 
-impl From<ClassicalPermutation> for Permutation {
+impl From<ClassicalPermutation> for StandardPermutation {
     fn from(perm: ClassicalPermutation) -> Self {
         perm.0
     }
@@ -86,7 +86,7 @@ impl From<ClassicalPermutation> for Permutation {
 
 #[cfg(test)]
 mod tests {
-    use super::ClassicalPermutation;
+    use super::*;
 
     #[test]
     fn id_creation() {
@@ -132,11 +132,9 @@ mod tests {
         perm.apply(0);
     }
 
-    use crate::perm::Permutation;
-
     #[test]
     fn from_permutation() {
-        let basic = Permutation::from_vec(vec![0, 2, 1]);
+        let basic = StandardPermutation::from_images(&[0, 2, 1]);
         let classic: ClassicalPermutation = basic.into();
         assert_eq!(classic.images(), vec![1, 3, 2]);
     }
@@ -144,7 +142,7 @@ mod tests {
     #[test]
     fn to_permutation() {
         let classic = ClassicalPermutation::from_slice(&vec![1, 3, 2]);
-        let basic: Permutation = classic.into();
+        let basic: StandardPermutation = classic.into();
         assert_eq!(basic.as_vec(), &vec![0, 2, 1][..]);
     }
 }
