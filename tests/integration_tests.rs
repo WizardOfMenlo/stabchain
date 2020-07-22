@@ -9,7 +9,7 @@ use stabchain::group::group_library::DecoratedGroup;
 use stabchain::group::orbit::transversal::valid_transversal;
 use stabchain::group::stabchain::valid_stabchain;
 use stabchain::perm::export::ExportablePermutation;
-use stabchain::perm::DefaultPermutation;
+use stabchain::perm::impls::sync::SyncPermutation;
 
 // We use this to limit the number of groups to test
 const LIMIT: usize = 1000;
@@ -34,7 +34,7 @@ fn group_library(path: &str) -> impl IntoIterator<Item = DecoratedGroup<Exportab
 
 fn general_test<F, E>(name: &str, mut validator: F)
 where
-    F: FnMut(DecoratedGroup) -> Result<(), E>,
+    F: FnMut(DecoratedGroup<SyncPermutation>) -> Result<(), E>,
     E: std::fmt::Debug,
 {
     let mut rng = rand::thread_rng();
@@ -42,7 +42,7 @@ where
     for g in GROUP_LIBRARY
         .iter()
         .cloned()
-        .map(|g| g.map(DefaultPermutation::from))
+        .map(|g| g.map(SyncPermutation::from))
         .choose_multiple(&mut rng, LIMIT)
     {
         let validation = validator(g.clone());

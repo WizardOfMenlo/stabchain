@@ -1,6 +1,7 @@
 use super::ClassicalPermutation;
 use crate::perm::impls::{
     based::BasedPermutation, map::MapPermutation, standard::StandardPermutation,
+    sync::SyncPermutation,
 };
 use crate::perm::Permutation;
 use serde::{Deserialize, Serialize};
@@ -71,6 +72,12 @@ impl CyclePermutation {
 impl From<StandardPermutation> for CyclePermutation {
     fn from(perm: StandardPermutation) -> Self {
         CyclePermutation::from(ClassicalPermutation::from(perm))
+    }
+}
+
+impl From<SyncPermutation> for CyclePermutation {
+    fn from(perm: SyncPermutation) -> Self {
+        CyclePermutation::from(StandardPermutation::from(perm))
     }
 }
 
