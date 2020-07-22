@@ -296,6 +296,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             //Really is setting this to i - 1, but as the position is zero indexed it would be doing (i - 1 + 1).
             self.up_to_date = self.current_pos;
         }
+        //TODO check if this is wasting effort with repeated calls, when the SGT also invokes the SGC.
         self.sgt();
         //SGC terminates if it is up to date at position 0; otherwise moving onto the next layers. Stop if we have reached the bottom of the chain
         if self.up_to_date != 0 && self.current_pos != self.chain.len() - 1 {
