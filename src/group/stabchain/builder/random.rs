@@ -351,14 +351,6 @@ where
             //If this point sifted through but isn't trivial, then we need a new record and base point.
             if self.sifted(drop_out_level) {
                 return None;
-            // let moved_point = self.selector.moved_point(&collapsed_residue);
-            // let record = StabchainRecord::new(
-            //     moved_point,
-            //     Group::new(&[collapsed_residue]),
-            //     [(moved_point, Permutation::id())].iter().cloned().collect(),
-            // );
-            // self.base.push(moved_point);
-            // self.chain.push(record);
             } else {
                 //Otherwise add it to the generators at that level, and invoke the SGC at that level.
                 self.check_transversal_augmentation_at_level(invoke_level, collapsed_residue);
