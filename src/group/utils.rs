@@ -1,7 +1,7 @@
 //! Group utilities which I was not sure where to place
 
 use super::Group;
-use crate::perm::Permutation;
+use crate::perm::{Action, Permutation};
 use rand::seq::SliceRandom;
 use rand::Rng;
 
@@ -21,25 +21,35 @@ pub fn random_subproduct_full<T: Rng>(rng: &mut T, gens: &[Permutation]) -> Perm
 }
 
 /// Apply a point to permutations stored as a word.
-pub fn apply_permutation_word<'a>(
-    perm_word: impl IntoIterator<Item = &'a Permutation>,
+pub fn apply_permutation_word<P, A, 'a>(
+    perm_word: impl IntoIterator<Item = &'a P>,
     x: usize,
-) -> usize {
-    perm_word.into_iter().fold(x, |accum, p| p.apply(accum))
+    strat: &A,
+) -> usize
+where
+    P: Permutation,
+    A: Action,
+{
+    perm_word
+        .into_iter()
+        .fold(x, |accum, p| strat.apply(p, accum))
 }
 
 /// Convert from a permutation stored as a word, into a single permutation.
-pub fn collapse_perm_word<'a>(p: impl IntoIterator<Item = &'a Permutation>) -> Permutation {
+pub fn collapse_perm_word<P, 'a>(p: impl IntoIterator<Item = &'a P>) -> P
+where
+    P: Permutation,
+{
     p.into_iter()
         .fold(Permutation::id(), |accum, perm| accum.multiply(&perm))
 }
 
 /// Generate a random subproduct of a random k sized subset of the given generators.
-pub fn random_subproduct_subset<T: Rng>(
-    rng: &mut T,
-    gens: &[Permutation],
-    k: usize,
-) -> Permutation {
+pub fn random_subproduct_subset<T, P>(rng: &mut T, gens: &[P], k: usize) -> P
+where
+    P: Permutation,
+    T: Rng,
+{
     gens.choose_multiple(rng, k)
         .fold(Permutation::id(), |accum, elem| {
             if rng.gen::<bool>() {
@@ -51,25 +61,30 @@ pub fn random_subproduct_subset<T: Rng>(
 }
 
 /// Generate a word representation of a random subproduct of the given generators.
-pub fn random_subproduct_word_subset<T: Rng>(
-    rng: &mut T,
-    gens: &[Permutation],
-    k: usize,
-) -> Vec<Permutation> {
+pub fn random_subproduct_word_subset<T, P>(rng: &mut T, gens: &[P], k: usize) -> Vec<P>
+where
+    P: Permutation,
+    T: Rng,
+{
     gens.choose_multiple(rng, k)
         .filter(|_| rng.gen::<bool>())
         .cloned()
-        .collect::<Vec<Permutation>>()
+        .collect::<Vec<P>>()
 }
 
 /// Generate random subproduct of the given generators.
-pub fn random_subproduct_word_full<T: Rng>(rng: &mut T, gens: &[Permutation]) -> Vec<Permutation> {
+pub fn random_subproduct_word_full<T, P>(rng: &mut T, gens: &[P]) -> Vec<P>
+where
+    P: Permutation,
+    T: Rng,
+{
     random_subproduct_word_subset(rng, gens, gens.len())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::perm::actions::SimpleApplication;
     use crate::perm::export::CyclePermutation;
     use rand::thread_rng;
 
@@ -130,7 +145,8 @@ mod tests {
     fn test_apply_permutation_word() {
         //Test an empty word.
         let empty_word: Vec<Permutation> = vec![];
-        assert_eq!(3, apply_permutation_word(&empty_word, 3));
+        let strat = SimpleApplication;
+        assert_eq!(3, apply_permutation_word(&empty_word, 3, &strat));
         let perm_word: Vec<Permutation> = vec![
             CyclePermutation::single_cycle(&[1, 2, 4]).into(),
             CyclePermutation::single_cycle(&[3, 5, 8]).into(),
@@ -141,7 +157,7 @@ mod tests {
         for i in 0..9 {
             assert_eq!(
                 collapsed_word.apply(i),
-                apply_permutation_word(&perm_word, i)
+                apply_permutation_word(&perm_word, i, &strat)
             );
         }
     }
