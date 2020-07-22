@@ -301,9 +301,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     fn sgt(&mut self) {
         println!("SGT");
         let original_position = self.current_pos;
-        self.current_pos = 0;
         //Should be at the top of the chain, I think.
-        debug_assert!(self.current_pos == 0);
+        self.current_pos = 0;
         //The union of the generator sets in the chain to this point.
         let gens = self
             .current_chain()
@@ -321,14 +320,18 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .collect();
         //Sift the original generators, and all products of the form g*w_{1,2}.
         for p in products {
-            self.sgt_test(&p[..]);
+            //If a we have a non-trivial element found, then invoke the sgc at the specified level.
+            if let Some(sgc_invoke_level) = self.sgt_test(&p[..]) {
+                self.current_pos = sgc_invoke_level;
+                self.sgc();
+                break;
+            };
         }
         self.current_pos = original_position;
     }
 
-    fn sgt_test<'a>(&mut self, p: &[Permutation]) {
+    fn sgt_test<'a>(&mut self, p: &[Permutation]) -> Option<usize> {
         let (drop_out_level, residue) = residue_as_words_from_words(self.current_chain(), p);
-        let original_position = self.current_pos;
         //Check if this is a non-trivial residue. If it is then the output of the SGC is correct for this element.
         if !self.is_trivial_residue_all_points(&residue) {
             let collapsed_residue = collapse_perm_word(&residue);
@@ -347,7 +350,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                 //TODO check if this is correct?
                 //If this point sifted through but isn't trivial, then we need a new record and base point.
                 if self.sifted(drop_out_level) {
-                    return;
+                    return None;
                     // let moved_point = self.selector.moved_point(&collapsed_residue);
                     // let record = StabchainRecord::new(
                     //     moved_point,
@@ -358,12 +361,11 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     // self.chain.push(record);
                 }
                 //Find the position at which this acted non-trivially, and invoke the SGC on that level.
-                self.current_pos += drop_out_level;
             }
-            self.sgc();
+            return Some(self.current_pos + drop_out_level);
+        } else {
+            None
         }
-        //Reset the position.
-        self.current_pos = original_position;
     }
 
     /// Wrapper function to check all points of the permutation domain.
