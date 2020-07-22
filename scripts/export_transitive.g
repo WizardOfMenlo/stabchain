@@ -3,7 +3,7 @@ LoadPackage("json");
 grpToJson := {g} -> rec(size := Size(g), generators := List(GeneratorsOfGroup(g), ListPerm));
 
 groups_of_degree := function (n)
-    local num_groups, res;
+    local i, num_groups, res;
 
     if not TransitiveGroupsAvailable(n) then
         return [];
@@ -27,6 +27,7 @@ export_groups_of_degree := function(n, dir)
 end;
 
 export_all_until_n := function(n, dir)
+    local i;
     for i in [1..n] do
         export_groups_of_degree(i, dir)
     od;
