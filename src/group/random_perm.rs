@@ -50,9 +50,10 @@ where
     /// Generate a random permutation.
     /// ```
     /// use stabchain::perm::*;
+    /// use stabchain::group::Group;
     /// use stabchain::group::random_perm::RandPerm;
     /// let generators = &[DefaultPermutation::from_images(&[1, 0]), DefaultPermutation::from_images(&[0, 2, 3, 1])];
-    /// let mut rand_perm = RandPerm::from_generators(11, generators, 50);
+    /// let mut rand_perm = RandPerm::from_generators(11, &Group::new(generators), 50);
     /// rand_perm.random_permutation();
     /// ```
     pub fn random_permutation(&mut self) -> P {
@@ -84,9 +85,10 @@ where
     /// Construct and initialise a random permutation generator.
     /// ```
     /// use stabchain::perm::{Permutation, DefaultPermutation};
+    /// use stabchain::group::Group;
     /// use stabchain::group::random_perm::RandPerm;
     /// let generators = &[DefaultPermutation::from_images(&[1, 0]), DefaultPermutation::from_images(&[0, 2, 3, 1])];
-    /// let rand_perm = RandPerm::from_generators(11, generators, 50);
+    /// let rand_perm = RandPerm::from_generators(11, &Group::new(generators), 50);
     /// ```
     pub fn from_generators(min_size: usize, g: &Group<P>, initial_runs: usize) -> Self {
         Self::new(min_size, g, initial_runs, rand::thread_rng())
