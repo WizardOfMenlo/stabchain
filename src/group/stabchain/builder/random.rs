@@ -72,15 +72,17 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         if group.generators().is_empty() {
             return;
         }
-        //Find the largest moved point of any generator, i.e find which size of the symmetric group the generators are from.
+        //Find the largest moved point of any generator, i.e find which size of the symmetric group the generators form a subgroup of.
         self.n = group
             .generators
             .iter()
             .map(|gen| gen.lmp().expect("Should not be the identity."))
             .max()
             .unwrap_or(0);
-        //Check if this is fine?
+        //TODO Check if this is fine?
         let moved_point = 0;
+        //Create the top level record for this chain, and add it to the chain.
+        //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let initial_record = StabchainRecord::new(
             moved_point,
             group.clone(),
@@ -230,10 +232,12 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         for h in random_gens {
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if self.sifted(drop_out_level) {
-                //Pick the points that should be evaluated.
+                //Pick the points that should be evaluated. This is a heuristic to speed up run times.
                 let evaluated_points: Vec<usize> = if record.transversal.len() <= ORBIT_BOUND {
+                    //Evaluate on all points of the current orbit.
                     record.transversal.keys().cloned().collect()
                 } else if self.base.len() <= BASE_BOUND {
+                    //Evaluate on BASE_BOUND randomly chosen points.
                     record
                         .transversal
                         .keys()
@@ -242,6 +246,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .copied()
                         .collect()
                 } else {
+                    //Evaluate on b_star randomly chosen points.
                     record
                         .transversal
                         .keys()
@@ -250,7 +255,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                         .copied()
                         .collect()
                 };
-                //If any point is not fixed by the residue
+                //If any point is not fixed by the residue, then we add the residue as a generator.
                 if !self.is_trivial_residue(&h_residue, evaluated_points) {
                     //Not all permutations have been discarded
                     all_discarded = false;
@@ -272,6 +277,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
                     self.up_to_date = self.base.len() + 1;
                 }
             } else {
+                //We have found a residue that has not sifted through, so we add a new base point with this point as a generator.
                 let h_star = collapse_perm_word(&h_residue);
                 println!(
                     "Adding new generator {}, from a drop out at level {}. Original generator was {}",
@@ -305,7 +311,8 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         self.current_pos = 0;
         //The union of the generator sets in the chain to this point.
         let gens = self
-            .current_chain()
+            .chain
+            .iter()
             .flat_map(|record| record.gens.generators())
             .cloned()
             .collect::<Vec<Permutation>>();
@@ -320,7 +327,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
             .collect();
         //Sift the original generators, and all products of the form g*w_{1,2}.
         for p in products {
-            //If a we have a non-trivial element found, then invoke the sgc at the specified level.
+            //If we have found a non-trivial element, then invoke the sgc at the specified level.
             if let Some(sgc_invoke_level) = self.sgt_test(&p[..]) {
                 self.current_pos = sgc_invoke_level;
                 self.sgc();
@@ -334,35 +341,24 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
         let (drop_out_level, residue) = residue_as_words_from_words(self.current_chain(), p);
         //Check if this is a non-trivial residue. If it is then the output of the SGC is correct for this element.
         if !self.is_trivial_residue_all_points(&residue) {
+            let invoke_level = self.current_pos + drop_out_level;
             let collapsed_residue = collapse_perm_word(&residue);
-            //This acts non-trivially on the current orbit.
-            if drop_out_level == 0 {
-                println!("Case 1");
-                //This acts non-trivially on the current orbit.
-                //Add this permutation to the generators of the current orbit, then invoke the strong generator constructor.
-                self.check_transversal_augmentation(collapsed_residue);
+            //If this point sifted through but isn't trivial, then we need a new record and base point.
+            if self.sifted(drop_out_level) {
+                return None;
+            // let moved_point = self.selector.moved_point(&collapsed_residue);
+            // let record = StabchainRecord::new(
+            //     moved_point,
+            //     Group::new(&[collapsed_residue]),
+            //     [(moved_point, Permutation::id())].iter().cloned().collect(),
+            // );
+            // self.base.push(moved_point);
+            // self.chain.push(record);
             } else {
-                println!(
-                    "Case 2: drop out at {} from element {}",
-                    drop_out_level,
-                    collapse_perm_word(&residue)
-                );
-                //TODO check if this is correct?
-                //If this point sifted through but isn't trivial, then we need a new record and base point.
-                if self.sifted(drop_out_level) {
-                    return None;
-                    // let moved_point = self.selector.moved_point(&collapsed_residue);
-                    // let record = StabchainRecord::new(
-                    //     moved_point,
-                    //     Group::new(&[collapsed_residue]),
-                    //     [(moved_point, Permutation::id())].iter().cloned().collect(),
-                    // );
-                    // self.base.push(moved_point);
-                    // self.chain.push(record);
-                }
-                //Find the position at which this acted non-trivially, and invoke the SGC on that level.
+                //Otherwise add it to the generators at that level, and invoke the SGC at that level.
+                self.check_transversal_augmentation_at_level(invoke_level, collapsed_residue);
             }
-            return Some(self.current_pos + drop_out_level);
+            Some(self.current_pos + drop_out_level)
         } else {
             None
         }
@@ -374,6 +370,7 @@ impl<T: MovedPointSelector> StabchainBuilderRandom<T> {
     }
 
     /// Check if a residue acts trivially on a set of points.
+    /// This is just done by checking that the given permutation fixes all given points.
     fn is_trivial_residue(
         &self,
         p_as_words: &[Permutation],
@@ -452,7 +449,7 @@ mod tests {
 
     #[test]
     fn symmetric_chain() {
-        let g = Group::symmetric(4);
+        let g = Group::symmetric(12);
         println!("{}", g);
         let mut builder = StabchainBuilderRandom::new(FmpSelector);
         builder.construct_strong_generating_set(&g);
@@ -460,6 +457,6 @@ mod tests {
         let chain = builder.build();
         check_well_formed_chain(&chain);
         println!("{}", chain);
-        assert_eq!(24, chain.order())
+        assert_eq!(479001600, chain.order())
     }
 }
