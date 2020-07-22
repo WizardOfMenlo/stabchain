@@ -142,7 +142,12 @@ where
 
     /// Create a random generator for elements of the group
     pub fn rng(&self) -> random_perm::RandPerm<P> {
-        random_perm::RandPerm::from_generators(11, self.generators(), 50)
+        random_perm::RandPerm::from_generators(11, self, 50)
+    }
+
+    /// Create a random generator for elements of the group with a source of randomness
+    pub fn rng_with_source<R: rand::Rng>(&self, r: R) -> random_perm::RandPerm<P, R> {
+        random_perm::RandPerm::new(11, self, 50, r)
     }
 
     /// Computes the orbit of a particular action
