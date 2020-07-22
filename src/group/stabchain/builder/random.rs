@@ -188,15 +188,12 @@ where
             // For each generator (and p)
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
                 let new_image = self.action.apply(&generator, orbit_element);
-
                 // If we haven't already seen the image
-                if !record.transversal.contains_key(&new_image) {
-                    // Store in transversal
-                    record.transversal.insert(new_image, generator.inv());
-
+                record.transversal.entry(new_image).or_insert_with(|| {
                     // Update and ask to check the new image
                     to_check.push_back(new_image);
-                }
+                    generator.inv()
+                });
             }
         }
         // Update the generators adding p if it isn't already present.
@@ -345,7 +342,7 @@ where
         self.current_pos = original_position;
     }
 
-    fn sgt_test<'a>(&mut self, p: &[P]) -> Option<usize> {
+    fn sgt_test(&mut self, p: &[P]) -> Option<usize> {
         let (drop_out_level, residue) = residue_as_words_from_words(self.current_chain(), p);
         //Check if this is a non-trivial residue. If it is then the output of the SGC is correct for this element.
         if !self.is_trivial_residue_all_points(&residue) {
@@ -407,7 +404,7 @@ where
     }
 
     fn build(self) -> Stabchain<P, FactoredTransversalResolver<A>, A> {
-        Stabchain { chain: self.chain }
+        self.build()
     }
 }
 
