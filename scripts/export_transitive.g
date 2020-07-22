@@ -21,7 +21,13 @@ end;
 export_groups_of_degree := function(n, dir)
     local groups, name, out;
     groups := groups_of_degree(n);
-    name := Concatenation(String(n), "_deg.json");
+    name := Concatenation(String(n), "_deg_trans.json");
     out := OutputTextFile(Filename(dir, name), false);
     GapToJsonStream(out, groups);
+end;
+
+export_all_until_n := function(n, dir)
+    for i in [1..n] do
+        export_groups_of_degree(i, dir)
+    od;
 end;

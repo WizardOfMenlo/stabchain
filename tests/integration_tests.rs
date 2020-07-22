@@ -15,16 +15,21 @@ use stabchain::perm::DefaultPermutation;
 const LIMIT: usize = 1000;
 
 lazy_static! {
-    static ref GROUP_LIBRARY: Vec<DecoratedGroup<ExportablePermutation>> = group_library();
+    static ref GROUP_LIBRARY: Vec<DecoratedGroup<ExportablePermutation>> =
+        load_libraries(&["data/small.json", "data/transitive.json"]);
 }
 
-fn group_library() -> Vec<DecoratedGroup<ExportablePermutation>> {
-    let input = File::open("data/groups.json").unwrap();
+fn load_libraries(paths: &[&str]) -> Vec<DecoratedGroup<ExportablePermutation>> {
+    paths.iter().map(|p| group_library(*p)).flatten().collect()
+}
+
+fn group_library(path: &str) -> impl IntoIterator<Item = DecoratedGroup<ExportablePermutation>> {
+    let input = File::open(path).unwrap();
     let input = BufReader::new(input);
 
     let groups: Vec<DecoratedGroup<ExportablePermutation>> =
         serde_json::from_reader(input).unwrap();
-    groups.into_iter().collect()
+    groups.into_iter()
 }
 
 fn general_test<F, E>(name: &str, mut validator: F)
