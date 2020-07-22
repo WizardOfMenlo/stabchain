@@ -16,19 +16,23 @@ pub fn copies_of_cyclic(specification: &[usize]) -> Group {
 }
 
 /// Generate random subproduct of the given generators.
-pub fn random_subproduct_full<T: Rng>(rng: &mut T, gens: &[Permutation]) -> Permutation {
+pub fn random_subproduct_full<T, P>(rng: &mut T, gens: &[P]) -> P
+where
+    P: Permutation,
+    T: Rng,
+{
     random_subproduct_subset(rng, gens, gens.len())
 }
 
 /// Apply a point to permutations stored as a word.
-pub fn apply_permutation_word<P, A, 'a>(
+pub fn apply_permutation_word<'a, P, A>(
     perm_word: impl IntoIterator<Item = &'a P>,
     x: usize,
     strat: &A,
 ) -> usize
 where
-    P: Permutation,
-    A: Action,
+    P: 'a + Permutation,
+    A: Action<P>,
 {
     perm_word
         .into_iter()
@@ -36,7 +40,7 @@ where
 }
 
 /// Convert from a permutation stored as a word, into a single permutation.
-pub fn collapse_perm_word<P, 'a>(p: impl IntoIterator<Item = &'a P>) -> P
+pub fn collapse_perm_word<'a, P>(p: impl IntoIterator<Item = &'a P>) -> P
 where
     P: Permutation,
 {
@@ -84,7 +88,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::perm::actions::SimpleApplication;
     use crate::perm::export::CyclePermutation;
     use rand::thread_rng;
 
@@ -144,10 +147,10 @@ mod tests {
     #[test]
     fn test_apply_permutation_word() {
         //Test an empty word.
-        let empty_word: Vec<Permutation> = vec![];
-        let strat = SimpleApplication;
+        let empty_word = vec![];
+        let strat = Action::default();
         assert_eq!(3, apply_permutation_word(&empty_word, 3, &strat));
-        let perm_word: Vec<Permutation> = vec![
+        let perm_word = vec![
             CyclePermutation::single_cycle(&[1, 2, 4]).into(),
             CyclePermutation::single_cycle(&[3, 5, 8]).into(),
             CyclePermutation::single_cycle(&[7, 9]).into(),
