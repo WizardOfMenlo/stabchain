@@ -42,7 +42,7 @@ where
 /// Convert from a permutation stored as a word, into a single permutation.
 pub fn collapse_perm_word<'a, P>(p: impl IntoIterator<Item = &'a P>) -> P
 where
-    P: Permutation,
+    P: 'a + Permutation,
 {
     p.into_iter()
         .fold(Permutation::id(), |accum, perm| accum.multiply(&perm))
