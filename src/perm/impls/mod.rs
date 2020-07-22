@@ -1,6 +1,7 @@
 pub mod based;
 pub mod map;
 pub mod standard;
+pub mod word;
 
 #[cfg(test)]
 macro_rules! permutation_tests {
@@ -199,4 +200,5 @@ mod tests {
     permutation_tests!(crate::perm::impls::based::BasedPermutation, based);
     permutation_tests!(crate::perm::impls::standard::StandardPermutation, standard);
     permutation_tests!(crate::perm::impls::map::MapPermutation, map);
+    permutation_tests!(crate::perm::impls::word::WordPermutation, word);
 }
