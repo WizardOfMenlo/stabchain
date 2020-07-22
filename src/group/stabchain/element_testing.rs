@@ -104,15 +104,15 @@ where
     let mut res = vec![p.clone()];
     let mut g = p.clone();
     for record in it {
-        let base = record.base;
-        let application = applicator.apply(&g, base);
+        let base = record.base.clone();
+        let application = applicator.apply(&g, base.clone());
         if !record.transversal.contains_key(&application) {
             break;
         }
 
         let representative = record
             .resolver()
-            .representative(&record.transversal, base, application)
+            .representative(&record.transversal, base.clone(), application)
             .unwrap();
         res.push(representative.clone());
         g = g.divide(&representative);
@@ -136,8 +136,8 @@ where
     let mut k = 0;
     let applicator = A::default();
     for record in it {
-        let base = record.base;
-        let application = apply_permutation_word(&g, base, &applicator);
+        let base = record.base.clone();
+        let application = apply_permutation_word(&g, base.clone(), &applicator);
 
         //There is a missing point, so this permutation has not sifted through.
         if !record.transversal.contains_key(&application) {
@@ -146,7 +146,7 @@ where
         //Already check the point is present, so there should be a representative.
         let representative = record
             .resolver()
-            .representative(&record.transversal, base, application)
+            .representative(&record.transversal, base.clone(), application)
             .unwrap();
         g.push(representative.inv());
         k += 1;

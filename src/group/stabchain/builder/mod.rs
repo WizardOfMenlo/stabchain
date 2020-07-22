@@ -122,7 +122,7 @@ impl<A, S> RandomBuilderStrategy<A, S> {
 impl<P, S, A> BuilderStrategy<P> for RandomBuilderStrategy<A, S>
 where
     P: Permutation,
-    A: Action<P>,
+    A: Action<P, OrbitT = usize>,
     S: MovedPointSelector<P, A::OrbitT>,
 {
     type Action = A;

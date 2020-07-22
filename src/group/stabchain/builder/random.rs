@@ -32,7 +32,7 @@ const C4: usize = 10;
 
 pub struct StabchainBuilderRandom<P, S, A = SimpleApplication<P>>
 where
-    A: Action<P>,
+    A: Action<P, OrbitT = usize>,
 {
     current_pos: usize,
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
@@ -51,7 +51,7 @@ impl<P, S, A> StabchainBuilderRandom<P, S, A>
 where
     P: Permutation,
     S: MovedPointSelector<P, A::OrbitT>,
-    A: Action<P>,
+    A: Action<P, OrbitT = usize>,
 {
     pub fn new(selector: S, action: A) -> Self {
         StabchainBuilderRandom {
@@ -64,10 +64,6 @@ where
             rng: thread_rng(),
             up_to_date: 1,
         }
-    }
-
-    fn bottom_of_the_chain(&self) -> bool {
-        self.current_pos == self.chain.len()
     }
 
     fn current_chain(
@@ -92,7 +88,6 @@ where
             .map(|gen| gen.lmp().expect("Should not be the identity."))
             .max()
             .unwrap_or(0);
-        //TODO Check if this is fine?
         let moved_point = self.selector.moved_point(&group.generators()[0]);
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
@@ -404,7 +399,7 @@ impl<P, S, A> super::Builder<P, FactoredTransversalResolver<A>, A>
     for StabchainBuilderRandom<P, S, A>
 where
     P: Permutation,
-    A: Action<P>,
+    A: Action<P, OrbitT = usize>,
     S: MovedPointSelector<P, A::OrbitT>,
 {
     fn set_generators(&mut self, gens: &Group<P>) {
@@ -431,7 +426,7 @@ mod tests {
         builder.construct_strong_generating_set(&g);
         let chain = builder.build();
         println!("{}", &chain);
-        valid_stabchain(&chain);
+        valid_stabchain(&chain).unwrap();
         assert!(chain.is_empty());
     }
 
@@ -444,7 +439,7 @@ mod tests {
         builder.construct_strong_generating_set(&g);
         println!("{:?}", builder.base.clone());
         let chain = builder.build();
-        valid_stabchain(&chain);
+        valid_stabchain(&chain).unwrap();
         println!("{}", chain);
         assert_eq!(num_bigint::BigUint::from(24_u32), chain.order())
     }
