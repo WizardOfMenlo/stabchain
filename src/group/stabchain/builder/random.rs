@@ -449,7 +449,7 @@ mod tests {
 
     #[test]
     fn symmetric_chain() {
-        let g = Group::symmetric(12);
+        let g = Group::symmetric(4);
         println!("{}", g);
         let mut builder = StabchainBuilderRandom::new(FmpSelector);
         builder.construct_strong_generating_set(&g);
@@ -457,6 +457,6 @@ mod tests {
         let chain = builder.build();
         check_well_formed_chain(&chain);
         println!("{}", chain);
-        assert_eq!(479001600, chain.order())
+        assert_eq!(24, chain.order())
     }
 }
