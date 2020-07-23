@@ -72,18 +72,18 @@ impl From<CyclePermutation> for ClassicalPermutation {
     }
 }
 
-impl From<ClassicalPermutation> for StandardPermutation {
-    fn from(perm: ClassicalPermutation) -> Self {
-        perm.0
-    }
-}
-
 impl<P> From<P> for ClassicalPermutation
 where
     P: Permutation,
 {
     fn from(p: P) -> Self {
         ClassicalPermutation(StandardPermutation::from_images(&p.images()[..]))
+    }
+}
+
+impl From<ClassicalPermutation> for StandardPermutation {
+    fn from(perm: ClassicalPermutation) -> Self {
+        perm.0
     }
 }
 

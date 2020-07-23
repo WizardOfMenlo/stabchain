@@ -2,7 +2,6 @@ use crate::perm::Permutation;
 
 use std::cell::RefCell;
 use std::cmp::max;
-use std::fmt;
 use std::iter::FromIterator;
 use std::rc::Rc;
 
@@ -127,13 +126,6 @@ impl Permutation for StandardPermutation {
         let new_images = self.vals.iter().map(|i| i + k);
         images.extend(new_images);
         StandardPermutation::from_vec_unchecked(images)
-    }
-}
-
-impl fmt::Display for StandardPermutation {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use crate::perm::export::CyclePermutation;
-        write!(f, "{}", CyclePermutation::from(self.clone()))
     }
 }
 

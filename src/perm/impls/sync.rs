@@ -1,7 +1,6 @@
 use crate::perm::Permutation;
 
 use std::cmp::max;
-use std::fmt;
 use std::iter::FromIterator;
 use std::sync::Arc;
 
@@ -110,13 +109,6 @@ impl Permutation for SyncPermutation {
         let new_images = self.0.vals.iter().map(|i| i + k);
         images.extend(new_images);
         SyncPermutation::from_vec_unchecked(images)
-    }
-}
-
-impl fmt::Display for SyncPermutation {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use crate::perm::export::CyclePermutation;
-        write!(f, "{}", CyclePermutation::from(self.clone()))
     }
 }
 

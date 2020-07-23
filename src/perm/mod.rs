@@ -78,3 +78,74 @@ pub trait Action<P>: Default + Clone {
 
     fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT;
 }
+
+macro_rules! impl_conversions {
+    ($first:ty, $second:ty) => {
+        impl From<$first> for $second {
+            fn from(p: $first) -> Self {
+                <$second>::from_images(&p.images()[..])
+            }
+        }
+    };
+}
+
+macro_rules! impl_display {
+    ($perm:ty) => {
+        impl std::fmt::Display for $perm {
+            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                use crate::perm::export::CyclePermutation;
+                write!(f, "{}", CyclePermutation::from(self.clone()))
+            }
+        }
+    };
+}
+
+macro_rules! impl_all {
+    ($first:ty, $($other:ty, )*) => {
+        $(impl_conversions!($first, $other);)*
+        impl_display!($first);
+    };
+}
+
+use crate::perm::impls::{
+    based::BasedPermutation, map::MapPermutation, standard::StandardPermutation,
+    sync::SyncPermutation, word::WordPermutation,
+};
+
+impl_all!(
+    StandardPermutation,
+    BasedPermutation,
+    MapPermutation,
+    WordPermutation,
+);
+
+impl_all!(
+    BasedPermutation,
+    StandardPermutation,
+    MapPermutation,
+    SyncPermutation,
+    WordPermutation,
+);
+
+impl_all!(
+    MapPermutation,
+    BasedPermutation,
+    StandardPermutation,
+    SyncPermutation,
+    WordPermutation,
+);
+
+impl_all!(
+    SyncPermutation,
+    MapPermutation,
+    BasedPermutation,
+    WordPermutation,
+);
+
+impl_all!(
+    WordPermutation,
+    SyncPermutation,
+    MapPermutation,
+    BasedPermutation,
+    StandardPermutation,
+);

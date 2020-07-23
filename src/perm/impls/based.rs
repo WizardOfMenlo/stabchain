@@ -146,25 +146,3 @@ impl std::hash::Hash for BasedPermutation {
         self.perm.hash(state);
     }
 }
-
-impl From<StandardPermutation> for BasedPermutation {
-    fn from(perm: StandardPermutation) -> Self {
-        BasedPermutation::from_images(perm.as_vec())
-    }
-}
-
-impl From<BasedPermutation> for StandardPermutation {
-    fn from(perm: BasedPermutation) -> Self {
-        let images = (0..perm.base)
-            .chain(perm.perm.as_vec().iter().map(|i| i + perm.base))
-            .collect();
-        StandardPermutation::from_vec(images)
-    }
-}
-
-use std::fmt;
-impl fmt::Display for BasedPermutation {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", StandardPermutation::from(self.clone()))
-    }
-}
