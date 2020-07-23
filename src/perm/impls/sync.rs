@@ -7,20 +7,16 @@ use std::sync::Arc;
 
 use super::standard::StandardPermutation;
 
-// TODO: Is it nicer to use this or the double arc method?
-#[derive(Clone, Debug)]
-struct SyncPermutationInner {
-    vals: Vec<usize>,
-    invvals: Vec<usize>,
-}
-
 /// Represents a permutation. Very similar to Standard, but ensure sync and can be sent between threads
 #[derive(Clone, Debug)]
-pub struct SyncPermutation(Arc<SyncPermutationInner>);
+pub struct SyncPermutation {
+    vals: Arc<Vec<usize>>,
+    invvals: Arc<Vec<usize>>,
+}
 
 impl SyncPermutation {
     pub fn as_vec(&self) -> &[usize] {
-        &self.0.vals[..]
+        &self.vals[..]
     }
 
     pub fn from_vec(vals: Vec<usize>) -> Self {
@@ -35,7 +31,10 @@ impl SyncPermutation {
 
         let invvals = crate::perm::algos::inv_unchecked(&vals[..]);
 
-        Self(Arc::new(SyncPermutationInner { vals, invvals }))
+        Self {
+            vals: Arc::new(vals),
+            invvals: Arc::new(invvals),
+        }
     }
 }
 
@@ -45,29 +44,29 @@ impl Permutation for SyncPermutation {
     }
 
     fn id() -> Self {
-        Self(Arc::new(SyncPermutationInner {
-            vals: vec![],
-            invvals: vec![],
-        }))
+        Self {
+            vals: Arc::new(Vec::new()),
+            invvals: Arc::new(Vec::new()),
+        }
     }
 
     fn is_id(&self) -> bool {
-        self.0.vals.is_empty()
+        self.vals.is_empty()
     }
 
     fn apply(&self, x: usize) -> usize {
-        if x < self.0.vals.len() {
-            self.0.vals[x]
+        if x < self.vals.len() {
+            self.vals[x]
         } else {
             x
         }
     }
 
     fn inv(&self) -> Self {
-        Self(Arc::new(SyncPermutationInner {
-            vals: self.0.invvals.clone(),
-            invvals: self.0.vals.clone(),
-        }))
+        Self {
+            vals: self.invvals.clone(),
+            invvals: self.vals.clone(),
+        }
     }
 
     fn multiply(&self, other: &SyncPermutation) -> Self {
@@ -94,10 +93,10 @@ impl Permutation for SyncPermutation {
     }
 
     fn lmp(&self) -> Option<usize> {
-        if self.0.vals.is_empty() {
+        if self.vals.is_empty() {
             None
         } else {
-            Some(self.0.vals.len() - 1)
+            Some(self.vals.len() - 1)
         }
     }
 
@@ -107,7 +106,7 @@ impl Permutation for SyncPermutation {
         }
 
         let mut images: Vec<_> = (0..k).collect();
-        let new_images = self.0.vals.iter().map(|i| i + k);
+        let new_images = self.vals.iter().map(|i| i + k);
         images.extend(new_images);
         SyncPermutation::from_vec_unchecked(images)
     }
@@ -122,7 +121,7 @@ impl fmt::Display for SyncPermutation {
 
 impl PartialEq for SyncPermutation {
     fn eq(&self, other: &Self) -> bool {
-        self.0.vals == other.0.vals
+        self.vals == other.vals
     }
 }
 
@@ -130,13 +129,13 @@ impl Eq for SyncPermutation {}
 
 impl PartialOrd for SyncPermutation {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.0.vals.cmp(&other.0.vals))
+        Some(self.vals.cmp(&other.vals))
     }
 }
 
 impl std::hash::Hash for SyncPermutation {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.0.vals.hash(state);
+        self.vals.hash(state);
     }
 }
 
@@ -145,14 +144,17 @@ impl From<StandardPermutation> for SyncPermutation {
         let vals = p.as_vec().to_vec();
         let invvals = p.inv().as_vec().to_vec();
 
-        SyncPermutation(Arc::new(SyncPermutationInner { vals, invvals }))
+        SyncPermutation {
+            vals: Arc::new(vals),
+            invvals: Arc::new(invvals),
+        }
     }
 }
 
 impl From<SyncPermutation> for StandardPermutation {
     fn from(p: SyncPermutation) -> Self {
         use std::rc::Rc;
-        StandardPermutation::make_inverse(Rc::new(p.0.vals.to_vec()), Rc::new(p.0.vals.to_vec()))
+        StandardPermutation::make_inverse(Rc::new(p.vals.to_vec()), Rc::new(p.vals.to_vec()))
     }
 }
 
