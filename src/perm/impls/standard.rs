@@ -22,7 +22,7 @@ impl StandardPermutation {
         &self.vals[..]
     }
 
-    fn make_inverse(vals: Rc<Vec<usize>>, invvals: Rc<Vec<usize>>) -> Self {
+    pub(crate) fn make_inverse(vals: Rc<Vec<usize>>, invvals: Rc<Vec<usize>>) -> Self {
         Self {
             vals: invvals,
             invvals: RefCell::new(Some(vals)),

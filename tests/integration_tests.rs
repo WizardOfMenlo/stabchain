@@ -2,54 +2,66 @@ use std::fs::File;
 use std::io::BufReader;
 
 use lazy_static::lazy_static;
-
 use rand::seq::IteratorRandom;
+use rayon::prelude::*;
 
 use stabchain::group::group_library::DecoratedGroup;
 use stabchain::group::orbit::transversal::valid_transversal;
 use stabchain::group::stabchain::valid_stabchain;
 use stabchain::perm::export::ExportablePermutation;
-use stabchain::perm::DefaultPermutation;
+use stabchain::perm::impls::sync::SyncPermutation;
 
 // We use this to limit the number of groups to test
-const LIMIT: usize = 1000;
+const DEFAULT_LIMIT: usize = 1000;
 
 lazy_static! {
-    static ref GROUP_LIBRARY: Vec<DecoratedGroup<ExportablePermutation>> = group_library();
+    static ref GROUP_LIBRARY: Vec<DecoratedGroup<SyncPermutation>> =
+        load_libraries(&["data/small.json", "data/transitive.json"]);
+    static ref LIMIT: usize = std::env::var("STABCHAIN_GROUP_TESTING_LIMIT")
+        .ok()
+        .and_then(|s| s.parse::<usize>().ok())
+        .unwrap_or(DEFAULT_LIMIT);
 }
 
-fn group_library() -> Vec<DecoratedGroup<ExportablePermutation>> {
-    let input = File::open("data/groups.json").unwrap();
+fn load_libraries(paths: &[&str]) -> Vec<DecoratedGroup<SyncPermutation>> {
+    paths.iter().map(|p| group_library(*p)).flatten().collect()
+}
+
+fn group_library(path: &str) -> impl IntoIterator<Item = DecoratedGroup<SyncPermutation>> {
+    let input = File::open(path).unwrap();
     let input = BufReader::new(input);
 
     let groups: Vec<DecoratedGroup<ExportablePermutation>> =
         serde_json::from_reader(input).unwrap();
-    groups.into_iter().collect()
+    groups.into_iter().map(|g| g.map(SyncPermutation::from))
 }
 
-fn general_test<F, E>(name: &str, mut validator: F)
+fn general_test<F, E>(name: &str, validator: F)
 where
-    F: FnMut(DecoratedGroup) -> Result<(), E>,
-    E: std::fmt::Debug,
+    F: Fn(DecoratedGroup<SyncPermutation>) -> Result<(), E> + Send + Sync,
+    E: std::fmt::Debug + Send,
 {
     let mut rng = rand::thread_rng();
-    let mut errors = Vec::new();
-    for g in GROUP_LIBRARY
+    let errors = GROUP_LIBRARY
         .iter()
+        .choose_multiple(&mut rng, *LIMIT)
+        .par_iter()
         .cloned()
-        .map(|g| g.map(DefaultPermutation::from))
-        .choose_multiple(&mut rng, LIMIT)
-    {
-        let validation = validator(g.clone());
-        if validation.is_err() {
-            let err = validation.unwrap_err();
-            println!("[{}] Error {:?}", name, &err);
-            println!("[{}] Error on {}", name, g.group());
-            errors.push((g, err));
-        }
-    }
+        .map(|g| {
+            let validation = validator(g.clone());
+            if validation.is_err() {
+                let err = validation.unwrap_err();
+                println!("[{}] Error {:?}", name, &err);
+                println!("[{}] Error on {}", name, g.group());
+                Some((g, err))
+            } else {
+                None
+            }
+        })
+        .flatten()
+        .collect::<Vec<_>>();
 
-    println!("[{}] {} errors out of {}", name, errors.len(), LIMIT);
+    println!("[{}] {} errors out of {}", name, errors.len(), *LIMIT);
     assert_eq!(errors.len(), 0);
 }
 

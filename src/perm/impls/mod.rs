@@ -1,6 +1,7 @@
 pub mod based;
 pub mod map;
 pub mod standard;
+pub mod sync;
 pub mod word;
 
 #[cfg(test)]
@@ -200,5 +201,6 @@ mod tests {
     permutation_tests!(crate::perm::impls::based::BasedPermutation, based);
     permutation_tests!(crate::perm::impls::standard::StandardPermutation, standard);
     permutation_tests!(crate::perm::impls::map::MapPermutation, map);
+    permutation_tests!(crate::perm::impls::sync::SyncPermutation, sync);
     permutation_tests!(crate::perm::impls::word::WordPermutation, word);
 }
