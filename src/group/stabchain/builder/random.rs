@@ -215,7 +215,6 @@ where
     }
 
     fn sgc(&mut self) {
-        println!("SGC {}/{}", self.current_pos, self.chain.len() - 1);
         let record = self.chain[self.current_pos].clone();
         //To see if all generators are discarded.
         let mut all_discarded = true;
@@ -297,7 +296,6 @@ where
             }
         }
         if all_discarded {
-            println!("All Discarded");
             //Really is setting this to i - 1, but as the position is zero indexed it would be doing (i - 1 + 1).
             self.up_to_date = self.current_pos;
         }
@@ -311,7 +309,6 @@ where
     }
 
     fn sgt(&mut self) {
-        println!("SGT");
         let original_position = self.current_pos;
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
@@ -415,7 +412,6 @@ mod tests {
         let mut builder = StabchainBuilderRandom::new(FmpSelector, application);
         builder.construct_strong_generating_set(&g);
         let chain = builder.build();
-        println!("{}", &chain);
         valid_stabchain(&chain).unwrap();
         assert!(chain.is_empty());
     }
@@ -423,14 +419,11 @@ mod tests {
     #[test]
     fn symmetric_chain() {
         let g = Group::symmetric(4);
-        println!("{}", g);
         let application = SimpleApplication::default();
         let mut builder = StabchainBuilderRandom::new(FmpSelector, application);
         builder.construct_strong_generating_set(&g);
-        println!("{:?}", builder.base.clone());
         let chain = builder.build();
         valid_stabchain(&chain).unwrap();
-        println!("{}", chain);
         assert_eq!(num_bigint::BigUint::from(24_u32), chain.order())
     }
 }
