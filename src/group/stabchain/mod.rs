@@ -247,72 +247,110 @@ where
 }
 
 #[cfg(test)]
+macro_rules! stabchain_tests {
+    ($strategy:expr, $short:ident) => {
+        mod $short {
+            use crate::group::stabchain::builder::*;
+            use crate::group::stabchain::moved_point_selector;
+            use crate::group::stabchain::{valid_stabchain, Stabchain};
+            use crate::group::Group;
+            use crate::perm::actions::*;
+            use num::BigUint;
+
+            #[test]
+            fn trivial_chain() {
+                let g = Group::trivial();
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+                assert!(chain.is_empty());
+            }
+
+            #[test]
+            fn klein4_chain() {
+                let g = Group::klein_4();
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+            }
+
+            #[test]
+            fn cyclic_chain() {
+                let g = Group::cyclic(100);
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+            }
+
+            fn i(x: usize) -> BigUint {
+                BigUint::from(x)
+            }
+
+            #[test]
+            fn dihedral_chain() {
+                let g = Group::dihedral_2n(3);
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+                assert_eq!(i(6), chain.order());
+            }
+
+            #[test]
+            fn alternating_chain() {
+                let g = Group::alternating(5);
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+                assert_eq!(i(60), chain.order());
+            }
+
+            #[test]
+            fn symmetric_chain() {
+                let g = Group::symmetric(10);
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+                assert_eq!(i(3628800), chain.order())
+            }
+
+            #[test]
+            fn product_chain() {
+                let g = Group::product(&Group::symmetric(15), &Group::symmetric(15));
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+            }
+
+            #[test]
+            fn single_non_trivial_layer() {
+                use crate::perm::export::CyclePermutation;
+                use crate::perm::DefaultPermutation;
+
+                let g = Group::<DefaultPermutation>::new(&[CyclePermutation::single_cycle(&[
+                    1, 2,
+                ])
+                .into()]);
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+            }
+        }
+    };
+}
+
+#[cfg(test)]
 mod tests {
-    use super::*;
-
-    #[test]
-    fn trivial_chain() {
-        let g = Group::trivial();
-        let chain = g.stabchain();
-        valid_stabchain(&chain).unwrap();
-        assert!(chain.is_empty());
-    }
-
-    #[test]
-    fn klein4_chain() {
-        let g = Group::klein_4();
-        let chain = g.stabchain();
-        valid_stabchain(&chain).unwrap();
-    }
-
-    #[test]
-    fn cyclic_chain() {
-        let g = Group::cyclic(100);
-        let chain = g.stabchain();
-        valid_stabchain(&chain).unwrap();
-    }
-
-    fn i(x: usize) -> BigUint {
-        BigUint::from(x)
-    }
-
-    #[test]
-    fn dihedral_chain() {
-        let g = Group::dihedral_2n(3);
-        let chain = g.stabchain();
-        valid_stabchain(&chain).unwrap();
-        assert_eq!(i(6), chain.order());
-    }
-
-    #[test]
-    fn alternating_chain() {
-        let g = Group::alternating(5);
-        let chain = g.stabchain();
-        valid_stabchain(&chain).unwrap();
-        assert_eq!(i(60), chain.order());
-    }
-
-    #[test]
-    fn symmetric_chain() {
-        let g = Group::symmetric(10);
-        let chain = g.stabchain();
-        valid_stabchain(&chain).unwrap();
-        assert_eq!(i(3628800), chain.order())
-    }
-
-    #[test]
-    fn product_chain() {
-        let g = Group::product(&Group::symmetric(15), &Group::symmetric(15));
-        let chain = g.stabchain();
-        valid_stabchain(&chain).unwrap();
-    }
-
-    #[test]
-    fn single_non_trivial_layer() {
-        use crate::perm::export::CyclePermutation;
-
-        let g = Group::<DefaultPermutation>::new(&[CyclePermutation::single_cycle(&[1, 2]).into()]);
-        let chain = g.stabchain();
-        valid_stabchain(&chain).unwrap();
-    }
+    stabchain_tests!(
+        NaiveBuilderStrategy::new(
+            SimpleApplication::default(),
+            moved_point_selector::LmpSelector::default()
+        ),
+        naive
+    );
+    stabchain_tests!(
+        IFTBuilderStrategy::new(
+            SimpleApplication::default(),
+            moved_point_selector::LmpSelector::default()
+        ),
+        ift
+    );
+    stabchain_tests!(
+        RandomBuilderStrategy::new(
+            SimpleApplication::default(),
+            moved_point_selector::LmpSelector::default()
+        ),
+        random
+    );
 }
