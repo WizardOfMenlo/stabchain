@@ -142,8 +142,8 @@ impl std::hash::Hash for SyncPermutation {
 
 impl From<StandardPermutation> for SyncPermutation {
     fn from(p: StandardPermutation) -> Self {
-        let vals = p.as_vec().to_vec();
-        let invvals = p.inv().as_vec().to_vec();
+        let vals = p.images();
+        let invvals = p.inv().images();
 
         SyncPermutation(Arc::new(SyncPermutationInner { vals, invvals }))
     }

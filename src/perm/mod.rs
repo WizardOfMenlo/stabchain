@@ -56,8 +56,16 @@ pub trait Permutation: Clone + Eq + Hash {
         counter
     }
 
+    /// Computes self * other^-1
     fn divide(&self, other: &Self) -> Self {
         self.multiply(&other.inv())
+    }
+
+    /// Get the images of the permutation
+    fn images(&self) -> Vec<usize> {
+        self.lmp()
+            .map(|n| (0..=n).map(|i| self.apply(i)).collect())
+            .unwrap_or_else(Vec::new)
     }
 
     /// Get the smallest moved point
