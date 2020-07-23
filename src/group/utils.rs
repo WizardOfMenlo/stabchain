@@ -49,10 +49,10 @@ where
 }
 
 /// Generate a random subproduct of a random k sized subset of the given generators.
-pub fn random_subproduct_subset<T, P>(rng: &mut T, gens: &[P], k: usize) -> P
+pub fn random_subproduct_subset<R, P>(rng: &mut R, gens: &[P], k: usize) -> P
 where
     P: Permutation,
-    T: Rng,
+    R: Rng,
 {
     gens.choose_multiple(rng, k)
         .fold(Permutation::id(), |accum, elem| {
@@ -65,10 +65,10 @@ where
 }
 
 /// Generate a word representation of a random subproduct of the given generators.
-pub fn random_subproduct_word_subset<T, P>(rng: &mut T, gens: &[P], k: usize) -> Vec<P>
+pub fn random_subproduct_word_subset<R, P>(rng: &mut R, gens: &[P], k: usize) -> Vec<P>
 where
     P: Permutation,
-    T: Rng,
+    R: Rng,
 {
     gens.choose_multiple(rng, k)
         .filter(|_| rng.gen::<bool>())
