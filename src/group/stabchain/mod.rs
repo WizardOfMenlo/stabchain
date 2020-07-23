@@ -349,7 +349,7 @@ mod tests {
     stabchain_tests!(
         RandomBuilderStrategy::new(
             SimpleApplication::default(),
-            moved_point_selector::LmpSelector::default()
+            moved_point_selector::FmpSelector::default()
         ),
         random
     );
