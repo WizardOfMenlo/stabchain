@@ -393,33 +393,3 @@ where
         self.build()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::group::stabchain::moved_point_selector::FmpSelector;
-    use crate::group::stabchain::valid_stabchain;
-    use crate::perm::actions::SimpleApplication;
-
-    #[test]
-    fn trivial_chain() {
-        let g = Group::trivial();
-        let application = SimpleApplication::default();
-        let mut builder = StabchainBuilderRandom::new(FmpSelector, application);
-        builder.construct_strong_generating_set(&g);
-        let chain = builder.build();
-        valid_stabchain(&chain).unwrap();
-        assert!(chain.is_empty());
-    }
-
-    #[test]
-    fn symmetric_chain() {
-        let g = Group::symmetric(4);
-        let application = SimpleApplication::default();
-        let mut builder = StabchainBuilderRandom::new(FmpSelector, application);
-        builder.construct_strong_generating_set(&g);
-        let chain = builder.build();
-        valid_stabchain(&chain).unwrap();
-        assert_eq!(num_bigint::BigUint::from(24_u32), chain.order())
-    }
-}
