@@ -85,7 +85,19 @@ where
         //Find the largest moved point of any generator, i.e find which size of the symmetric group the generators form a subgroup of.
         // The minus 1 is to account for this being zero indexed, e.g S_4 moves points 0..3.
         self.n = group.symmetric_super_order() - 1;
-        let moved_point = self.selector.moved_point(&group.generators()[0]);
+        //Pick an initial generator for the moved point.
+        //This is required so that the moved point selector can consume any fields it may have, e.g with a fixed base.
+        let moved_point_generator = group
+            .generators
+            .iter()
+            .min_by(|g1, g2| {
+                self.selector
+                    .clone()
+                    .moved_point(g1)
+                    .cmp(&self.selector.clone().moved_point(g2))
+            })
+            .unwrap();
+        let moved_point = self.selector.moved_point(moved_point_generator);
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let initial_record = StabchainRecord::new(

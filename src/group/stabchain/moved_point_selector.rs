@@ -6,7 +6,7 @@ const ID_ERROR: &str = "Should never be id";
 
 /// A very small trait, used to seamlessly switch between
 /// an automatic base repr, and one which uses a precomputed one
-pub trait MovedPointSelector<P, OrbitT = usize> {
+pub trait MovedPointSelector<P, OrbitT = usize>: Clone {
     /// Contract, should never be called with id
     fn moved_point(&mut self, p: &P) -> OrbitT;
 }
@@ -48,7 +48,10 @@ where
     }
 }
 
-impl<P, T> MovedPointSelector<P, T> for FixedBaseSelector<T> {
+impl<P, T> MovedPointSelector<P, T> for FixedBaseSelector<T>
+where
+    T: Clone,
+{
     fn moved_point(&mut self, _: &P) -> T {
         self.base
             .pop_front()
