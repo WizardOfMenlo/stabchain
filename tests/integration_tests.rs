@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::BufReader;
+use std::stringify;
 
 use lazy_static::lazy_static;
 use rand::seq::IteratorRandom;
@@ -7,9 +8,13 @@ use rayon::prelude::*;
 
 use stabchain::group::group_library::DecoratedGroup;
 use stabchain::group::orbit::transversal::valid_transversal;
-use stabchain::group::stabchain::valid_stabchain;
+use stabchain::group::stabchain::{correct_stabchain_order, valid_stabchain};
 use stabchain::perm::export::ExportablePermutation;
 use stabchain::perm::impls::sync::SyncPermutation;
+
+use stabchain::group::stabchain::builder::*;
+use stabchain::group::stabchain::moved_point_selector::*;
+use stabchain::perm::actions::*;
 
 // We use this to limit the number of groups to test
 const DEFAULT_LIMIT: usize = 1000;
@@ -73,28 +78,31 @@ fn test_transversals() {
     })
 }
 
-#[test]
-fn test_stabilizer() {
-    general_test("stabilizer", |g| {
-        let stabilizer = g.group().stabchain();
-        assert_eq!(&stabilizer.order(), g.order());
-        valid_stabchain(&stabilizer)
-    });
+#[cfg(test)]
+macro_rules! test_stabilizer_on_strategy {
+    ($strategy:expr, $short:ident) => {
+        #[test]
+        fn $short() {
+            general_test(stringify!($short), |g| {
+                let stabilizer = g.group().stabchain_with_strategy($strategy);
+                correct_stabchain_order(&stabilizer, g.order().clone())?;
+                valid_stabchain(&stabilizer)
+            });
+        }
+    };
 }
 
-#[test]
-fn test_stabilizer_ift() {
-    use stabchain::group::stabchain::builder::IFTBuilderStrategy;
-    use stabchain::group::stabchain::moved_point_selector::LmpSelector;
-    use stabchain::perm::actions::SimpleApplication;
+test_stabilizer_on_strategy!(
+    NaiveBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default(),),
+    test_naive_stabilizer
+);
 
-    general_test("ift_stabilizer", |g| {
-        let stabilizer = g.group().stabchain_with_strategy(IFTBuilderStrategy::new(
-            SimpleApplication::default(),
-            LmpSelector::default(),
-        ));
+test_stabilizer_on_strategy!(
+    IFTBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default(),),
+    test_ift_stabilizer
+);
 
-        assert_eq!(&stabilizer.order(), g.order());
-        valid_stabchain(&stabilizer)
-    });
-}
+test_stabilizer_on_strategy!(
+    RandomBuilderStrategy::new(SimpleApplication::default(), FmpSelector::default(),),
+    test_random_stabilizer
+);

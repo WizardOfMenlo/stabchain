@@ -207,6 +207,25 @@ pub enum StabchainError<P, OrbitT> {
     InvalidComputedOrbit,
     TransversalError(TransversalError<P, OrbitT>),
     BasePointNotStabilized(OrbitT),
+    IncorrectOrder(BigUint),
+}
+
+pub fn correct_stabchain_order<P, V, A>(
+    s: &Stabchain<P, V, A>,
+    expected_order: BigUint,
+) -> Result<(), StabchainError<P, A::OrbitT>>
+where
+    P: Permutation,
+    V: TransversalResolver<P, A>,
+    A: Action<P>,
+    A::OrbitT: std::fmt::Debug,
+{
+    let order = s.order();
+    if order == expected_order {
+        Ok(())
+    } else {
+        Err(StabchainError::IncorrectOrder(order))
+    }
 }
 
 pub fn valid_stabchain<P, V, A>(s: &Stabchain<P, V, A>) -> Result<(), StabchainError<P, A::OrbitT>>
