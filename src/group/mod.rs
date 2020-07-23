@@ -237,6 +237,12 @@ where
         )
     }
 
+    /// Check G.subgroup_of(H) <=> G <= H
+    pub fn subgroup_of(&self, h: &Group<P>) -> bool {
+        let stabchain = h.stabchain();
+        self.generators().iter().all(|g| stabchain.in_group(g))
+    }
+
     /// Bruteforce the elements to get all elements in the group using an orbit strategy
     /// Unless time is a very cheap commodity, do not do on large groups
     pub fn bruteforce_elements(&self) -> Vec<P> {
@@ -382,10 +388,22 @@ mod tests {
 
     #[test]
     fn check_symmetric_super() {
+        /*
         assert_eq!(Group::trivial().symmetric_super_order(), 1);
         assert_eq!(Group::symmetric(10).symmetric_super_order(), 10);
         assert_eq!(Group::dihedral_2n(10).symmetric_super_order(), 10);
         assert_eq!(Group::cyclic(15).symmetric_super_order(), 15);
+        */
+
+        let groups = [
+            Group::trivial(),
+            Group::symmetric(10),
+            Group::dihedral_2n(10),
+            Group::cyclic(15),
+        ];
+        for g in groups.iter() {
+            assert!(g.subgroup_of(&Group::symmetric(g.symmetric_super_order())));
+        }
     }
 
     #[test]
