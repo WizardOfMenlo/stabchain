@@ -106,8 +106,8 @@ where
     }
 }
 
-/// Schreir Sims with factored transversal. Much more memory friendly,
-/// yet much slower
+/// Randomised Stabiliser chain construction.
+/// This should be faster than the naive and IFT methods, but is not deterministic.
 pub struct RandomBuilderStrategy<A, S> {
     selector: S,
     action: A,
