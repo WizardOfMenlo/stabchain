@@ -60,7 +60,7 @@ where
 }
 ///Struct for a base point selector that takes the first point to be moved.
 #[derive(Default, Debug, Copy, Clone)]
-pub(crate) struct FmpSelector;
+pub struct FmpSelector;
 
 impl<P> MovedPointSelector<P, usize> for FmpSelector
 where
