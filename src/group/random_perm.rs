@@ -1,5 +1,6 @@
 //! Utility for generating random elements of a subgroup
 
+use super::Group;
 use crate::perm::{DefaultPermutation, Permutation};
 use rand::rngs::ThreadRng;
 use rand::Rng;
@@ -7,28 +8,22 @@ use std::cmp::max;
 
 /// Calling random_element from this struct repetedly will generate random permutations in the subgroup
 #[derive(Debug)]
-pub struct RandPerm<P = DefaultPermutation> {
+pub struct RandPerm<P = DefaultPermutation, R = ThreadRng> {
     size: usize,
-    rng: ThreadRng,
+    rng: R,
     gen_elements: Vec<P>,
     accum: P,
 }
 
-impl<P> RandPerm<P>
+impl<P, R> RandPerm<P, R>
 where
     P: Permutation,
+    R: Rng,
 {
-    /// Construct and initialise a random permutation generator.
-    /// ```
-    /// use stabchain::perm::{Permutation, DefaultPermutation};
-    /// use stabchain::group::random_perm::RandPerm;
-    /// let generators = &[DefaultPermutation::from_images(&[1, 0]), DefaultPermutation::from_images(&[0, 2, 3, 1])];
-    /// let rand_perm = RandPerm::from_generators(11, generators, 50);
-    /// ```
-    pub fn from_generators(min_size: usize, generators: &[P], initial_runs: usize) -> Self {
-        let rng = rand::thread_rng();
-        let mut gen_elements: Vec<_> = if !generators.is_empty() {
-            generators.to_vec()
+    /// Creates a rand perm, using a defined source of randomness
+    pub fn new(min_size: usize, g: &Group<P>, initial_runs: usize, rng: R) -> Self {
+        let mut gen_elements: Vec<_> = if !g.generators().is_empty() {
+            g.generators().to_vec()
         } else {
             vec![P::id()]
         };
@@ -55,9 +50,10 @@ where
     /// Generate a random permutation.
     /// ```
     /// use stabchain::perm::*;
+    /// use stabchain::group::Group;
     /// use stabchain::group::random_perm::RandPerm;
     /// let generators = &[DefaultPermutation::from_images(&[1, 0]), DefaultPermutation::from_images(&[0, 2, 3, 1])];
-    /// let mut rand_perm = RandPerm::from_generators(11, generators, 50);
+    /// let mut rand_perm = RandPerm::from_generators(11, &Group::new(generators), 50);
     /// rand_perm.random_permutation();
     /// ```
     pub fn random_permutation(&mut self) -> P {
@@ -82,6 +78,23 @@ where
     }
 }
 
+impl<P> RandPerm<P>
+where
+    P: Permutation,
+{
+    /// Construct and initialise a random permutation generator.
+    /// ```
+    /// use stabchain::perm::{Permutation, DefaultPermutation};
+    /// use stabchain::group::Group;
+    /// use stabchain::group::random_perm::RandPerm;
+    /// let generators = &[DefaultPermutation::from_images(&[1, 0]), DefaultPermutation::from_images(&[0, 2, 3, 1])];
+    /// let rand_perm = RandPerm::from_generators(11, &Group::new(generators), 50);
+    /// ```
+    pub fn from_generators(min_size: usize, g: &Group<P>, initial_runs: usize) -> Self {
+        Self::new(min_size, g, initial_runs, rand::thread_rng())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -89,7 +102,7 @@ mod tests {
     /// Test that only the indentity permutation is generated from an empty set of generators.
     fn empty_generators() {
         let id = DefaultPermutation::id();
-        let mut rand_perm = RandPerm::from_generators(10, &[] as &[DefaultPermutation], 50);
+        let mut rand_perm = RandPerm::from_generators(10, &Group::trivial(), 50);
         for _ in 0..50 {
             assert_eq!(id, rand_perm.random_permutation());
         }
@@ -104,7 +117,7 @@ mod tests {
             generator.pow(3),
             generator.pow(4),
         ];
-        let mut rand_perm = RandPerm::from_generators(10, &[generator], 50);
+        let mut rand_perm = RandPerm::from_generators(10, &Group::new(&elements[..]), 50);
         for _ in 0..50 {
             assert!(elements.contains(&rand_perm.random_permutation()));
         }
@@ -120,7 +133,7 @@ mod tests {
             CyclePermutation::single_cycle(&[3, 5, 8]).into(),
             CyclePermutation::single_cycle(&[7, 9]).into(),
         ]);
-        let mut rand_perm = RandPerm::from_generators(10, g.generators(), 50);
+        let mut rand_perm = RandPerm::from_generators(10, &g, 50);
         // dbg!(&rand_perm);
         let chain = g.stabchain();
         for _ in 0..100 {
@@ -134,7 +147,7 @@ mod tests {
     fn closure_larger_symmetric() {
         use crate::group::Group;
         let g = Group::symmetric(20);
-        let mut rand_perm = RandPerm::from_generators(10, g.generators(), 1000);
+        let mut rand_perm = RandPerm::from_generators(10, &g, 1000);
         let chain = g.stabchain();
         for _ in 0..100 {
             let perm = rand_perm.random_permutation();
