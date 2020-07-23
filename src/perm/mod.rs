@@ -101,7 +101,7 @@ macro_rules! impl_display {
 }
 
 macro_rules! impl_all {
-    ($first:ty, $($other:ty, )*) => {
+    ([$first:ty], $($other:ty, )*) => {
         $(impl_conversions!($first, $other);)*
         impl_display!($first);
     };
@@ -113,14 +113,14 @@ use crate::perm::impls::{
 };
 
 impl_all!(
-    StandardPermutation,
+    [StandardPermutation],
     BasedPermutation,
     MapPermutation,
     WordPermutation,
 );
 
 impl_all!(
-    BasedPermutation,
+    [BasedPermutation],
     StandardPermutation,
     MapPermutation,
     SyncPermutation,
@@ -128,7 +128,7 @@ impl_all!(
 );
 
 impl_all!(
-    MapPermutation,
+    [MapPermutation],
     BasedPermutation,
     StandardPermutation,
     SyncPermutation,
@@ -136,14 +136,14 @@ impl_all!(
 );
 
 impl_all!(
-    SyncPermutation,
+    [SyncPermutation],
     MapPermutation,
     BasedPermutation,
     WordPermutation,
 );
 
 impl_all!(
-    WordPermutation,
+    [WordPermutation],
     SyncPermutation,
     MapPermutation,
     BasedPermutation,
