@@ -38,6 +38,7 @@ where
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
     selector: S,
     action: A,
+    // The maximum degree of the permutations this group generates.
     n: usize,
     base: Vec<A::OrbitT>,
     rng: ThreadRng,
