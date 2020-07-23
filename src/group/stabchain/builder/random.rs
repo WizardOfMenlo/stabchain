@@ -83,12 +83,8 @@ where
             return;
         }
         //Find the largest moved point of any generator, i.e find which size of the symmetric group the generators form a subgroup of.
-        self.n = group
-            .generators
-            .iter()
-            .map(|gen| gen.lmp().expect("Should not be the identity."))
-            .max()
-            .unwrap_or(0);
+        // The minus 1 is to account for this being zero indexed, e.g S_4 moves points 0..3.
+        self.n = group.symmetric_super_order() - 1;
         let moved_point = self.selector.moved_point(&group.generators()[0]);
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
