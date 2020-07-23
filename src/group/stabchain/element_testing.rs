@@ -2,6 +2,7 @@
 
 use super::StabchainRecord;
 use crate::group::orbit::abstraction::TransversalResolver;
+use crate::group::utils::apply_permutation_word;
 use crate::perm::{Action, Permutation};
 
 /// Given a stabilizer chain, computes whether the given element is in the group
@@ -82,6 +83,75 @@ where
     } else {
         Some(res)
     }
+}
+
+/// Sift the permutation through the chain, returning the residue it generates.
+pub fn residue_as_words<'a, P, A, V>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
+    p: &P,
+) -> Vec<P>
+where
+    V: 'a + TransversalResolver<P, A>,
+    P: 'a + Permutation,
+    A: 'a + Action<P>,
+{
+    // Early exit
+    if p.is_id() {
+        // The empty product is the identity
+        return Vec::new();
+    }
+    let applicator = A::default();
+    let mut res = vec![p.clone()];
+    let mut g = p.clone();
+    for record in it {
+        let base = record.base.clone();
+        let application = applicator.apply(&g, base.clone());
+        if !record.transversal.contains_key(&application) {
+            break;
+        }
+
+        let representative = record
+            .resolver()
+            .representative(&record.transversal, base.clone(), application)
+            .unwrap();
+        res.push(representative.clone());
+        g = g.divide(&representative);
+    }
+    res
+}
+
+/// Sift the permutation word through the chain, returning the residue it generates and the drop out level.
+pub fn residue_as_words_from_words<'a, 'b, V, A, P>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
+    p: impl IntoIterator<Item = &'b P>,
+) -> (usize, Vec<P>)
+where
+    V: 'a + TransversalResolver<P, A>,
+    P: 'a + 'b + Permutation,
+    A: 'a + Action<P>,
+{
+    //This permutation word will store the resulting residue.
+    let mut g: Vec<P> = p.into_iter().cloned().collect();
+    //This counts how many layers of the chain the permutation sifts through.
+    let mut k = 0;
+    let applicator = A::default();
+    for record in it {
+        let base = record.base.clone();
+        let application = apply_permutation_word(&g, base.clone(), &applicator);
+
+        //There is a missing point, so this permutation has not sifted through.
+        if !record.transversal.contains_key(&application) {
+            break;
+        }
+        //Already check the point is present, so there should be a representative.
+        let representative = record
+            .resolver()
+            .representative(&record.transversal, base.clone(), application)
+            .unwrap();
+        g.push(representative.inv());
+        k += 1;
+    }
+    (k, g)
 }
 
 #[cfg(test)]

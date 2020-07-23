@@ -10,6 +10,7 @@ use crate::perm::{Action, Permutation};
 
 mod ift;
 mod naive;
+mod random;
 
 /// A builder is a datastructure to be used for constructing
 /// a stabilizer chain. While the ultimate record is the same for any kind of
@@ -102,5 +103,33 @@ where
 
     fn make_builder(self) -> Self::BuilderT {
         ift::StabchainBuilderIFT::new(self.selector, self.action)
+    }
+}
+
+/// Randomised Stabiliser chain construction.
+/// This should be faster than the naive and IFT methods, but is not deterministic.
+pub struct RandomBuilderStrategy<A, S> {
+    selector: S,
+    action: A,
+}
+
+impl<A, S> RandomBuilderStrategy<A, S> {
+    pub fn new(action: A, selector: S) -> Self {
+        RandomBuilderStrategy { action, selector }
+    }
+}
+
+impl<P, S, A> BuilderStrategy<P> for RandomBuilderStrategy<A, S>
+where
+    P: Permutation,
+    A: Action<P, OrbitT = usize>,
+    S: MovedPointSelector<P, A::OrbitT>,
+{
+    type Action = A;
+    type Transversal = FactoredTransversalResolver<A>;
+    type BuilderT = random::StabchainBuilderRandom<P, S, A>;
+
+    fn make_builder(self) -> Self::BuilderT {
+        random::StabchainBuilderRandom::new(self.selector, self.action)
     }
 }

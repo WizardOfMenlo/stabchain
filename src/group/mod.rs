@@ -142,7 +142,12 @@ where
 
     /// Create a random generator for elements of the group
     pub fn rng(&self) -> random_perm::RandPerm<P> {
-        random_perm::RandPerm::from_generators(11, self.generators(), 50)
+        random_perm::RandPerm::from_generators(11, self, 50)
+    }
+
+    /// Create a random generator for elements of the group with a source of randomness
+    pub fn rng_with_source<R: rand::Rng>(&self, r: R) -> random_perm::RandPerm<P, R> {
+        random_perm::RandPerm::new(11, self, 50, r)
     }
 
     /// Computes the orbit of a particular action
@@ -242,6 +247,37 @@ where
         .iter()
         .cloned()
         .collect()
+    }
+
+    /// Regenerate the groups using a new set of generators
+    pub fn random_generators(&self) -> Group<P> {
+        let order = self.stabchain().order();
+
+        let mut rng = self.rng();
+        let mut gens = Vec::new();
+
+        while Group::new(&gens[..]).stabchain().order() != order {
+            gens.push(rng.random_permutation());
+        }
+
+        Group::new(&gens[..])
+    }
+
+    /// Regenerate the groups using a new set of generators
+    /// Note this might not actually terminate if n cannot be generated with that number of generators (i.e. symmetric with 1 generator)
+    /// Setting n >= self.generators().len() should guarantee that this terminates
+    pub fn random_n_generators(&self, n: usize) -> Group<P> {
+        let order = self.stabchain().order();
+
+        let mut rng = self.rng();
+        let mut gens = Vec::new();
+
+        while Group::new(&gens[..]).stabchain().order() != order {
+            gens = Vec::with_capacity(n);
+            gens.extend(std::iter::repeat_with(|| rng.random_permutation()).take(n));
+        }
+
+        Group::new(&gens[..])
     }
 
     /// Computes the smallest n s.t. G <= S_n
@@ -374,5 +410,18 @@ mod tests {
         let prod = Group::product(&Group::symmetric(4), &Group::symmetric(3));
         let expanded = prod.bruteforce_elements();
         assert_eq!(expanded.len(), 24 * 6);
+    }
+
+    #[test]
+    fn random_regenerator() {
+        use std::collections::HashSet;
+        use std::iter::FromIterator;
+
+        let g = Group::product(&Group::dihedral_2n(12), &Group::symmetric(5));
+        let reg = g.random_generators();
+
+        let g_el: HashSet<_> = HashSet::from_iter(g.bruteforce_elements().into_iter());
+        let reg_el = HashSet::from_iter(reg.bruteforce_elements().into_iter());
+        assert_eq!(g_el, reg_el);
     }
 }

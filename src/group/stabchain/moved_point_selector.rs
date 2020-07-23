@@ -2,6 +2,8 @@
 
 use crate::perm::Permutation;
 
+const ID_ERROR: &str = "Should never be id";
+
 /// A very small trait, used to seamlessly switch between
 /// an automatic base repr, and one which uses a precomputed one
 pub trait MovedPointSelector<P, OrbitT = usize> {
@@ -22,7 +24,7 @@ where
     P: Permutation,
 {
     fn moved_point(&mut self, p: &P) -> usize {
-        p.lmp().expect("Should never be id")
+        p.lmp().expect(ID_ERROR)
     }
 }
 
@@ -51,6 +53,21 @@ impl<P, T> MovedPointSelector<P, T> for FixedBaseSelector<T> {
         self.base
             .pop_front()
             .expect("Base was shorter than expected")
+    }
+}
+///Struct for a base point selector that takes the first point to be moved.
+#[derive(Default, Debug, Copy, Clone)]
+pub(crate) struct FmpSelector;
+
+impl<P> MovedPointSelector<P, usize> for FmpSelector
+where
+    P: Permutation,
+{
+    fn moved_point(&mut self, p: &P) -> usize {
+        //Find the first point that isn't fixed.
+        (0..p.lmp().expect(ID_ERROR))
+            .find(|&x| p.apply(x) != x)
+            .expect(ID_ERROR)
     }
 }
 
@@ -83,5 +100,23 @@ mod tests {
         assert_eq!(selector.moved_point(&p), 0);
         assert_eq!(selector.moved_point(&p), 1);
         assert_eq!(selector.moved_point(&p), 2);
+    }
+
+    #[test]
+    fn fmp_test() {
+        let p1 = DefaultPermutation::from_vec(vec![0, 1, 3, 2]);
+        let p2 = DefaultPermutation::from_vec(vec![1, 0]);
+        let mut selector = FmpSelector;
+        assert_eq!(selector.moved_point(&p1), 2);
+        assert_eq!(selector.moved_point(&p2), 0);
+    }
+
+    #[should_panic]
+    #[test]
+    /// The selector should not be passed the ID, and will panic otherwise.
+    fn fmp_test_id() {
+        let mut selector = FmpSelector;
+        let id = DefaultPermutation::id();
+        selector.moved_point(&id);
     }
 }
