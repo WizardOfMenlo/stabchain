@@ -216,8 +216,6 @@ where
 
     fn sgc(&mut self) {
         let record = self.chain[self.current_pos].clone();
-        //To see if all generators are discarded.
-        let mut all_discarded = true;
         //Number of base points than are in the current orbit.
         let b_star = self
             .base
@@ -239,6 +237,8 @@ where
             //Append the inverse of the residue to the word, to get a schrier generator.
             gw.extend(gw_bar.iter().map(|p| p.inv()).rev());
         });
+        //To see if all generators are discarded.
+        let mut all_discarded = true;
         for h in random_gens {
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if self.sifted(drop_out_level) {
