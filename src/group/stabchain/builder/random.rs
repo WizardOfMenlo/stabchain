@@ -116,7 +116,7 @@ where
             .sum::<f64>()
             .floor() as usize;
         let record = &self.chain[self.current_pos];
-        let k = rand::Rng::gen_range(&mut self.rng.clone(), 0, gens.len() / 2 + 1);
+        let k = rand::Rng::gen_range(&mut self.rng.clone(), 0, 1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
             repeat_with(|| random_subproduct_word_full(&mut self.rng.clone(), &gens[..]))
