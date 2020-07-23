@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 pub use classic::ClassicalPermutation;
 pub use cycles::CyclePermutation;
 
-use super::impls::standard::StandardPermutation;
 use crate::perm::Permutation;
 
 /// A permutation that is easy to export
@@ -18,7 +17,7 @@ where
     P: Permutation,
 {
     fn from(perm: P) -> Self {
-        ClassicalPermutation::from(StandardPermutation::from_images(&perm.images()[..])).into()
+        ClassicalPermutation::from(perm).into()
     }
 }
 
@@ -28,9 +27,32 @@ impl From<ClassicalPermutation> for ExportablePermutation {
     }
 }
 
-impl From<ExportablePermutation> for StandardPermutation {
-    fn from(perm: ExportablePermutation) -> Self {
-        use std::iter::FromIterator;
-        StandardPermutation::from_iter(perm.0.iter().map(|i| i - 1))
-    }
+macro_rules! impl_from_for_perm {
+    ($name:ty) => {
+        impl From<ExportablePermutation> for $name {
+            fn from(perm: ExportablePermutation) -> Self {
+                let vec: Vec<_> = perm.0.iter().map(|i| i - 1).collect();
+                <$name>::from_images(&vec[..])
+            }
+        }
+    };
 }
+
+macro_rules! impl_all {
+    ($($name:ty), *) => {
+        $(impl_from_for_perm!($name);)*
+    };
+}
+
+use super::impls::{
+    based::BasedPermutation, map::MapPermutation, standard::StandardPermutation,
+    sync::SyncPermutation, word::WordPermutation,
+};
+
+impl_all!(
+    StandardPermutation,
+    SyncPermutation,
+    MapPermutation,
+    BasedPermutation,
+    WordPermutation
+);
