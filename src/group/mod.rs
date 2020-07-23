@@ -442,4 +442,11 @@ mod tests {
         let reg_el = HashSet::from_iter(reg.bruteforce_elements().into_iter());
         assert_eq!(g_el, reg_el);
     }
+
+    #[test]
+    fn subgroup_testing() {
+        assert!(Group::cyclic(10).subgroup_of(&Group::symmetric(10)));
+        assert!(Group::alternating(10).subgroup_of(&Group::symmetric(10)));
+        assert!(Group::trivial().subgroup_of(&Group::klein_4()));
+    }
 }
