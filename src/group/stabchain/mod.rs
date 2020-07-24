@@ -207,7 +207,7 @@ pub enum StabchainError<P, OrbitT> {
     InvalidComputedOrbit,
     TransversalError(TransversalError<P, OrbitT>),
     BasePointNotStabilized(OrbitT),
-    IncorrectOrder(BigUint),
+    IncorrectOrder((BigUint, BigUint)),
 }
 
 pub fn correct_stabchain_order<P, V, A>(
@@ -224,7 +224,7 @@ where
     if order == expected_order {
         Ok(())
     } else {
-        Err(StabchainError::IncorrectOrder(order))
+        Err(StabchainError::IncorrectOrder((order, expected_order)))
     }
 }
 
