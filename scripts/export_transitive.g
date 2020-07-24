@@ -29,6 +29,6 @@ end;
 export_all_until_n := function(n, dir)
     local i;
     for i in [1..n] do
-        export_groups_of_degree(i, dir)
+        export_groups_of_degree(i, dir);
     od;
 end;

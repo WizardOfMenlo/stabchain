@@ -41,4 +41,4 @@ jobs:
         with:
           command: test
         env:
-          STABCHAIN_GROUP_TESTING_LIMIT: 50000
+          STABCHAIN_GROUP_TESTING_LIMIT: 170000
