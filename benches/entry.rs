@@ -11,10 +11,11 @@ use group::orbit::{
 
 use group::stabilizer_chain::{selector::selector, stabchain};
 
-use perm::permutation;
+use perm::{comparison::cmp, permutation};
 
 criterion_main!(
     permutation,
+    cmp,
     orbit,
     orbit_impl,
     bruteforce,
