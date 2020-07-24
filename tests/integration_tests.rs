@@ -67,7 +67,7 @@ where
         .collect::<Vec<_>>();
 
     println!("[{}] {} errors out of {}", name, errors.len(), *LIMIT);
-    assert!(errors.len() < error_limit);
+    assert!(errors.len() <= error_limit);
 }
 
 #[test]
