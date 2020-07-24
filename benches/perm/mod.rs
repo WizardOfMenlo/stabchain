@@ -1,3 +1,5 @@
+pub mod comparison;
+
 use criterion::{black_box, criterion_group, BenchmarkId, Criterion};
 
 use std::iter::FromIterator;
