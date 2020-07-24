@@ -41,7 +41,7 @@ fn group_library(path: &str) -> impl IntoIterator<Item = DecoratedGroup<SyncPerm
     groups.into_iter().map(|g| g.map(SyncPermutation::from))
 }
 
-fn general_test<F, E>(name: &str, validator: F)
+fn general_test<F, E>(name: &str, validator: F, error_limit: usize)
 where
     F: Fn(DecoratedGroup<SyncPermutation>) -> Result<(), E> + Send + Sync,
     E: std::fmt::Debug + Send,
@@ -67,42 +67,53 @@ where
         .collect::<Vec<_>>();
 
     println!("[{}] {} errors out of {}", name, errors.len(), *LIMIT);
-    assert_eq!(errors.len(), 0);
+    assert!(errors.len() < error_limit);
 }
 
 #[test]
 fn test_transversals() {
-    general_test("transversal", |g| {
-        let transversal = g.group().transversal(0);
-        valid_transversal(&transversal)
-    })
+    general_test(
+        "transversal",
+        |g| {
+            let transversal = g.group().transversal(0);
+            valid_transversal(&transversal)
+        },
+        0,
+    )
 }
 
 #[cfg(test)]
 macro_rules! test_stabilizer_on_strategy {
-    ($strategy:expr, $short:ident) => {
+    ($strategy:expr, $short:ident, $error: expr) => {
         #[test]
         fn $short() {
-            general_test(stringify!($short), |g| {
-                let stabilizer = g.group().stabchain_with_strategy($strategy);
-                correct_stabchain_order(&stabilizer, g.order().clone())?;
-                valid_stabchain(&stabilizer)
-            });
+            general_test(
+                stringify!($short),
+                |g| {
+                    let stabilizer = g.group().stabchain_with_strategy($strategy);
+                    correct_stabchain_order(&stabilizer, g.order().clone())?;
+                    valid_stabchain(&stabilizer)
+                },
+                $error,
+            );
         }
     };
 }
 
 test_stabilizer_on_strategy!(
     NaiveBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default(),),
-    test_naive_stabilizer
+    test_naive_stabilizer,
+    0
 );
 
 test_stabilizer_on_strategy!(
     IFTBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default(),),
-    test_ift_stabilizer
+    test_ift_stabilizer,
+    0
 );
 
 test_stabilizer_on_strategy!(
     RandomBuilderStrategy::new(SimpleApplication::default(), FmpSelector::default(),),
-    test_random_stabilizer
+    test_random_stabilizer,
+    (*LIMIT as f32 * 0.05).floor() as usize
 );
