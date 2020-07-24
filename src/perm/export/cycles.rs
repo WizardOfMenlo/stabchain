@@ -1,8 +1,4 @@
 use super::ClassicalPermutation;
-use crate::perm::impls::{
-    based::BasedPermutation, map::MapPermutation, standard::StandardPermutation,
-    sync::SyncPermutation,
-};
 use crate::perm::Permutation;
 use serde::{Deserialize, Serialize};
 
@@ -69,36 +65,12 @@ impl CyclePermutation {
     }
 }
 
-impl From<StandardPermutation> for CyclePermutation {
-    fn from(perm: StandardPermutation) -> Self {
+impl<P> From<P> for CyclePermutation
+where
+    P: Permutation,
+{
+    fn from(perm: P) -> Self {
         CyclePermutation::from(ClassicalPermutation::from(perm))
-    }
-}
-
-impl From<SyncPermutation> for CyclePermutation {
-    fn from(perm: SyncPermutation) -> Self {
-        CyclePermutation::from(StandardPermutation::from(perm))
-    }
-}
-
-impl From<CyclePermutation> for StandardPermutation {
-    fn from(perm: CyclePermutation) -> Self {
-        let int: ClassicalPermutation = perm.into();
-        int.into()
-    }
-}
-
-impl From<CyclePermutation> for BasedPermutation {
-    fn from(perm: CyclePermutation) -> Self {
-        let int: StandardPermutation = perm.into();
-        int.into()
-    }
-}
-
-impl From<CyclePermutation> for MapPermutation {
-    fn from(perm: CyclePermutation) -> Self {
-        let int: StandardPermutation = perm.into();
-        int.into()
     }
 }
 
@@ -163,6 +135,36 @@ impl From<ClassicalPermutation> for CyclePermutation {
         CyclePermutation::from_vec_unchecked(cycles)
     }
 }
+
+macro_rules! impl_from_for_perm {
+    ($name:ty) => {
+        impl From<CyclePermutation> for $name {
+            fn from(perm: CyclePermutation) -> Self {
+                let int: ClassicalPermutation = perm.into();
+                <$name>::from(int)
+            }
+        }
+    };
+}
+
+macro_rules! impl_all {
+    ($($name:ty), *) => {
+        $(impl_from_for_perm!($name);)*
+    };
+}
+
+use crate::perm::impls::{
+    based::BasedPermutation, map::MapPermutation, standard::StandardPermutation,
+    sync::SyncPermutation, word::WordPermutation,
+};
+
+impl_all!(
+    StandardPermutation,
+    SyncPermutation,
+    MapPermutation,
+    BasedPermutation,
+    WordPermutation
+);
 
 #[cfg(test)]
 mod tests {

@@ -1,7 +1,6 @@
 use crate::perm::Permutation;
 
 use std::cmp::max;
-use std::fmt;
 use std::iter::FromIterator;
 use std::sync::Arc;
 
@@ -112,13 +111,6 @@ impl Permutation for SyncPermutation {
     }
 }
 
-impl fmt::Display for SyncPermutation {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        use crate::perm::export::CyclePermutation;
-        write!(f, "{}", CyclePermutation::from(self.clone()))
-    }
-}
-
 impl PartialEq for SyncPermutation {
     fn eq(&self, other: &Self) -> bool {
         self.vals == other.vals
@@ -141,8 +133,8 @@ impl std::hash::Hash for SyncPermutation {
 
 impl From<StandardPermutation> for SyncPermutation {
     fn from(p: StandardPermutation) -> Self {
-        let vals = p.as_vec().to_vec();
-        let invvals = p.inv().as_vec().to_vec();
+        let vals = p.images();
+        let invvals = p.inv().images();
 
         SyncPermutation {
             vals: Arc::new(vals),

@@ -43,12 +43,6 @@ impl ClassicalPermutation {
     }
 }
 
-impl From<StandardPermutation> for ClassicalPermutation {
-    fn from(perm: StandardPermutation) -> Self {
-        ClassicalPermutation(perm)
-    }
-}
-
 impl From<CyclePermutation> for ClassicalPermutation {
     fn from(perm: CyclePermutation) -> Self {
         let cycles = perm.cycles();
@@ -78,11 +72,47 @@ impl From<CyclePermutation> for ClassicalPermutation {
     }
 }
 
+impl<P> From<P> for ClassicalPermutation
+where
+    P: Permutation,
+{
+    fn from(p: P) -> Self {
+        ClassicalPermutation(StandardPermutation::from_images(&p.images()[..]))
+    }
+}
+
 impl From<ClassicalPermutation> for StandardPermutation {
     fn from(perm: ClassicalPermutation) -> Self {
         perm.0
     }
 }
+
+macro_rules! impl_from_for_perm {
+    ($name:ty) => {
+        impl From<ClassicalPermutation> for $name {
+            fn from(perm: ClassicalPermutation) -> Self {
+                <$name>::from_images(perm.0.as_vec())
+            }
+        }
+    };
+}
+
+macro_rules! impl_all {
+    ($($name:ty), *) => {
+        $(impl_from_for_perm!($name);)*
+    };
+}
+
+use crate::perm::impls::{
+    based::BasedPermutation, map::MapPermutation, sync::SyncPermutation, word::WordPermutation,
+};
+
+impl_all!(
+    BasedPermutation,
+    MapPermutation,
+    SyncPermutation,
+    WordPermutation
+);
 
 #[cfg(test)]
 mod tests {

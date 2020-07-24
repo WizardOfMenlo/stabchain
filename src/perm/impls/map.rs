@@ -78,29 +78,3 @@ impl FromIterator<(usize, usize)> for MapPermutation {
         }
     }
 }
-
-use crate::perm::impls::standard::StandardPermutation;
-impl From<StandardPermutation> for MapPermutation {
-    fn from(perm: StandardPermutation) -> Self {
-        MapPermutation::from_images(perm.as_vec())
-    }
-}
-
-impl From<MapPermutation> for StandardPermutation {
-    fn from(perm: MapPermutation) -> Self {
-        let lmp = perm.lmp();
-        if lmp.is_none() {
-            return StandardPermutation::id();
-        }
-
-        let lmp = lmp.unwrap();
-        StandardPermutation::from_iter((0..=lmp).map(|i| perm.apply(i)))
-    }
-}
-
-use std::fmt;
-impl fmt::Display for MapPermutation {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", StandardPermutation::from(self.clone()))
-    }
-}
