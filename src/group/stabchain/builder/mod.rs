@@ -28,7 +28,7 @@ where
 
 /// A strategy is a lightweight struct that allows to
 /// (hopefully at compile time plz compiler) select which builder to use
-pub trait BuilderStrategy<P> {
+pub trait BuilderStrategy<P>: Clone {
     /// The action that this strategy uses
     type Action: Action<P>;
 
@@ -108,6 +108,7 @@ where
 
 /// Randomised Stabiliser chain construction.
 /// This should be faster than the naive and IFT methods, but is not deterministic.
+#[derive(Debug, Clone)]
 pub struct RandomBuilderStrategy<A, S> {
     selector: S,
     action: A,
