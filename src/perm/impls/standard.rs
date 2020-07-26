@@ -121,6 +121,12 @@ impl Permutation for StandardPermutation {
         images.extend(new_images);
         StandardPermutation::from_vec_unchecked(images)
     }
+
+    fn order(&self) -> usize {
+        use crate::perm::export::CyclePermutation;
+        let cycle = CyclePermutation::from(self.clone());
+        cycle.order()
+    }
 }
 
 impl PartialEq for StandardPermutation {
