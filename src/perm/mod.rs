@@ -54,8 +54,8 @@ pub trait Permutation: Clone + Eq + Hash {
 
     /// Get the order of the permutation
     fn order(&self) -> usize {
-        let mut acc = Self::id();
-        let mut counter = 0;
+        let mut acc = self.clone();
+        let mut counter = 1;
         while !acc.is_id() {
             acc = acc.multiply(self);
             counter += 1;
