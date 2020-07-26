@@ -103,12 +103,6 @@ impl Permutation for StandardPermutation {
         }
     }
 
-    fn order(&self) -> usize {
-        // TODO: If we ever use order in resource heavy context, optmize here
-        use crate::perm::export::CyclePermutation;
-        CyclePermutation::from(self.clone()).order()
-    }
-
     fn lmp(&self) -> Option<usize> {
         if self.vals.is_empty() {
             None
