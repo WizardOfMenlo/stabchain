@@ -83,6 +83,39 @@ fn exponentiation_small_exponent(c: &mut Criterion) {
     group.finish();
 }
 
+fn order_efficiency(c: &mut Criterion) {
+    let mut group = c.benchmark_group("permutation__order_cmp");
+    for i in RANGE_OF_VALUES.iter() {
+        group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
+            let perm = random_permutation::<DefaultPermutation>(*i);
+            b.iter(|| perm.order())
+        });
+        group.bench_with_input(BenchmarkId::new("iterated_mult", i), i, |b, i| {
+            let perm = random_permutation::<DefaultPermutation>(*i);
+            b.iter(|| {
+                let mut acc = perm.clone();
+                let mut order = 1;
+                while !acc.is_id() {
+                    acc = acc.multiply(&perm);
+                    order += 1;
+                }
+                order
+            })
+        });
+        group.bench_with_input(BenchmarkId::new("cycle", i), i, |b, i| {
+            let perm = random_permutation::<DefaultPermutation>(*i);
+            b.iter(|| {
+                use stabchain::perm::export::CyclePermutation;
+                let mut images = perm.images();
+                images.iter_mut().for_each(|i| *i += 1);
+                let cycle = CyclePermutation::from_images(&images[..]);
+                cycle.order()
+            })
+        });
+    }
+    group.finish();
+}
+
 /// Benchmark the check of an identity, although this should be constant due to it being an empty check.
 fn identity_check(c: &mut Criterion) {
     let id = DefaultPermutation::id();
@@ -110,4 +143,5 @@ criterion_group!(
     inverse,
     exponentiation,
     exponentiation_small_exponent,
+    order_efficiency,
 );
