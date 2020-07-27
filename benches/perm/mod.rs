@@ -100,6 +100,21 @@ fn order_efficiency(c: &mut Criterion) {
             let perm = random_permutation::<DefaultPermutation>(*i);
             b.iter(|| order_cycle(&perm))
         });
+        group.bench_with_input(BenchmarkId::new("parallel", i), i, |b, i| {
+            use rayon::prelude::*;
+            use stabchain::perm::impls::sync::SyncPermutation;
+            let perm = random_permutation::<SyncPermutation>(*i);
+            b.iter(|| match perm.lmp() {
+                Some(n) => (0..n as usize)
+                    .into_par_iter()
+                    .map(|i| (i, perm.pow(i as isize)))
+                    .filter(|t| t.1.is_id())
+                    .map(|t| t.0)
+                    .min()
+                    .unwrap(),
+                None => 1,
+            });
+        });
     }
     group.finish();
 }
