@@ -91,26 +91,14 @@ fn order_efficiency(c: &mut Criterion) {
             b.iter(|| perm.order())
         });
         group.bench_with_input(BenchmarkId::new("iterated_mult", i), i, |b, i| {
+            use crate::perm::algos::order_mult;
             let perm = random_permutation::<DefaultPermutation>(*i);
-            b.iter(|| {
-                let mut acc = perm.clone();
-                let mut order = 1;
-                while !acc.is_id() {
-                    acc = acc.multiply(&perm);
-                    order += 1;
-                }
-                order
-            })
+            b.iter(|| order_mult(&perm))
         });
         group.bench_with_input(BenchmarkId::new("cycle", i), i, |b, i| {
+            use crate::perm::algos::order_cycle;
             let perm = random_permutation::<DefaultPermutation>(*i);
-            b.iter(|| {
-                use stabchain::perm::export::CyclePermutation;
-                let mut images = perm.images();
-                images.iter_mut().for_each(|i| *i += 1);
-                let cycle = CyclePermutation::from_images(&images[..]);
-                cycle.order()
-            })
+            b.iter(|| order_cycle(&perm))
         });
     }
     group.finish();
