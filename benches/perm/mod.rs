@@ -85,7 +85,7 @@ fn exponentiation_small_exponent(c: &mut Criterion) {
 
 fn order_efficiency(c: &mut Criterion) {
     let mut group = c.benchmark_group("permutation__order_cmp");
-    for i in RANGE_OF_VALUES.iter() {
+    for i in [8, 16, 32, 64, 100].iter() {
         group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
             let perm = random_permutation::<DefaultPermutation>(*i);
             b.iter(|| perm.order())
