@@ -17,6 +17,14 @@ impl CyclePermutation {
         CyclePermutation::from_vec(Vec::new())
     }
 
+    /// Take some images in the 1..=n range and output a cycled repr
+    pub fn from_images(images: &[usize]) -> Self {
+        assert!(images.iter().all(|&n| n > 0));
+
+        let classic = ClassicalPermutation::from_slice(images);
+        classic.into()
+    }
+
     pub fn from_vec(cycles: Vec<Vec<usize>>) -> Self {
         use std::collections::HashMap;
         // Check the element range

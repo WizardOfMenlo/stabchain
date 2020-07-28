@@ -20,6 +20,7 @@ pub fn random_permutation<P: Permutation>(n: usize) -> P {
 pub fn order_n_permutation<P: Permutation>(start: usize, n: usize) -> P {
     assert!(n > 0);
     assert!(start > 0);
+
     let cycle = CyclePermutation::from_vec(vec![(start..(start + n)).collect()]);
     let standard = StandardPermutation::from(cycle);
     let images = standard.as_vec();

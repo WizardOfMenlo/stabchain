@@ -83,6 +83,42 @@ fn exponentiation_small_exponent(c: &mut Criterion) {
     group.finish();
 }
 
+fn order_efficiency(c: &mut Criterion) {
+    let mut group = c.benchmark_group("permutation__order_cmp");
+    for i in [8, 16, 32, 64, 100].iter() {
+        group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
+            let perm = random_permutation::<DefaultPermutation>(*i);
+            b.iter(|| perm.order())
+        });
+        group.bench_with_input(BenchmarkId::new("iterated_mult", i), i, |b, i| {
+            use crate::perm::algos::order_mult;
+            let perm = random_permutation::<DefaultPermutation>(*i);
+            b.iter(|| order_mult(&perm))
+        });
+        group.bench_with_input(BenchmarkId::new("cycle", i), i, |b, i| {
+            use crate::perm::algos::order_cycle;
+            let perm = random_permutation::<DefaultPermutation>(*i);
+            b.iter(|| order_cycle(&perm))
+        });
+        group.bench_with_input(BenchmarkId::new("parallel", i), i, |b, i| {
+            use rayon::prelude::*;
+            use stabchain::perm::impls::sync::SyncPermutation;
+            let perm = random_permutation::<SyncPermutation>(*i);
+            b.iter(|| match perm.lmp() {
+                Some(n) => (0..n as usize)
+                    .into_par_iter()
+                    .map(|i| (i, perm.pow(i as isize)))
+                    .filter(|t| t.1.is_id())
+                    .map(|t| t.0)
+                    .min()
+                    .unwrap(),
+                None => 1,
+            });
+        });
+    }
+    group.finish();
+}
+
 /// Benchmark the check of an identity, although this should be constant due to it being an empty check.
 fn identity_check(c: &mut Criterion) {
     let id = DefaultPermutation::id();
@@ -110,4 +146,5 @@ criterion_group!(
     inverse,
     exponentiation,
     exponentiation_small_exponent,
+    order_efficiency,
 );

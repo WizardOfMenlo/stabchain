@@ -11,6 +11,9 @@ pub mod utils;
 
 use std::hash::Hash;
 
+// Very much arbitrary
+const ORDER_LIMIT: usize = 12;
+
 /// The DefaultPermutation type. It is the permutation that, trough our testing,
 /// seems to perform better
 pub type DefaultPermutation = impls::standard::StandardPermutation;
@@ -54,13 +57,11 @@ pub trait Permutation: Clone + Eq + Hash {
 
     /// Get the order of the permutation
     fn order(&self) -> usize {
-        let mut acc = Self::id();
-        let mut counter = 0;
-        while !acc.is_id() {
-            acc = acc.multiply(self);
-            counter += 1;
+        match self.lmp() {
+            Some(n) if n <= ORDER_LIMIT => algos::order_mult(self),
+            Some(_) => algos::order_cycle(self),
+            None => 1,
         }
-        counter
     }
 
     /// Computes self * other^-1
