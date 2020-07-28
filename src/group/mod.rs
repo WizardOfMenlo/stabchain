@@ -133,6 +133,13 @@ where
         Self::from_iter(generators.iter().cloned())
     }
 
+    /// Deduplicate the generators
+    pub fn deduplicate(&self) -> Self {
+        use std::collections::HashSet;
+        let set: HashSet<_> = HashSet::from_iter(self.generators.iter().cloned());
+        Group::from_list(set.into_iter())
+    }
+
     /// Computes the orbit of the generator.
     /// Note that in most cases factored_transversal is a better choice
     /// As it allows to compute representatives with only marginally more work
@@ -266,7 +273,7 @@ where
             gens.push(rng.random_permutation());
         }
 
-        Group::new(&gens[..])
+        Group::new(&gens[..]).deduplicate()
     }
 
     /// Regenerate the groups using a new set of generators
@@ -283,7 +290,7 @@ where
             gens.extend(std::iter::repeat_with(|| rng.random_permutation()).take(n));
         }
 
-        Group::new(&gens[..])
+        Group::new(&gens[..]).deduplicate()
     }
 
     /// Computes the smallest n s.t. G <= S_n
@@ -441,6 +448,16 @@ mod tests {
         let g_el: HashSet<_> = HashSet::from_iter(g.bruteforce_elements().into_iter());
         let reg_el = HashSet::from_iter(reg.bruteforce_elements().into_iter());
         assert_eq!(g_el, reg_el);
+    }
+
+    #[test]
+    fn random_regenerator_small() {
+        // Size 24
+        let g = Group::symmetric(4);
+        let reg = g.random_n_generators(30);
+
+        // We subtract the identity
+        assert!(reg.generators().len() <= 24 - 1);
     }
 
     #[test]
