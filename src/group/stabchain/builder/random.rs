@@ -20,13 +20,13 @@ use std::iter::Iterator;
 use std::iter::{repeat_with, FromIterator};
 
 //Constants for subproduct generation
-const C1: usize = 10;
-const C2: usize = 10;
+const C1: usize = 64;
+const C2: usize = 5;
 const ORBIT_BOUND: usize = 50;
 const BASE_BOUND: usize = 5;
 // Cosntants for the Strong Generating Test.
-const C3: usize = 10;
-const C4: usize = 10;
+const C3: usize = 64;
+const C4: usize = 5;
 
 // Helper struct, used to build the stabilizer chain
 
@@ -123,6 +123,7 @@ where
             .map(|record| (record.transversal.len() as f64).log2())
             .sum::<f64>()
             .floor() as usize;
+        println!("t={}", t);
         let record = &self.chain[self.current_pos];
         let k = rand::Rng::gen_range(&mut self.rng.clone(), 0, 1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
@@ -223,6 +224,7 @@ where
     }
 
     fn sgc(&mut self) {
+        println!("SGC");
         let record = self.chain[self.current_pos].clone();
         //Number of base points than are in the current orbit.
         let b_star = self
@@ -307,16 +309,18 @@ where
             //Really is setting this to i - 1, but as the position is zero indexed it would be doing (i - 1 + 1).
             self.up_to_date = self.current_pos;
         }
-        //TODO check if this is wasting effort with repeated calls, when the SGT also invokes the SGC.
-        self.sgt();
         //SGC terminates if it is up to date at position 0; otherwise moving onto the next layers. Stop if we have reached the bottom of the chain
         if self.up_to_date != 0 && self.current_pos != self.chain.len() - 1 {
             self.current_pos += 1;
             self.sgc();
+        } else {
+            self.sgt();
         }
     }
 
+    /// Test that the current strong generating set is indeed a strong generating set, returning true if it (probably) is.
     fn sgt(&mut self) {
+        println!("SGT");
         let original_position = self.current_pos;
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
@@ -403,5 +407,23 @@ where
 
     fn build(self) -> Stabchain<P, FactoredTransversalResolver<A>, A> {
         self.build()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::group::stabchain::moved_point_selector::FmpSelector;
+    use crate::group::stabchain::valid_stabchain;
+    use crate::perm::actions::SimpleApplication;
+    #[test]
+    fn test() {
+        let g = Group::symmetric(10);
+        let application = SimpleApplication::default();
+        let mut builder = StabchainBuilderRandom::new(FmpSelector::default(), application);
+        builder.construct_strong_generating_set(&g);
+        let chain = builder.build();
+        valid_stabchain(&chain).unwrap();
+        assert_eq!(num_bigint::BigUint::from(3628800_u32), chain.order());
     }
 }
