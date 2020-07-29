@@ -14,10 +14,7 @@ where
     P: Permutation,
 {
     pub fn new(points: Vec<usize>) -> Self {
-        Self {
-            points,
-            action: SimpleApplication::default(),
-        }
+        Self::new_with_action(points, SimpleApplication::default())
     }
 }
 
@@ -26,6 +23,10 @@ where
     A: Action<P>,
     P: Permutation,
 {
+    pub fn new_with_action(points: Vec<A::OrbitT>, action: A) -> Self {
+        Self { points, action }
+    }
+
     /// Find any perm which fixes all the points and is not the id
     pub fn base_for_subset(&self, perms: impl IntoIterator<Item = P>) -> bool {
         !perms

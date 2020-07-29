@@ -9,6 +9,7 @@ use crate::group::orbit::abstraction::TransversalResolver;
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::*;
+use base::Base;
 use builder::{Builder, BuilderStrategy};
 use moved_point_selector::MovedPointSelector;
 
@@ -81,8 +82,11 @@ where
     }
 
     /// Get the base corresponding to this stabilizer chain
-    pub fn base(&self) -> Vec<A::OrbitT> {
-        self.chain.iter().map(|g| &g.base).cloned().collect()
+    pub fn base(&self) -> Base<P, A> {
+        Base::new_with_action(
+            self.chain.iter().map(|g| &g.base).cloned().collect(),
+            A::default(),
+        )
     }
 
     /// Get chain length
