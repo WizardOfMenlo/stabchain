@@ -104,12 +104,12 @@ mod tests {
     action_tests!(SimpleApplication<DefaultPermutation>, 0..100, application);
     action_tests!(
         MultiplicationAction<DefaultPermutation>,
-        crate::group::Group::symmetric(3).bruteforce_elements(),
+        crate::group::Group::symmetric(5).bruteforce_elements(),
         mult
     );
     action_tests!(
         ConjugationAction<DefaultPermutation>,
-        crate::group::Group::symmetric(3).bruteforce_elements(),
+        crate::group::Group::symmetric(5).bruteforce_elements(),
         conj
     );
 }
