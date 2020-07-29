@@ -77,6 +77,8 @@ pub trait Permutation: Clone + Eq + Hash {
 pub trait Action<P>: Default + Clone {
     type OrbitT: Hash + Eq + Clone;
 
+    /// Apply the action. Required to satisfy (1) action.apply(P::id, i) == i.
+    /// (2) action.apply(a b, i) == action.apply(b, action.apply(a, i))
     fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT;
 }
 
