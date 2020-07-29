@@ -28,7 +28,7 @@ where
 
 /// A strategy is a lightweight struct that allows to
 /// (hopefully at compile time plz compiler) select which builder to use
-pub trait BuilderStrategy<P>: Clone {
+pub trait BuilderStrategy<P> {
     /// The action that this strategy uses
     type Action: Action<P>;
 
