@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1595975960170,
+  "lastUpdate": 1596027087376,
   "repoUrl": "https://github.com/WizardOfMenlo/stabchain",
   "entries": {
     "Benchmark": [
@@ -77735,6 +77735,4020 @@ window.BENCHMARK_DATA = {
             "name": "group__stabchain__ss__selector_comparison__product_symmetric/ift/32",
             "value": 35807513,
             "range": "± 3404719",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "giacomofenzi@outlook.com",
+            "name": "Giacomo Fenzi",
+            "username": "WizardOfMenlo"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "8a1d2c12ddbbb87b629dafc978ce1cbdb5fb398b",
+          "message": "Merge pull request #59 from WizardOfMenlo/better_env_suite",
+          "timestamp": "2020-07-29T12:00:19+02:00",
+          "tree_id": "56a7c4f050c516e2eb23e32f5e602af5a91e9526",
+          "url": "https://github.com/WizardOfMenlo/stabchain/commit/8a1d2c12ddbbb87b629dafc978ce1cbdb5fb398b"
+        },
+        "date": 1596027084522,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "permutation__random_creation/default/8",
+            "value": 416,
+            "range": "± 20",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/16",
+            "value": 753,
+            "range": "± 23",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/32",
+            "value": 1864,
+            "range": "± 111",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/64",
+            "value": 4006,
+            "range": "± 139",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/128",
+            "value": 8510,
+            "range": "± 262",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/256",
+            "value": 19299,
+            "range": "± 1059",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__random_creation/default/512",
+            "value": 40655,
+            "range": "± 1665",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/8",
+            "value": 183,
+            "range": "± 15",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/prod_of_inv/8",
+            "value": 252,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/16",
+            "value": 221,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/prod_of_inv/16",
+            "value": 326,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/32",
+            "value": 255,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/prod_of_inv/32",
+            "value": 406,
+            "range": "± 15",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/64",
+            "value": 397,
+            "range": "± 46",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/prod_of_inv/64",
+            "value": 539,
+            "range": "± 47",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/128",
+            "value": 603,
+            "range": "± 28",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/prod_of_inv/128",
+            "value": 802,
+            "range": "± 67",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/256",
+            "value": 1067,
+            "range": "± 42",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/prod_of_inv/256",
+            "value": 1371,
+            "range": "± 38",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/default/512",
+            "value": 1866,
+            "range": "± 83",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inv_prod/prod_of_inv/512",
+            "value": 2548,
+            "range": "± 109",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__is_id",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/8",
+            "value": 88,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/16",
+            "value": 130,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/32",
+            "value": 125,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/64",
+            "value": 138,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/128",
+            "value": 365,
+            "range": "± 16",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/256",
+            "value": 463,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__inverse/default/512",
+            "value": 595,
+            "range": "± 23",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/pow/16",
+            "value": 328,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/multijoin/16",
+            "value": 847,
+            "range": "± 33",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/pow/32",
+            "value": 608,
+            "range": "± 37",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/multijoin/32",
+            "value": 2266,
+            "range": "± 115",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/pow/64",
+            "value": 1163,
+            "range": "± 54",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/multijoin/64",
+            "value": 7322,
+            "range": "± 353",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/pow/128",
+            "value": 2382,
+            "range": "± 83",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/multijoin/128",
+            "value": 24717,
+            "range": "± 707",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/pow/256",
+            "value": 5412,
+            "range": "± 167",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/multijoin/256",
+            "value": 97846,
+            "range": "± 4402",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/pow/512",
+            "value": 11217,
+            "range": "± 840",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/multijoin/512",
+            "value": 357568,
+            "range": "± 14011",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/pow/1024",
+            "value": 24332,
+            "range": "± 864",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__exp/multijoin/1024",
+            "value": 1442813,
+            "range": "± 41085",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/pow/1",
+            "value": 19,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/multijoin/1",
+            "value": 1965,
+            "range": "± 69",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/pow/3",
+            "value": 5307,
+            "range": "± 139",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/multijoin/3",
+            "value": 7329,
+            "range": "± 306",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/pow/5",
+            "value": 7790,
+            "range": "± 317",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/multijoin/5",
+            "value": 12631,
+            "range": "± 524",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/pow/7",
+            "value": 10515,
+            "range": "± 354",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/multijoin/7",
+            "value": 18605,
+            "range": "± 925",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/pow/9",
+            "value": 11132,
+            "range": "± 935",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/multijoin/9",
+            "value": 24069,
+            "range": "± 945",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/pow/11",
+            "value": 13891,
+            "range": "± 580",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/multijoin/11",
+            "value": 30092,
+            "range": "± 1268",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/pow/13",
+            "value": 14339,
+            "range": "± 717",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/multijoin/13",
+            "value": 35458,
+            "range": "± 1156",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/pow/15",
+            "value": 17585,
+            "range": "± 677",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__small_exp/multijoin/15",
+            "value": 41473,
+            "range": "± 2402",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/default/8",
+            "value": 458,
+            "range": "± 243",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/iterated_mult/8",
+            "value": 523,
+            "range": "± 290",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/cycle/8",
+            "value": 1542,
+            "range": "± 141",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/parallel/8",
+            "value": 17102,
+            "range": "± 3791",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/default/16",
+            "value": 2721,
+            "range": "± 157",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/iterated_mult/16",
+            "value": 2401,
+            "range": "± 2762",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/cycle/16",
+            "value": 2737,
+            "range": "± 161",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/parallel/16",
+            "value": 26708,
+            "range": "± 3480",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/default/32",
+            "value": 5226,
+            "range": "± 172",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/iterated_mult/32",
+            "value": 20258,
+            "range": "± 31204",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/cycle/32",
+            "value": 5146,
+            "range": "± 194",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/parallel/32",
+            "value": 52832,
+            "range": "± 3122",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/default/64",
+            "value": 10417,
+            "range": "± 581",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/iterated_mult/64",
+            "value": 155980,
+            "range": "± 6398761",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/cycle/64",
+            "value": 10311,
+            "range": "± 603",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/parallel/64",
+            "value": 134017,
+            "range": "± 8240",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/default/100",
+            "value": 14836,
+            "range": "± 669",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/iterated_mult/100",
+            "value": 818757,
+            "range": "± 12723981",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/cycle/100",
+            "value": 14969,
+            "range": "± 726",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__order_cmp/parallel/100",
+            "value": 284672,
+            "range": "± 20913",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/StandardPermutation/8",
+            "value": 416,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/SyncPermutation/8",
+            "value": 551,
+            "range": "± 35",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/BasedPermutation/8",
+            "value": 432,
+            "range": "± 14",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/MapPermutation/8",
+            "value": 689,
+            "range": "± 20",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/WordPermutation/8",
+            "value": 479,
+            "range": "± 22",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/StandardPermutation/16",
+            "value": 757,
+            "range": "± 32",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/SyncPermutation/16",
+            "value": 901,
+            "range": "± 38",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/BasedPermutation/16",
+            "value": 764,
+            "range": "± 30",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/MapPermutation/16",
+            "value": 1493,
+            "range": "± 64",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/WordPermutation/16",
+            "value": 833,
+            "range": "± 31",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/StandardPermutation/32",
+            "value": 1870,
+            "range": "± 173",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/SyncPermutation/32",
+            "value": 2003,
+            "range": "± 63",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/BasedPermutation/32",
+            "value": 1902,
+            "range": "± 99",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/MapPermutation/32",
+            "value": 3492,
+            "range": "± 185",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/WordPermutation/32",
+            "value": 1898,
+            "range": "± 88",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/StandardPermutation/64",
+            "value": 3968,
+            "range": "± 116",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/SyncPermutation/64",
+            "value": 4230,
+            "range": "± 156",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/BasedPermutation/64",
+            "value": 3939,
+            "range": "± 168",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/MapPermutation/64",
+            "value": 7714,
+            "range": "± 450",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/WordPermutation/64",
+            "value": 4051,
+            "range": "± 143",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/StandardPermutation/128",
+            "value": 8654,
+            "range": "± 536",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/SyncPermutation/128",
+            "value": 8892,
+            "range": "± 258",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/BasedPermutation/128",
+            "value": 8737,
+            "range": "± 315",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/MapPermutation/128",
+            "value": 18347,
+            "range": "± 1357",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/WordPermutation/128",
+            "value": 8724,
+            "range": "± 447",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/StandardPermutation/256",
+            "value": 19143,
+            "range": "± 942",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/SyncPermutation/256",
+            "value": 19508,
+            "range": "± 599",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/BasedPermutation/256",
+            "value": 19199,
+            "range": "± 850",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/MapPermutation/256",
+            "value": 42129,
+            "range": "± 1351",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/WordPermutation/256",
+            "value": 19135,
+            "range": "± 493",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/StandardPermutation/512",
+            "value": 40583,
+            "range": "± 785",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/SyncPermutation/512",
+            "value": 41793,
+            "range": "± 2626",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/BasedPermutation/512",
+            "value": 41566,
+            "range": "± 1389",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/MapPermutation/512",
+            "value": 95611,
+            "range": "± 3269",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__random_creation/WordPermutation/512",
+            "value": 41303,
+            "range": "± 1142",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/StandardPermutation/8",
+            "value": 42,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/SyncPermutation/8",
+            "value": 47,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/BasedPermutation/8",
+            "value": 45,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/MapPermutation/8",
+            "value": 126,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/WordPermutation/8",
+            "value": 56,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/StandardPermutation/16",
+            "value": 62,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/SyncPermutation/16",
+            "value": 72,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/BasedPermutation/16",
+            "value": 62,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/MapPermutation/16",
+            "value": 265,
+            "range": "± 25",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/WordPermutation/16",
+            "value": 82,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/StandardPermutation/32",
+            "value": 97,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/SyncPermutation/32",
+            "value": 119,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/BasedPermutation/32",
+            "value": 97,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/MapPermutation/32",
+            "value": 552,
+            "range": "± 40",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/WordPermutation/32",
+            "value": 147,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/StandardPermutation/64",
+            "value": 169,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/SyncPermutation/64",
+            "value": 222,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/BasedPermutation/64",
+            "value": 172,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/MapPermutation/64",
+            "value": 1245,
+            "range": "± 104",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/WordPermutation/64",
+            "value": 247,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/StandardPermutation/128",
+            "value": 311,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/SyncPermutation/128",
+            "value": 416,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/BasedPermutation/128",
+            "value": 310,
+            "range": "± 94",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/MapPermutation/128",
+            "value": 2937,
+            "range": "± 316",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/WordPermutation/128",
+            "value": 449,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/StandardPermutation/256",
+            "value": 640,
+            "range": "± 20",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/SyncPermutation/256",
+            "value": 860,
+            "range": "± 53",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/BasedPermutation/256",
+            "value": 650,
+            "range": "± 44",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/MapPermutation/256",
+            "value": 6124,
+            "range": "± 342",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/WordPermutation/256",
+            "value": 902,
+            "range": "± 110",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/StandardPermutation/512",
+            "value": 1174,
+            "range": "± 43",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/SyncPermutation/512",
+            "value": 1619,
+            "range": "± 87",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/BasedPermutation/512",
+            "value": 1178,
+            "range": "± 38",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/MapPermutation/512",
+            "value": 19227,
+            "range": "± 645",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__simple_application/WordPermutation/512",
+            "value": 1728,
+            "range": "± 63",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/StandardPermutation/8",
+            "value": 8,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/SyncPermutation/8",
+            "value": 33,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/BasedPermutation/8",
+            "value": 20,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/MapPermutation/8",
+            "value": 337,
+            "range": "± 38",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/WordPermutation/8",
+            "value": 294,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/StandardPermutation/16",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/SyncPermutation/16",
+            "value": 33,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/BasedPermutation/16",
+            "value": 20,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/MapPermutation/16",
+            "value": 791,
+            "range": "± 53",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/WordPermutation/16",
+            "value": 350,
+            "range": "± 22",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/StandardPermutation/32",
+            "value": 8,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/SyncPermutation/32",
+            "value": 33,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/BasedPermutation/32",
+            "value": 20,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/MapPermutation/32",
+            "value": 1654,
+            "range": "± 74",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/WordPermutation/32",
+            "value": 375,
+            "range": "± 23",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/StandardPermutation/64",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/SyncPermutation/64",
+            "value": 33,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/BasedPermutation/64",
+            "value": 20,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/MapPermutation/64",
+            "value": 3564,
+            "range": "± 268",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/WordPermutation/64",
+            "value": 502,
+            "range": "± 36",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/StandardPermutation/128",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/SyncPermutation/128",
+            "value": 33,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/BasedPermutation/128",
+            "value": 20,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/MapPermutation/128",
+            "value": 8257,
+            "range": "± 567",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/WordPermutation/128",
+            "value": 764,
+            "range": "± 38",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/StandardPermutation/256",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/SyncPermutation/256",
+            "value": 33,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/BasedPermutation/256",
+            "value": 20,
+            "range": "± 1",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/MapPermutation/256",
+            "value": 18388,
+            "range": "± 2173",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/WordPermutation/256",
+            "value": 1235,
+            "range": "± 66",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/StandardPermutation/512",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/SyncPermutation/512",
+            "value": 34,
+            "range": "± 2",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/BasedPermutation/512",
+            "value": 20,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/MapPermutation/512",
+            "value": 48297,
+            "range": "± 1766",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__inverses/WordPermutation/512",
+            "value": 2036,
+            "range": "± 133",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/StandardPermutation/8",
+            "value": 79,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/SyncPermutation/8",
+            "value": 216,
+            "range": "± 11",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/BasedPermutation/8",
+            "value": 223,
+            "range": "± 58",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/MapPermutation/8",
+            "value": 506,
+            "range": "± 46",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/WordPermutation/8",
+            "value": 164,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/StandardPermutation/16",
+            "value": 98,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/SyncPermutation/16",
+            "value": 272,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/BasedPermutation/16",
+            "value": 322,
+            "range": "± 57",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/MapPermutation/16",
+            "value": 1239,
+            "range": "± 86",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/WordPermutation/16",
+            "value": 165,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/StandardPermutation/32",
+            "value": 136,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/SyncPermutation/32",
+            "value": 311,
+            "range": "± 18",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/BasedPermutation/32",
+            "value": 628,
+            "range": "± 43",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/MapPermutation/32",
+            "value": 2719,
+            "range": "± 159",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/WordPermutation/32",
+            "value": 163,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/StandardPermutation/64",
+            "value": 224,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/SyncPermutation/64",
+            "value": 452,
+            "range": "± 25",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/BasedPermutation/64",
+            "value": 1177,
+            "range": "± 74",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/MapPermutation/64",
+            "value": 6222,
+            "range": "± 299",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/WordPermutation/64",
+            "value": 161,
+            "range": "± 5",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/StandardPermutation/128",
+            "value": 383,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/SyncPermutation/128",
+            "value": 712,
+            "range": "± 40",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/BasedPermutation/128",
+            "value": 2334,
+            "range": "± 103",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/MapPermutation/128",
+            "value": 15489,
+            "range": "± 957",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/WordPermutation/128",
+            "value": 165,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/StandardPermutation/256",
+            "value": 733,
+            "range": "± 19",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/SyncPermutation/256",
+            "value": 1275,
+            "range": "± 47",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/BasedPermutation/256",
+            "value": 5346,
+            "range": "± 246",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/MapPermutation/256",
+            "value": 43042,
+            "range": "± 1758",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/WordPermutation/256",
+            "value": 165,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/StandardPermutation/512",
+            "value": 1380,
+            "range": "± 62",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/SyncPermutation/512",
+            "value": 2343,
+            "range": "± 143",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/BasedPermutation/512",
+            "value": 16984,
+            "range": "± 1142",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/MapPermutation/512",
+            "value": 129570,
+            "range": "± 11630",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__single_mult/WordPermutation/512",
+            "value": 176,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/StandardPermutation/8",
+            "value": 2910,
+            "range": "± 188",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/SyncPermutation/8",
+            "value": 7705,
+            "range": "± 670",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/BasedPermutation/8",
+            "value": 9746,
+            "range": "± 846",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/MapPermutation/8",
+            "value": 19146,
+            "range": "± 1239",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/WordPermutation/8",
+            "value": 29860,
+            "range": "± 1238",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/StandardPermutation/16",
+            "value": 3675,
+            "range": "± 229",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/SyncPermutation/16",
+            "value": 9214,
+            "range": "± 776",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/BasedPermutation/16",
+            "value": 14681,
+            "range": "± 1801",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/MapPermutation/16",
+            "value": 51751,
+            "range": "± 3453",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/WordPermutation/16",
+            "value": 29048,
+            "range": "± 1978",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/StandardPermutation/32",
+            "value": 4990,
+            "range": "± 344",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/SyncPermutation/32",
+            "value": 11820,
+            "range": "± 1002",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/BasedPermutation/32",
+            "value": 25241,
+            "range": "± 1778",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/MapPermutation/32",
+            "value": 139472,
+            "range": "± 11086",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/WordPermutation/32",
+            "value": 29836,
+            "range": "± 1824",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/StandardPermutation/64",
+            "value": 8274,
+            "range": "± 1376",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/SyncPermutation/64",
+            "value": 15560,
+            "range": "± 1117",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/BasedPermutation/64",
+            "value": 77712,
+            "range": "± 5966",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/MapPermutation/64",
+            "value": 331977,
+            "range": "± 25523",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/WordPermutation/64",
+            "value": 27386,
+            "range": "± 1907",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/StandardPermutation/128",
+            "value": 13290,
+            "range": "± 1172",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/SyncPermutation/128",
+            "value": 23488,
+            "range": "± 708",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/BasedPermutation/128",
+            "value": 198036,
+            "range": "± 7727",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/MapPermutation/128",
+            "value": 753000,
+            "range": "± 31731",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/WordPermutation/128",
+            "value": 26660,
+            "range": "± 1334",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/StandardPermutation/256",
+            "value": 25110,
+            "range": "± 722",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/SyncPermutation/256",
+            "value": 42382,
+            "range": "± 1568",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/BasedPermutation/256",
+            "value": 481579,
+            "range": "± 17574",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/MapPermutation/256",
+            "value": 1730433,
+            "range": "± 107358",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/WordPermutation/256",
+            "value": 26688,
+            "range": "± 1102",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/StandardPermutation/512",
+            "value": 45337,
+            "range": "± 1588",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/SyncPermutation/512",
+            "value": 75032,
+            "range": "± 2235",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/BasedPermutation/512",
+            "value": 1053899,
+            "range": "± 29958",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/MapPermutation/512",
+            "value": 3838075,
+            "range": "± 173017",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult/WordPermutation/512",
+            "value": 26880,
+            "range": "± 716",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/StandardPermutation/8",
+            "value": 2833,
+            "range": "± 110",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/SyncPermutation/8",
+            "value": 7065,
+            "range": "± 281",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/BasedPermutation/8",
+            "value": 8917,
+            "range": "± 344",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/MapPermutation/8",
+            "value": 17808,
+            "range": "± 790",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/WordPermutation/8",
+            "value": 27975,
+            "range": "± 1916",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/StandardPermutation/16",
+            "value": 3425,
+            "range": "± 141",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/SyncPermutation/16",
+            "value": 8371,
+            "range": "± 347",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/BasedPermutation/16",
+            "value": 12306,
+            "range": "± 758",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/MapPermutation/16",
+            "value": 48843,
+            "range": "± 1497",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/WordPermutation/16",
+            "value": 29205,
+            "range": "± 1488",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/StandardPermutation/32",
+            "value": 4603,
+            "range": "± 116",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/SyncPermutation/32",
+            "value": 10627,
+            "range": "± 670",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/BasedPermutation/32",
+            "value": 22670,
+            "range": "± 1241",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/MapPermutation/32",
+            "value": 129958,
+            "range": "± 4280",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/WordPermutation/32",
+            "value": 30365,
+            "range": "± 1018",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/StandardPermutation/64",
+            "value": 7664,
+            "range": "± 244",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/SyncPermutation/64",
+            "value": 15374,
+            "range": "± 672",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/BasedPermutation/64",
+            "value": 72127,
+            "range": "± 2998",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/MapPermutation/64",
+            "value": 311257,
+            "range": "± 9858",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/WordPermutation/64",
+            "value": 33694,
+            "range": "± 1574",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/StandardPermutation/128",
+            "value": 13033,
+            "range": "± 664",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/SyncPermutation/128",
+            "value": 25815,
+            "range": "± 1425",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/BasedPermutation/128",
+            "value": 196993,
+            "range": "± 8950",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/MapPermutation/128",
+            "value": 757113,
+            "range": "± 21733",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/WordPermutation/128",
+            "value": 42754,
+            "range": "± 1126",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/StandardPermutation/256",
+            "value": 25872,
+            "range": "± 1631",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/SyncPermutation/256",
+            "value": 43529,
+            "range": "± 1544",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/BasedPermutation/256",
+            "value": 477369,
+            "range": "± 14810",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/MapPermutation/256",
+            "value": 1727630,
+            "range": "± 50842",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/WordPermutation/256",
+            "value": 64700,
+            "range": "± 2252",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/StandardPermutation/512",
+            "value": 46690,
+            "range": "± 2105",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/SyncPermutation/512",
+            "value": 81436,
+            "range": "± 3568",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/BasedPermutation/512",
+            "value": 1063512,
+            "range": "± 42553",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/MapPermutation/512",
+            "value": 3901745,
+            "range": "± 243012",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__multiple_mult_and_appl/WordPermutation/512",
+            "value": 112616,
+            "range": "± 5005",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/StandardPermutation/8",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/SyncPermutation/8",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/BasedPermutation/8",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/MapPermutation/8",
+            "value": 71,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/WordPermutation/8",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/StandardPermutation/16",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/SyncPermutation/16",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/BasedPermutation/16",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/MapPermutation/16",
+            "value": 123,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/WordPermutation/16",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/StandardPermutation/32",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/SyncPermutation/32",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/BasedPermutation/32",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/MapPermutation/32",
+            "value": 220,
+            "range": "± 26",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/WordPermutation/32",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/StandardPermutation/64",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/SyncPermutation/64",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/BasedPermutation/64",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/MapPermutation/64",
+            "value": 442,
+            "range": "± 23",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/WordPermutation/64",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/StandardPermutation/128",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/SyncPermutation/128",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/BasedPermutation/128",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/MapPermutation/128",
+            "value": 871,
+            "range": "± 37",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/WordPermutation/128",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/StandardPermutation/256",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/SyncPermutation/256",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/BasedPermutation/256",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/MapPermutation/256",
+            "value": 1751,
+            "range": "± 106",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/WordPermutation/256",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/StandardPermutation/512",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/SyncPermutation/512",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/BasedPermutation/512",
+            "value": 2,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/MapPermutation/512",
+            "value": 3457,
+            "range": "± 121",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp/WordPermutation/512",
+            "value": 9,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/StandardPermutation/8",
+            "value": 2791,
+            "range": "± 201",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/SyncPermutation/8",
+            "value": 7087,
+            "range": "± 335",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/BasedPermutation/8",
+            "value": 8963,
+            "range": "± 333",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/MapPermutation/8",
+            "value": 17546,
+            "range": "± 930",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/WordPermutation/8",
+            "value": 27065,
+            "range": "± 877",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/StandardPermutation/16",
+            "value": 3350,
+            "range": "± 124",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/SyncPermutation/16",
+            "value": 8239,
+            "range": "± 368",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/BasedPermutation/16",
+            "value": 11990,
+            "range": "± 1307",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/MapPermutation/16",
+            "value": 48721,
+            "range": "± 3056",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/WordPermutation/16",
+            "value": 27873,
+            "range": "± 1007",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/StandardPermutation/32",
+            "value": 4536,
+            "range": "± 196",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/SyncPermutation/32",
+            "value": 10597,
+            "range": "± 560",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/BasedPermutation/32",
+            "value": 23145,
+            "range": "± 1591",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/MapPermutation/32",
+            "value": 131534,
+            "range": "± 4985",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/WordPermutation/32",
+            "value": 27348,
+            "range": "± 1107",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/StandardPermutation/64",
+            "value": 7589,
+            "range": "± 351",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/SyncPermutation/64",
+            "value": 15265,
+            "range": "± 577",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/BasedPermutation/64",
+            "value": 72748,
+            "range": "± 2472",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/MapPermutation/64",
+            "value": 314085,
+            "range": "± 11856",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/WordPermutation/64",
+            "value": 26935,
+            "range": "± 801",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/StandardPermutation/128",
+            "value": 12774,
+            "range": "± 430",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/SyncPermutation/128",
+            "value": 24066,
+            "range": "± 1334",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/BasedPermutation/128",
+            "value": 200245,
+            "range": "± 5698",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/MapPermutation/128",
+            "value": 750794,
+            "range": "± 19861",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/WordPermutation/128",
+            "value": 27569,
+            "range": "± 843",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/StandardPermutation/256",
+            "value": 25161,
+            "range": "± 1774",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/SyncPermutation/256",
+            "value": 41536,
+            "range": "± 2295",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/BasedPermutation/256",
+            "value": 480414,
+            "range": "± 25248",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/MapPermutation/256",
+            "value": 1718598,
+            "range": "± 42361",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/WordPermutation/256",
+            "value": 27302,
+            "range": "± 981",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/StandardPermutation/512",
+            "value": 45772,
+            "range": "± 1139",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/SyncPermutation/512",
+            "value": 82485,
+            "range": "± 4761",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/BasedPermutation/512",
+            "value": 1050231,
+            "range": "± 62491",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/MapPermutation/512",
+            "value": 3743589,
+            "range": "± 135824",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__lmp_multiple/WordPermutation/512",
+            "value": 27266,
+            "range": "± 1566",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/StandardPermutation/8",
+            "value": 535,
+            "range": "± 275",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/SyncPermutation/8",
+            "value": 1213,
+            "range": "± 637",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/BasedPermutation/8",
+            "value": 565,
+            "range": "± 296",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/MapPermutation/8",
+            "value": 2904,
+            "range": "± 1728",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/WordPermutation/8",
+            "value": 2004,
+            "range": "± 1954",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/StandardPermutation/16",
+            "value": 2785,
+            "range": "± 151",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/SyncPermutation/16",
+            "value": 3337,
+            "range": "± 210",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/BasedPermutation/16",
+            "value": 2779,
+            "range": "± 150",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/MapPermutation/16",
+            "value": 3277,
+            "range": "± 142",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/WordPermutation/16",
+            "value": 2795,
+            "range": "± 115",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/StandardPermutation/32",
+            "value": 5309,
+            "range": "± 363",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/SyncPermutation/32",
+            "value": 6457,
+            "range": "± 252",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/BasedPermutation/32",
+            "value": 5166,
+            "range": "± 292",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/MapPermutation/32",
+            "value": 6215,
+            "range": "± 317",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/WordPermutation/32",
+            "value": 5211,
+            "range": "± 223",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/StandardPermutation/64",
+            "value": 10233,
+            "range": "± 273",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/SyncPermutation/64",
+            "value": 12741,
+            "range": "± 481",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/BasedPermutation/64",
+            "value": 10336,
+            "range": "± 375",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/MapPermutation/64",
+            "value": 12622,
+            "range": "± 576",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/WordPermutation/64",
+            "value": 10585,
+            "range": "± 296",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/StandardPermutation/128",
+            "value": 21637,
+            "range": "± 997",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/SyncPermutation/128",
+            "value": 26542,
+            "range": "± 1504",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/BasedPermutation/128",
+            "value": 21553,
+            "range": "± 1354",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/MapPermutation/128",
+            "value": 25866,
+            "range": "± 1583",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/WordPermutation/128",
+            "value": 21860,
+            "range": "± 1222",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/StandardPermutation/256",
+            "value": 48067,
+            "range": "± 3621",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/SyncPermutation/256",
+            "value": 59582,
+            "range": "± 3773",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/BasedPermutation/256",
+            "value": 47120,
+            "range": "± 3698",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/MapPermutation/256",
+            "value": 63713,
+            "range": "± 4438",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/WordPermutation/256",
+            "value": 48496,
+            "range": "± 3964",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/StandardPermutation/512",
+            "value": 121474,
+            "range": "± 16348",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/SyncPermutation/512",
+            "value": 141125,
+            "range": "± 17129",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/BasedPermutation/512",
+            "value": 121853,
+            "range": "± 16957",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/MapPermutation/512",
+            "value": 160370,
+            "range": "± 18764",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__order/WordPermutation/512",
+            "value": 118164,
+            "range": "± 16830",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/StandardPermutation/8",
+            "value": 120,
+            "range": "± 3",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/SyncPermutation/8",
+            "value": 254,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/BasedPermutation/8",
+            "value": 6,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/MapPermutation/8",
+            "value": 358,
+            "range": "± 44",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/WordPermutation/8",
+            "value": 166,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/StandardPermutation/16",
+            "value": 143,
+            "range": "± 6",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/SyncPermutation/16",
+            "value": 326,
+            "range": "± 12",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/BasedPermutation/16",
+            "value": 6,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/MapPermutation/16",
+            "value": 823,
+            "range": "± 62",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/WordPermutation/16",
+            "value": 188,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/StandardPermutation/32",
+            "value": 156,
+            "range": "± 13",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/SyncPermutation/32",
+            "value": 363,
+            "range": "± 17",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/BasedPermutation/32",
+            "value": 7,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/MapPermutation/32",
+            "value": 1757,
+            "range": "± 79",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/WordPermutation/32",
+            "value": 206,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/StandardPermutation/64",
+            "value": 173,
+            "range": "± 7",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/SyncPermutation/64",
+            "value": 470,
+            "range": "± 36",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/BasedPermutation/64",
+            "value": 7,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/MapPermutation/64",
+            "value": 3803,
+            "range": "± 115",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/WordPermutation/64",
+            "value": 224,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/StandardPermutation/128",
+            "value": 198,
+            "range": "± 4",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/SyncPermutation/128",
+            "value": 646,
+            "range": "± 22",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/BasedPermutation/128",
+            "value": 6,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/MapPermutation/128",
+            "value": 9323,
+            "range": "± 491",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/WordPermutation/128",
+            "value": 244,
+            "range": "± 26",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/StandardPermutation/256",
+            "value": 241,
+            "range": "± 10",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/SyncPermutation/256",
+            "value": 1055,
+            "range": "± 121",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/BasedPermutation/256",
+            "value": 6,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/MapPermutation/256",
+            "value": 22450,
+            "range": "± 1038",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/WordPermutation/256",
+            "value": 286,
+            "range": "± 8",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/StandardPermutation/512",
+            "value": 389,
+            "range": "± 21",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/SyncPermutation/512",
+            "value": 1674,
+            "range": "± 135",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/BasedPermutation/512",
+            "value": 7,
+            "range": "± 0",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/MapPermutation/512",
+            "value": 54140,
+            "range": "± 2505",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "permutation__cmp__shift/WordPermutation/512",
+            "value": 453,
+            "range": "± 36",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/orbit/8",
+            "value": 1224,
+            "range": "± 52",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/8",
+            "value": 1576,
+            "range": "± 96",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/transversal/8",
+            "value": 2956,
+            "range": "± 67",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/orbit/16",
+            "value": 2365,
+            "range": "± 71",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/16",
+            "value": 3089,
+            "range": "± 155",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/transversal/16",
+            "value": 6959,
+            "range": "± 219",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/orbit/32",
+            "value": 4666,
+            "range": "± 237",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/32",
+            "value": 5802,
+            "range": "± 275",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/transversal/32",
+            "value": 15602,
+            "range": "± 580",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/orbit/64",
+            "value": 9082,
+            "range": "± 400",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/factored_transversal/64",
+            "value": 11075,
+            "range": "± 1062",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_symmetric/transversal/64",
+            "value": 40998,
+            "range": "± 1855",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/orbit/8",
+            "value": 1232,
+            "range": "± 58",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/factored_transversal/8",
+            "value": 1586,
+            "range": "± 60",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/transversal/8",
+            "value": 2942,
+            "range": "± 144",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/orbit/16",
+            "value": 2374,
+            "range": "± 63",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/factored_transversal/16",
+            "value": 2956,
+            "range": "± 74",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/transversal/16",
+            "value": 6854,
+            "range": "± 325",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/orbit/32",
+            "value": 4593,
+            "range": "± 254",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/factored_transversal/32",
+            "value": 5838,
+            "range": "± 292",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/transversal/32",
+            "value": 15876,
+            "range": "± 1127",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/orbit/64",
+            "value": 9175,
+            "range": "± 827",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/factored_transversal/64",
+            "value": 11184,
+            "range": "± 405",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_dihedral/transversal/64",
+            "value": 40525,
+            "range": "± 2644",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/orbit/8",
+            "value": 1015,
+            "range": "± 35",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/factored_transversal/8",
+            "value": 1347,
+            "range": "± 48",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/transversal/8",
+            "value": 2785,
+            "range": "± 99",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/orbit/16",
+            "value": 2003,
+            "range": "± 72",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/factored_transversal/16",
+            "value": 2636,
+            "range": "± 173",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/transversal/16",
+            "value": 6405,
+            "range": "± 250",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/orbit/32",
+            "value": 3836,
+            "range": "± 175",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/factored_transversal/32",
+            "value": 5332,
+            "range": "± 436",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/transversal/32",
+            "value": 16035,
+            "range": "± 1582",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/orbit/64",
+            "value": 7847,
+            "range": "± 597",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/factored_transversal/64",
+            "value": 10562,
+            "range": "± 663",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_factored_cyclic/transversal/64",
+            "value": 42761,
+            "range": "± 2881",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_symmetric/factored_transversal/8",
+            "value": 8193,
+            "range": "± 526",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_symmetric/transversal/8",
+            "value": 3422,
+            "range": "± 193",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_symmetric/factored_transversal/16",
+            "value": 29864,
+            "range": "± 1883",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_symmetric/transversal/16",
+            "value": 7310,
+            "range": "± 513",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_symmetric/factored_transversal/32",
+            "value": 125988,
+            "range": "± 7106",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_symmetric/transversal/32",
+            "value": 16915,
+            "range": "± 1378",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_symmetric/factored_transversal/64",
+            "value": 615686,
+            "range": "± 39087",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_symmetric/transversal/64",
+            "value": 44683,
+            "range": "± 3628",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_dihedral/factored_transversal/8",
+            "value": 6302,
+            "range": "± 355",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_dihedral/transversal/8",
+            "value": 3462,
+            "range": "± 208",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_dihedral/factored_transversal/16",
+            "value": 21354,
+            "range": "± 1838",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_dihedral/transversal/16",
+            "value": 7567,
+            "range": "± 595",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_dihedral/factored_transversal/32",
+            "value": 76253,
+            "range": "± 5835",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_dihedral/transversal/32",
+            "value": 17066,
+            "range": "± 1273",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_dihedral/factored_transversal/64",
+            "value": 324958,
+            "range": "± 10700",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_dihedral/transversal/64",
+            "value": 40250,
+            "range": "± 1594",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_cyclic/factored_transversal/8",
+            "value": 6993,
+            "range": "± 288",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_cyclic/transversal/8",
+            "value": 2964,
+            "range": "± 103",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_cyclic/factored_transversal/16",
+            "value": 26562,
+            "range": "± 1044",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_cyclic/transversal/16",
+            "value": 6895,
+            "range": "± 232",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_cyclic/factored_transversal/32",
+            "value": 110776,
+            "range": "± 3046",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_cyclic/transversal/32",
+            "value": 15138,
+            "range": "± 519",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_cyclic/factored_transversal/64",
+            "value": 587357,
+            "range": "± 21209",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_factored_cyclic/transversal/64",
+            "value": 37824,
+            "range": "± 1134",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete/orbit/8",
+            "value": 1226,
+            "range": "± 57",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete/orbit_optmized/8",
+            "value": 1031,
+            "range": "± 39",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete/orbit/16",
+            "value": 2397,
+            "range": "± 245",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete/orbit_optmized/16",
+            "value": 1980,
+            "range": "± 67",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete/orbit/32",
+            "value": 4637,
+            "range": "± 274",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete/orbit_optmized/32",
+            "value": 3830,
+            "range": "± 102",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete/orbit/64",
+            "value": 9046,
+            "range": "± 387",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete/orbit_optmized/64",
+            "value": 7484,
+            "range": "± 236",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_uncomplete/orbit/8",
+            "value": 1457,
+            "range": "± 52",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_uncomplete/orbit_optmized/8",
+            "value": 1299,
+            "range": "± 52",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_uncomplete/orbit/16",
+            "value": 2860,
+            "range": "± 71",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_uncomplete/orbit_optmized/16",
+            "value": 2496,
+            "range": "± 53",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_uncomplete/orbit/32",
+            "value": 5400,
+            "range": "± 194",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_uncomplete/orbit_optmized/32",
+            "value": 4758,
+            "range": "± 164",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_uncomplete/orbit/64",
+            "value": 10612,
+            "range": "± 349",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_uncomplete/orbit_optmized/64",
+            "value": 9309,
+            "range": "± 506",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete_many_gens/orbit/8",
+            "value": 2063,
+            "range": "± 54",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete_many_gens/orbit_optmized/8",
+            "value": 959,
+            "range": "± 40",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete_many_gens/orbit/16",
+            "value": 7802,
+            "range": "± 542",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete_many_gens/orbit_optmized/16",
+            "value": 2046,
+            "range": "± 90",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete_many_gens/orbit/32",
+            "value": 27430,
+            "range": "± 1516",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete_many_gens/orbit_optmized/32",
+            "value": 3999,
+            "range": "± 309",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete_many_gens/orbit/64",
+            "value": 108167,
+            "range": "± 5422",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__orbit_vs_optmized_orbit_complete_many_gens/orbit_optmized/64",
+            "value": 7849,
+            "range": "± 260",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_cyclic/classic/8",
+            "value": 7017,
+            "range": "± 437",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_cyclic/orbit/8",
+            "value": 2916,
+            "range": "± 217",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_cyclic/classic/16",
+            "value": 57939,
+            "range": "± 2043",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_cyclic/orbit/16",
+            "value": 8254,
+            "range": "± 490",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_cyclic/classic/32",
+            "value": 676015,
+            "range": "± 24187",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_cyclic/orbit/32",
+            "value": 23615,
+            "range": "± 976",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_cyclic/classic/64",
+            "value": 9717065,
+            "range": "± 419846",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_cyclic/orbit/64",
+            "value": 76100,
+            "range": "± 2057",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_symm/classic/3",
+            "value": 4316,
+            "range": "± 122",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_symm/orbit/3",
+            "value": 2376,
+            "range": "± 84",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_symm/classic/4",
+            "value": 174603,
+            "range": "± 8281",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_symm/orbit/4",
+            "value": 10760,
+            "range": "± 413",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_symm/classic/5",
+            "value": 22192112,
+            "range": "± 811332",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__bruteforce__classic_vs_orbit_symm/orbit/5",
+            "value": 71890,
+            "range": "± 3506",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete/transversal/8",
+            "value": 2613,
+            "range": "± 147",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete/transversal_optmized/8",
+            "value": 2366,
+            "range": "± 62",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete/transversal/16",
+            "value": 6338,
+            "range": "± 235",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete/transversal_optmized/16",
+            "value": 5767,
+            "range": "± 206",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete/transversal/32",
+            "value": 14453,
+            "range": "± 459",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete/transversal_optmized/32",
+            "value": 13634,
+            "range": "± 467",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete/transversal/64",
+            "value": 37532,
+            "range": "± 1395",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete/transversal_optmized/64",
+            "value": 34257,
+            "range": "± 822",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete_many_gens/transversal/8",
+            "value": 3364,
+            "range": "± 95",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete_many_gens/transversal_optmized/8",
+            "value": 2231,
+            "range": "± 44",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete_many_gens/transversal/16",
+            "value": 10674,
+            "range": "± 1105",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete_many_gens/transversal_optmized/16",
+            "value": 4977,
+            "range": "± 219",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete_many_gens/transversal/32",
+            "value": 35830,
+            "range": "± 912",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete_many_gens/transversal_optmized/32",
+            "value": 11232,
+            "range": "± 259",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete_many_gens/transversal/64",
+            "value": 124565,
+            "range": "± 3328",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_complete_many_gens/transversal_optmized/64",
+            "value": 26235,
+            "range": "± 948",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_uncomplete/transversal/8",
+            "value": 2802,
+            "range": "± 64",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_uncomplete/transversal_optmized/8",
+            "value": 2612,
+            "range": "± 66",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_uncomplete/transversal/16",
+            "value": 6078,
+            "range": "± 835",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_uncomplete/transversal_optmized/16",
+            "value": 6093,
+            "range": "± 350",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_uncomplete/transversal/32",
+            "value": 14857,
+            "range": "± 353",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_uncomplete/transversal_optmized/32",
+            "value": 14643,
+            "range": "± 597",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_uncomplete/transversal/64",
+            "value": 37753,
+            "range": "± 4588",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__transversal_vs_optmized_transversal_uncomplete/transversal_optmized/64",
+            "value": 37432,
+            "range": "± 1371",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete/transversal/8",
+            "value": 1216,
+            "range": "± 69",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete/transversal_optmized/8",
+            "value": 1190,
+            "range": "± 32",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete/transversal/16",
+            "value": 2348,
+            "range": "± 69",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete/transversal_optmized/16",
+            "value": 2324,
+            "range": "± 82",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete/transversal/32",
+            "value": 4532,
+            "range": "± 147",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete/transversal_optmized/32",
+            "value": 4501,
+            "range": "± 180",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete/transversal/64",
+            "value": 8881,
+            "range": "± 291",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete/transversal_optmized/64",
+            "value": 8767,
+            "range": "± 263",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete_many_gens/transversal/8",
+            "value": 2049,
+            "range": "± 58",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete_many_gens/transversal_optmized/8",
+            "value": 1141,
+            "range": "± 45",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete_many_gens/transversal/16",
+            "value": 7795,
+            "range": "± 283",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete_many_gens/transversal_optmized/16",
+            "value": 2380,
+            "range": "± 89",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete_many_gens/transversal/32",
+            "value": 28430,
+            "range": "± 848",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete_many_gens/transversal_optmized/32",
+            "value": 4683,
+            "range": "± 139",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete_many_gens/transversal/64",
+            "value": 111020,
+            "range": "± 4231",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_complete_many_gens/transversal_optmized/64",
+            "value": 9352,
+            "range": "± 324",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_uncomplete/transversal/8",
+            "value": 1466,
+            "range": "± 41",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_uncomplete/transversal_optmized/8",
+            "value": 1670,
+            "range": "± 62",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_uncomplete/transversal/16",
+            "value": 2859,
+            "range": "± 158",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_uncomplete/transversal_optmized/16",
+            "value": 3391,
+            "range": "± 126",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_uncomplete/transversal/32",
+            "value": 5750,
+            "range": "± 150",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_uncomplete/transversal_optmized/32",
+            "value": 6789,
+            "range": "± 382",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_uncomplete/transversal/64",
+            "value": 10663,
+            "range": "± 371",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__orbit__f_transversal_vs_optmized_f_transversal_uncomplete/transversal_optmized/64",
+            "value": 12894,
+            "range": "± 364",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/default/8",
+            "value": 1939,
+            "range": "± 52",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/naive/8",
+            "value": 1919,
+            "range": "± 58",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/ift/8",
+            "value": 1801,
+            "range": "± 88",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/default/10",
+            "value": 2318,
+            "range": "± 106",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/naive/10",
+            "value": 2316,
+            "range": "± 72",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/ift/10",
+            "value": 2106,
+            "range": "± 59",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/default/16",
+            "value": 4699,
+            "range": "± 156",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/naive/16",
+            "value": 4619,
+            "range": "± 152",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/ift/16",
+            "value": 3797,
+            "range": "± 152",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/default/20",
+            "value": 5860,
+            "range": "± 234",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/naive/20",
+            "value": 5823,
+            "range": "± 309",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/ift/20",
+            "value": 4521,
+            "range": "± 192",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/default/32",
+            "value": 11418,
+            "range": "± 544",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/naive/32",
+            "value": 11379,
+            "range": "± 338",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__cyclic/ift/32",
+            "value": 9693,
+            "range": "± 309",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/default/8",
+            "value": 50373,
+            "range": "± 2812",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/naive/8",
+            "value": 49668,
+            "range": "± 2385",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/ift/8",
+            "value": 100059,
+            "range": "± 2603",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/default/10",
+            "value": 108573,
+            "range": "± 5279",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/naive/10",
+            "value": 109095,
+            "range": "± 4710",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/ift/10",
+            "value": 229020,
+            "range": "± 18847",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/default/16",
+            "value": 587886,
+            "range": "± 37988",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/naive/16",
+            "value": 595891,
+            "range": "± 45371",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/ift/16",
+            "value": 1306569,
+            "range": "± 105710",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/default/20",
+            "value": 1342693,
+            "range": "± 152368",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/naive/20",
+            "value": 1364057,
+            "range": "± 140066",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/ift/20",
+            "value": 3160103,
+            "range": "± 347781",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/default/32",
+            "value": 8605793,
+            "range": "± 1791462",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/naive/32",
+            "value": 8387607,
+            "range": "± 1897706",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__symmetric/ift/32",
+            "value": 22922837,
+            "range": "± 6009382",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/default/8",
+            "value": 203127,
+            "range": "± 5613",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/naive/8",
+            "value": 203922,
+            "range": "± 11374",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/ift/8",
+            "value": 411734,
+            "range": "± 12022",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/default/10",
+            "value": 406288,
+            "range": "± 20569",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/naive/10",
+            "value": 404307,
+            "range": "± 25128",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/ift/10",
+            "value": 835653,
+            "range": "± 28762",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/default/16",
+            "value": 1849606,
+            "range": "± 99094",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/naive/16",
+            "value": 1847727,
+            "range": "± 91740",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/ift/16",
+            "value": 4120530,
+            "range": "± 272102",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/default/20",
+            "value": 4019727,
+            "range": "± 280425",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/naive/20",
+            "value": 4122410,
+            "range": "± 357700",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/ift/20",
+            "value": 9548055,
+            "range": "± 687200",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/default/32",
+            "value": 22863882,
+            "range": "± 3903802",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/naive/32",
+            "value": 23213237,
+            "range": "± 3976658",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__product_symmetric/ift/32",
+            "value": 56736423,
+            "range": "± 16267003",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/default/8",
+            "value": 1923,
+            "range": "± 79",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/lmp/8",
+            "value": 1939,
+            "range": "± 33",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/fixed/8",
+            "value": 1979,
+            "range": "± 56",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/default/10",
+            "value": 2314,
+            "range": "± 78",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/lmp/10",
+            "value": 2335,
+            "range": "± 218",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/fixed/10",
+            "value": 2406,
+            "range": "± 100",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/default/16",
+            "value": 4577,
+            "range": "± 153",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/lmp/16",
+            "value": 4608,
+            "range": "± 254",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/fixed/16",
+            "value": 4680,
+            "range": "± 144",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/default/20",
+            "value": 5924,
+            "range": "± 193",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/lmp/20",
+            "value": 6037,
+            "range": "± 294",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/fixed/20",
+            "value": 6258,
+            "range": "± 176",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/default/32",
+            "value": 11383,
+            "range": "± 590",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/lmp/32",
+            "value": 11535,
+            "range": "± 466",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__cyclic/fixed/32",
+            "value": 11798,
+            "range": "± 397",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/default/8",
+            "value": 49457,
+            "range": "± 1938",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/lmp/8",
+            "value": 50474,
+            "range": "± 1887",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/fixed/8",
+            "value": 51215,
+            "range": "± 2002",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/default/10",
+            "value": 108803,
+            "range": "± 3540",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/lmp/10",
+            "value": 109521,
+            "range": "± 2919",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/fixed/10",
+            "value": 121121,
+            "range": "± 2799",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/default/16",
+            "value": 584334,
+            "range": "± 36998",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/lmp/16",
+            "value": 576520,
+            "range": "± 47424",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/fixed/16",
+            "value": 831872,
+            "range": "± 39384",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/default/20",
+            "value": 1360340,
+            "range": "± 147022",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/lmp/20",
+            "value": 1376917,
+            "range": "± 152753",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/fixed/20",
+            "value": 2205664,
+            "range": "± 126871",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/default/32",
+            "value": 8875876,
+            "range": "± 2090356",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/lmp/32",
+            "value": 8502338,
+            "range": "± 2010718",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__symmetric/fixed/32",
+            "value": 16630337,
+            "range": "± 1730072",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/default/8",
+            "value": 202586,
+            "range": "± 5914",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/naive/8",
+            "value": 201238,
+            "range": "± 6237",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/ift/8",
+            "value": 223340,
+            "range": "± 25307",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/default/10",
+            "value": 408727,
+            "range": "± 20104",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/naive/10",
+            "value": 407571,
+            "range": "± 14373",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/ift/10",
+            "value": 452553,
+            "range": "± 14267",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/default/16",
+            "value": 1853340,
+            "range": "± 96621",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/naive/16",
+            "value": 1869478,
+            "range": "± 131565",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/ift/16",
+            "value": 2428215,
+            "range": "± 119949",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/default/20",
+            "value": 3992660,
+            "range": "± 282632",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/naive/20",
+            "value": 4010691,
+            "range": "± 268949",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/ift/20",
+            "value": 5831161,
+            "range": "± 391526",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/default/32",
+            "value": 24027037,
+            "range": "± 4124413",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/naive/32",
+            "value": 23912919,
+            "range": "± 4140282",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "group__stabchain__ss__selector_comparison__product_symmetric/ift/32",
+            "value": 40765345,
+            "range": "± 3399872",
             "unit": "ns/iter"
           }
         ]
