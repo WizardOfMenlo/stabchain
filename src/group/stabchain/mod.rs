@@ -1,5 +1,6 @@
 //! Mod which contains the definition of a stabilizer chain, complete with all the ways of creating such a chain
 
+pub mod base;
 pub mod builder;
 pub mod element_testing;
 pub mod moved_point_selector;
