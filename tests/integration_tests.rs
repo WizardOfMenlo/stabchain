@@ -21,6 +21,7 @@ lazy_static! {
         .ok()
         .and_then(|s| s.parse::<usize>().ok())
         .unwrap_or(DEFAULT_LIMIT);
+    static ref NO_LIMIT: bool = std::env::var("STABCHAIN_GROUP_TESTING_NO_LIMIT").is_ok();
 }
 
 fn load_libraries(paths: &[&str]) -> Vec<DecoratedGroup<SyncPermutation>> {
@@ -42,9 +43,17 @@ where
     E: std::fmt::Debug + Send,
 {
     let mut rng = rand::thread_rng();
-    let errors = GROUP_LIBRARY
-        .iter()
-        .choose_multiple(&mut rng, *LIMIT)
+
+    let groups = if *NO_LIMIT {
+        GROUP_LIBRARY.to_vec()
+    } else {
+        GROUP_LIBRARY
+            .iter()
+            .cloned()
+            .choose_multiple(&mut rng, *LIMIT)
+    };
+
+    let errors = groups
         .par_iter()
         .cloned()
         .map(|g| {
