@@ -20,13 +20,13 @@ use std::iter::Iterator;
 use std::iter::{repeat_with, FromIterator};
 
 //Constants for subproduct generation
-const C1: usize = 64;
-const C2: usize = 5;
+const C1: usize = 1;
+const C2: usize = 1;
 const ORBIT_BOUND: usize = 50;
 const BASE_BOUND: usize = 5;
 // Cosntants for the Strong Generating Test.
-const C3: usize = 64;
-const C4: usize = 5;
+const C3: usize = 1;
+const C4: usize = 1;
 
 // Helper struct, used to build the stabilizer chain
 
@@ -119,11 +119,12 @@ where
     ) -> Vec<Vec<P>> {
         //Sum of all "depths". In reality the transversal doesn't have a depth, so we use this as a upper bound.
         let t = self
-            .current_chain()
+            .chain
+            .iter()
             .map(|record| (record.transversal.len() as f64).log2())
             .sum::<f64>()
             .floor() as usize;
-        println!("t={}", t);
+        dbg!(&t);
         let record = &self.chain[self.current_pos];
         let k = rand::Rng::gen_range(&mut self.rng.clone(), 0, 1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
@@ -224,7 +225,7 @@ where
     }
 
     fn sgc(&mut self) {
-        println!("SGC");
+        dbg!("SGC");
         let record = self.chain[self.current_pos].clone();
         //Number of base points than are in the current orbit.
         let b_star = self
@@ -240,6 +241,7 @@ where
             .collect::<Vec<P>>();
         //Random products of the form gw
         let mut random_gens = self.random_schrier_generators_as_word(C1, C2, &gens[..]);
+        dbg!(random_gens.len());
         //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
         random_gens.iter_mut().for_each(|gw| {
             //Get the residue of this word
@@ -320,7 +322,7 @@ where
 
     /// Test that the current strong generating set is indeed a strong generating set, returning true if it (probably) is.
     fn sgt(&mut self) {
-        println!("SGT");
+        dbg!("SGT");
         let original_position = self.current_pos;
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
@@ -360,7 +362,14 @@ where
             let collapsed_residue = collapse_perm_word(&residue);
             //If this point sifted through but isn't trivial, then we need a new record and base point.
             if self.sifted(drop_out_level) {
-                return None;
+                let moved_point = self.selector.moved_point(&collapsed_residue);
+                let gens = Group::new(&[collapsed_residue]);
+                let transversal =
+                    factored_transversal_complete_opt(&gens, moved_point, &self.action);
+                let initial_record = StabchainRecord::new(moved_point, gens, transversal);
+                self.base.push(moved_point);
+                self.chain.push(initial_record);
+                return Some(self.current_pos + drop_out_level);
             } else {
                 //Otherwise add it to the generators at that level, and invoke the SGC at that level.
                 self.check_transversal_augmentation_at_level(invoke_level, collapsed_residue);
@@ -416,14 +425,21 @@ mod tests {
     use crate::group::stabchain::moved_point_selector::FmpSelector;
     use crate::group::stabchain::valid_stabchain;
     use crate::perm::actions::SimpleApplication;
+    use std::time::Instant;
     #[test]
     fn test() {
-        let g = Group::symmetric(10);
+        let g = Group::symmetric(20);
         let application = SimpleApplication::default();
         let mut builder = StabchainBuilderRandom::new(FmpSelector::default(), application);
+        let start = Instant::now();
         builder.construct_strong_generating_set(&g);
         let chain = builder.build();
+        let time = start.elapsed();
         valid_stabchain(&chain).unwrap();
-        assert_eq!(num_bigint::BigUint::from(3628800_u32), chain.order());
+        println!("time={}ms", time.as_millis());
+        assert_eq!(
+            num_bigint::BigUint::from(2432902008176640000_u128),
+            chain.order()
+        );
     }
 }
