@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::BufReader;
+use std::stringify;
 
 use lazy_static::lazy_static;
 use rand::seq::IteratorRandom;
@@ -7,9 +8,13 @@ use rayon::prelude::*;
 
 use stabchain::group::group_library::DecoratedGroup;
 use stabchain::group::orbit::transversal::valid_transversal;
-use stabchain::group::stabchain::valid_stabchain;
+use stabchain::group::stabchain::{correct_stabchain_order, valid_stabchain};
 use stabchain::perm::export::ExportablePermutation;
 use stabchain::perm::impls::sync::SyncPermutation;
+
+use stabchain::group::stabchain::builder::*;
+use stabchain::group::stabchain::moved_point_selector::*;
+use stabchain::perm::actions::*;
 
 // We use this to limit the number of groups to test
 const DEFAULT_LIMIT: usize = 1000;
@@ -37,7 +42,7 @@ fn group_library(path: &str) -> impl IntoIterator<Item = DecoratedGroup<SyncPerm
     groups.into_iter().map(|g| g.map(SyncPermutation::from))
 }
 
-fn general_test<F, E>(name: &str, validator: F)
+fn general_test<F, E>(name: &str, validator: F, error_limit: usize)
 where
     F: Fn(DecoratedGroup<SyncPermutation>) -> Result<(), E> + Send + Sync,
     E: std::fmt::Debug + Send,
@@ -71,39 +76,53 @@ where
         .collect::<Vec<_>>();
 
     println!("[{}] {} errors out of {}", name, errors.len(), *LIMIT);
-    assert_eq!(errors.len(), 0);
+    assert!(errors.len() <= error_limit);
 }
 
 #[test]
 fn test_transversals() {
-    general_test("transversal", |g| {
-        let transversal = g.group().transversal(0);
-        valid_transversal(&transversal)
-    })
+    general_test(
+        "transversal",
+        |g| {
+            let transversal = g.group().transversal(0);
+            valid_transversal(&transversal)
+        },
+        0,
+    )
 }
 
-#[test]
-fn test_stabilizer() {
-    general_test("stabilizer", |g| {
-        let stabilizer = g.group().stabchain();
-        assert_eq!(&stabilizer.order(), g.order());
-        valid_stabchain(&stabilizer)
-    });
+#[cfg(test)]
+macro_rules! test_stabilizer_on_strategy {
+    ($strategy:expr, $short:ident, $error: expr) => {
+        #[test]
+        fn $short() {
+            general_test(
+                stringify!($short),
+                |g| {
+                    let stabilizer = g.group().stabchain_with_strategy($strategy);
+                    correct_stabchain_order(&stabilizer, g.order().clone())?;
+                    valid_stabchain(&stabilizer)
+                },
+                $error,
+            );
+        }
+    };
 }
 
-#[test]
-fn test_stabilizer_ift() {
-    use stabchain::group::stabchain::builder::IFTBuilderStrategy;
-    use stabchain::group::stabchain::moved_point_selector::LmpSelector;
-    use stabchain::perm::actions::SimpleApplication;
+test_stabilizer_on_strategy!(
+    NaiveBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default(),),
+    test_naive_stabilizer,
+    0
+);
 
-    general_test("ift_stabilizer", |g| {
-        let stabilizer = g.group().stabchain_with_strategy(IFTBuilderStrategy::new(
-            SimpleApplication::default(),
-            LmpSelector::default(),
-        ));
+test_stabilizer_on_strategy!(
+    IFTBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default(),),
+    test_ift_stabilizer,
+    0
+);
 
-        assert_eq!(&stabilizer.order(), g.order());
-        valid_stabchain(&stabilizer)
-    });
-}
+test_stabilizer_on_strategy!(
+    RandomBuilderStrategy::new(SimpleApplication::default(), FmpSelector::default(),),
+    test_random_stabilizer,
+    (*LIMIT as f32 * 0.05).floor() as usize
+);
