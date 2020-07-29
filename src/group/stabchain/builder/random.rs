@@ -124,7 +124,6 @@ where
             .map(|record| (record.transversal.len() as f64).log2())
             .sum::<f64>()
             .floor() as usize;
-        dbg!(&t);
         let record = &self.chain[self.current_pos];
         let k = rand::Rng::gen_range(&mut self.rng.clone(), 0, 1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
@@ -225,7 +224,6 @@ where
     }
 
     fn sgc(&mut self) {
-        dbg!("SGC");
         let record = self.chain[self.current_pos].clone();
         //Number of base points than are in the current orbit.
         let b_star = self
@@ -241,7 +239,6 @@ where
             .collect::<Vec<P>>();
         //Random products of the form gw
         let mut random_gens = self.random_schrier_generators_as_word(C1, C2, &gens[..]);
-        dbg!(random_gens.len());
         //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
         random_gens.iter_mut().for_each(|gw| {
             //Get the residue of this word
@@ -322,7 +319,6 @@ where
 
     /// Test that the current strong generating set is indeed a strong generating set, returning true if it (probably) is.
     fn sgt(&mut self) {
-        dbg!("SGT");
         let original_position = self.current_pos;
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
