@@ -12,7 +12,8 @@ macro_rules! bench_stabchain_impl {
     ($bencher: ident, $name:expr, $i:ident, $group:tt, $strat:expr) => {
         $bencher.bench_with_input(BenchmarkId::new($name, $i), $i, |b, i| {
             let g = $group(i);
-            b.iter(|| g.stabchain_with_strategy($strat.clone()))
+            let strat = $strat;
+            b.iter(|| g.stabchain_with_strategy(strat.clone()))
         });
     };
 }
