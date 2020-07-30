@@ -105,13 +105,14 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
             (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
             IFTBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
         );
-        bench_stabchain_impl!(
-            group,
-            "random",
-            i,
-            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
-            RandomBuilderStrategy::new(SimpleApplication::default(), FmpSelector::default())
-        );
+        //TODO comment once performance has improved.
+        // bench_stabchain_impl!(
+        //     group,
+        //     "random",
+        //     i,
+        //     (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
+        //     RandomBuilderStrategy::new(SimpleApplication::default(), FmpSelector::default())
+        // );
     }
     group.finish();
 }
