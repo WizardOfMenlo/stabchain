@@ -366,10 +366,10 @@ where
                 self.base.push(moved_point);
                 self.chain.push(initial_record);
                 self.up_to_date = self.base.len() + 1;
-                return Some(self.current_pos + drop_out_level);
             } else {
                 //Otherwise add it to the generators at that level, and invoke the SGC at that level.
                 self.check_transversal_augmentation_at_level(invoke_level, collapsed_residue);
+                self.up_to_date = self.current_pos + drop_out_level + 1
             }
             Some(self.current_pos + drop_out_level)
         } else {
