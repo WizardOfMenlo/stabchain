@@ -365,6 +365,7 @@ where
                 let initial_record = StabchainRecord::new(moved_point, gens, transversal);
                 self.base.push(moved_point);
                 self.chain.push(initial_record);
+                self.up_to_date = self.base.len() + 1;
                 return Some(self.current_pos + drop_out_level);
             } else {
                 //Otherwise add it to the generators at that level, and invoke the SGC at that level.
