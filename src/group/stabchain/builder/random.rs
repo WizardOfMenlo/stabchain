@@ -136,6 +136,7 @@ where
         //Iterleave the two iterators.
         let subproduct_iter: Vec<Vec<P>> =
             subproduct_w1_iter.interleave(subproduct_w2_iter).collect();
+        //TODO check if precalculating all transversal elements would be faster.
         // Iterator of random coset representatives.
         let g_iter = repeat_with(|| {
             record
