@@ -415,28 +415,3 @@ where
         self.build()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::group::stabchain::moved_point_selector::FmpSelector;
-    use crate::group::stabchain::valid_stabchain;
-    use crate::perm::actions::SimpleApplication;
-    use std::time::Instant;
-    #[test]
-    fn test() {
-        let g = Group::symmetric(20);
-        let application = SimpleApplication::default();
-        let mut builder = StabchainBuilderRandom::new(FmpSelector::default(), application);
-        let start = Instant::now();
-        builder.construct_strong_generating_set(&g);
-        let chain = builder.build();
-        let time = start.elapsed();
-        valid_stabchain(&chain).unwrap();
-        println!("time={}ms", time.as_millis());
-        assert_eq!(
-            num_bigint::BigUint::from(2432902008176640000_u128),
-            chain.order()
-        );
-    }
-}
