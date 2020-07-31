@@ -5,7 +5,6 @@ use crate::group::{Action, Group};
 use crate::perm::Permutation;
 use rand::Rng;
 use std::collections::{HashMap, VecDeque};
-use std::iter::once;
 
 //Make a transversal with depths at most max_depth + 1.
 pub fn random_transversal<P, A, R>(
@@ -52,7 +51,6 @@ where
         }
     }
     let max_depth = depths.values().into_iter().max().unwrap().clone();
-    dbg!(&max_depth);
     if max_depth > set_depth {
         //TODO perhaps use a more efficient method than creating the entire thing.
         let new_gen = RandPerm::new(10, g, 50, rng.clone()).random_permutation();
@@ -65,6 +63,7 @@ where
         (transversal, max_depth)
     }
 }
+
 
 #[cfg(test)]
 mod tests {
