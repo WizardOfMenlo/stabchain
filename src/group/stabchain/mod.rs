@@ -351,6 +351,7 @@ macro_rules! stabchain_tests {
 
 #[cfg(test)]
 mod tests {
+
     stabchain_tests!(
         NaiveBuilderStrategy::new(
             SimpleApplication::default(),
@@ -366,10 +367,14 @@ mod tests {
         ift
     );
     stabchain_tests!(
-        RandomBuilderStrategy::new(
-            SimpleApplication::default(),
-            moved_point_selector::FmpSelector::default()
-        ),
+        {
+            use rand::SeedableRng;
+            RandomBuilderStrategy::new_with_rng(
+                SimpleApplication::default(),
+                moved_point_selector::FmpSelector::default(),
+                rand::rngs::StdRng::from_seed([42; 32]),
+            )
+        },
         random
     );
 }

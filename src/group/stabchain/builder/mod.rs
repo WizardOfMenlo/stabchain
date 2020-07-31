@@ -8,6 +8,9 @@ use crate::group::orbit::abstraction::{
 use crate::group::Group;
 use crate::perm::{Action, Permutation};
 
+use rand::rngs::ThreadRng;
+use rand::Rng;
+
 mod ift;
 mod naive;
 mod random;
@@ -109,28 +112,44 @@ where
 /// Randomised Stabiliser chain construction.
 /// This should be faster than the naive and IFT methods, but is not deterministic.
 #[derive(Debug, Clone)]
-pub struct RandomBuilderStrategy<A, S> {
+pub struct RandomBuilderStrategy<A, S, R = ThreadRng> {
     selector: S,
     action: A,
+    random: R,
 }
 
 impl<A, S> RandomBuilderStrategy<A, S> {
     pub fn new(action: A, selector: S) -> Self {
-        RandomBuilderStrategy { action, selector }
+        RandomBuilderStrategy {
+            action,
+            selector,
+            random: rand::thread_rng(),
+        }
     }
 }
 
-impl<P, S, A> BuilderStrategy<P> for RandomBuilderStrategy<A, S>
+impl<A, S, R> RandomBuilderStrategy<A, S, R> {
+    pub fn new_with_rng(action: A, selector: S, random: R) -> Self {
+        RandomBuilderStrategy {
+            action,
+            selector,
+            random,
+        }
+    }
+}
+
+impl<P, S, A, R> BuilderStrategy<P> for RandomBuilderStrategy<A, S, R>
 where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
     S: MovedPointSelector<P, A::OrbitT>,
+    R: Rng,
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
-    type BuilderT = random::StabchainBuilderRandom<P, S, A>;
+    type BuilderT = random::StabchainBuilderRandom<P, S, A, R>;
 
     fn make_builder(self) -> Self::BuilderT {
-        random::StabchainBuilderRandom::new(self.selector, self.action)
+        random::StabchainBuilderRandom::new(self.selector, self.action, self.random)
     }
 }
