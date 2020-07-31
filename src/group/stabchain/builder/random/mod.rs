@@ -1,3 +1,7 @@
+pub mod parameters;
+
+use parameters::RandomAlgoParameters;
+
 use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::factored_transversal::{
     factored_transversal_complete_opt, representative_raw_as_word,
@@ -20,15 +24,6 @@ use std::collections::{HashMap, VecDeque};
 use std::iter::Iterator;
 use std::iter::{repeat_with, FromIterator};
 
-//Constants for subproduct generation
-const C1: usize = 1;
-const C2: usize = 1;
-const ORBIT_BOUND: usize = 50;
-const BASE_BOUND: usize = 5;
-// Cosntants for the Strong Generating Test.
-const C3: usize = 1;
-const C4: usize = 1;
-
 // Helper struct, used to build the stabilizer chain
 
 pub struct StabchainBuilderRandom<P, S, A = SimpleApplication<P>, R = ThreadRng>
@@ -43,6 +38,7 @@ where
     n: usize,
     base: Vec<A::OrbitT>,
     rng: RefCell<R>,
+    constants: parameters::Constants,
     //The chain is zero indexed, but this field is 1 indexed.
     //This is due to the end condition being when the chain is up to date below the index of the first record position, and this would be -1 with zero indexing.
     //For zero indexing this would have to be a signed type, which doesn't really seem worth it just to require one negative value at the end condition.
@@ -56,7 +52,9 @@ where
     A: Action<P, OrbitT = usize>,
     R: Rng,
 {
-    pub fn new(selector: S, action: A, random: R) -> Self {
+    pub fn new(selector: S, action: A, params: RandomAlgoParameters<R>) -> Self {
+        let (constants, random) = params.consts();
+
         StabchainBuilderRandom {
             current_pos: 0,
             chain: Vec::new(),
@@ -64,6 +62,7 @@ where
             action,
             n: 0,
             base: Vec::new(),
+            constants,
             rng: RefCell::new(random),
             up_to_date: 1,
         }

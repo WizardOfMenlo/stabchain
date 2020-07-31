@@ -109,13 +109,15 @@ where
     }
 }
 
+use random::parameters::RandomAlgoParameters;
+
 /// Randomised Stabiliser chain construction.
 /// This should be faster than the naive and IFT methods, but is not deterministic.
 #[derive(Debug, Clone)]
 pub struct RandomBuilderStrategy<A, S, R = ThreadRng> {
     selector: S,
     action: A,
-    random: R,
+    params: RandomAlgoParameters<R>,
 }
 
 impl<A, S> RandomBuilderStrategy<A, S> {
@@ -123,17 +125,17 @@ impl<A, S> RandomBuilderStrategy<A, S> {
         RandomBuilderStrategy {
             action,
             selector,
-            random: rand::thread_rng(),
+            params: random::parameters::RandomAlgoParameters::default(),
         }
     }
 }
 
 impl<A, S, R> RandomBuilderStrategy<A, S, R> {
-    pub fn new_with_rng(action: A, selector: S, random: R) -> Self {
+    pub fn new_with_params(action: A, selector: S, params: RandomAlgoParameters<R>) -> Self {
         RandomBuilderStrategy {
             action,
             selector,
-            random,
+            params,
         }
     }
 }
@@ -150,6 +152,6 @@ where
     type BuilderT = random::StabchainBuilderRandom<P, S, A, R>;
 
     fn make_builder(self) -> Self::BuilderT {
-        random::StabchainBuilderRandom::new(self.selector, self.action, self.random)
+        random::StabchainBuilderRandom::new(self.selector, self.action, self.params)
     }
 }
