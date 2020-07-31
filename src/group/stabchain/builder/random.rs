@@ -14,7 +14,8 @@ use crate::perm::{Action, Permutation};
 use itertools::Itertools;
 use rand::rngs::ThreadRng;
 use rand::seq::IteratorRandom;
-use rand::thread_rng;
+use rand::Rng;
+use std::cell::RefCell;
 use std::collections::{HashMap, VecDeque};
 use std::iter::Iterator;
 use std::iter::{repeat_with, FromIterator};
@@ -30,7 +31,7 @@ const C4: usize = 1;
 
 // Helper struct, used to build the stabilizer chain
 
-pub struct StabchainBuilderRandom<P, S, A = SimpleApplication<P>>
+pub struct StabchainBuilderRandom<P, S, A = SimpleApplication<P>, R = ThreadRng>
 where
     A: Action<P, OrbitT = usize>,
 {
@@ -41,20 +42,21 @@ where
     // The maximum degree of the permutations this group generates.
     n: usize,
     base: Vec<A::OrbitT>,
-    rng: ThreadRng,
+    rng: RefCell<R>,
     //The chain is zero indexed, but this field is 1 indexed.
     //This is due to the end condition being when the chain is up to date below the index of the first record position, and this would be -1 with zero indexing.
     //For zero indexing this would have to be a signed type, which doesn't really seem worth it just to require one negative value at the end condition.
     up_to_date: usize,
 }
 
-impl<P, S, A> StabchainBuilderRandom<P, S, A>
+impl<P, S, A, R> StabchainBuilderRandom<P, S, A, R>
 where
     P: Permutation,
     S: MovedPointSelector<P, A::OrbitT>,
     A: Action<P, OrbitT = usize>,
+    R: Rng,
 {
-    pub fn new(selector: S, action: A) -> Self {
+    pub fn new(selector: S, action: A, random: R) -> Self {
         StabchainBuilderRandom {
             current_pos: 0,
             chain: Vec::new(),
@@ -62,7 +64,7 @@ where
             action,
             n: 0,
             base: Vec::new(),
-            rng: thread_rng(),
+            rng: RefCell::new(random),
             up_to_date: 1,
         }
     }
@@ -125,14 +127,15 @@ where
             .sum::<f64>()
             .floor() as usize;
         let record = &self.chain[self.current_pos];
-        let k = rand::Rng::gen_range(&mut self.rng.clone(), 0, 1 + gens.len() / 2);
+        let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0, 1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
-            repeat_with(|| random_subproduct_word_full(&mut self.rng.clone(), &gens[..]))
+            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), &gens[..]))
                 .take(subproducts);
-        let subproduct_w2_iter =
-            repeat_with(|| random_subproduct_word_subset(&mut self.rng.clone(), &gens[..], k))
-                .take(subproducts);
+        let subproduct_w2_iter = repeat_with(|| {
+            random_subproduct_word_subset(&mut *self.rng.borrow_mut(), &gens[..], k)
+        })
+        .take(subproducts);
         //Iterleave the two iterators.
         let subproduct_iter: Vec<Vec<P>> =
             subproduct_w1_iter.interleave(subproduct_w2_iter).collect();
@@ -142,7 +145,7 @@ where
             record
                 .transversal
                 .keys()
-                .choose(&mut self.rng.clone())
+                .choose(&mut *self.rng.borrow_mut())
                 .map(|point| {
                     representative_raw_as_word(
                         &record.transversal,
@@ -261,7 +264,7 @@ where
                     record
                         .transversal
                         .keys()
-                        .choose_multiple(&mut self.rng, BASE_BOUND)
+                        .choose_multiple(&mut *self.rng.borrow_mut(), BASE_BOUND)
                         .into_iter()
                         .cloned()
                         .collect()
@@ -270,7 +273,7 @@ where
                     record
                         .transversal
                         .keys()
-                        .choose_multiple(&mut self.rng, b_star.len())
+                        .choose_multiple(&mut *self.rng.borrow_mut(), b_star.len())
                         .into_iter()
                         .cloned()
                         .collect()
