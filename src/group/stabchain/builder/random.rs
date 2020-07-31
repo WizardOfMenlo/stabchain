@@ -20,13 +20,13 @@ use std::iter::Iterator;
 use std::iter::{repeat_with, FromIterator};
 
 //Constants for subproduct generation
-const C1: usize = 10;
-const C2: usize = 10;
+const C1: usize = 1;
+const C2: usize = 1;
 const ORBIT_BOUND: usize = 50;
 const BASE_BOUND: usize = 5;
 // Cosntants for the Strong Generating Test.
-const C3: usize = 10;
-const C4: usize = 10;
+const C3: usize = 1;
+const C4: usize = 1;
 
 // Helper struct, used to build the stabilizer chain
 
@@ -119,7 +119,8 @@ where
     ) -> Vec<Vec<P>> {
         //Sum of all "depths". In reality the transversal doesn't have a depth, so we use this as a upper bound.
         let t = self
-            .current_chain()
+            .chain
+            .iter()
             .map(|record| (record.transversal.len() as f64).log2())
             .sum::<f64>()
             .floor() as usize;
@@ -135,6 +136,7 @@ where
         //Iterleave the two iterators.
         let subproduct_iter: Vec<Vec<P>> =
             subproduct_w1_iter.interleave(subproduct_w2_iter).collect();
+        //TODO check if precalculating all transversal elements would be faster.
         // Iterator of random coset representatives.
         let g_iter = repeat_with(|| {
             record
@@ -307,15 +309,16 @@ where
             //Really is setting this to i - 1, but as the position is zero indexed it would be doing (i - 1 + 1).
             self.up_to_date = self.current_pos;
         }
-        //TODO check if this is wasting effort with repeated calls, when the SGT also invokes the SGC.
-        self.sgt();
         //SGC terminates if it is up to date at position 0; otherwise moving onto the next layers. Stop if we have reached the bottom of the chain
         if self.up_to_date != 0 && self.current_pos != self.chain.len() - 1 {
             self.current_pos += 1;
             self.sgc();
+        } else {
+            self.sgt();
         }
     }
 
+    /// Test that the current strong generating set is indeed a strong generating set, returning true if it (probably) is.
     fn sgt(&mut self) {
         let original_position = self.current_pos;
         //Should be at the top of the chain, I think.
@@ -356,10 +359,18 @@ where
             let collapsed_residue = collapse_perm_word(&residue);
             //If this point sifted through but isn't trivial, then we need a new record and base point.
             if self.sifted(drop_out_level) {
-                return None;
+                let moved_point = self.selector.moved_point(&collapsed_residue);
+                let gens = Group::new(&[collapsed_residue]);
+                let transversal =
+                    factored_transversal_complete_opt(&gens, moved_point, &self.action);
+                let initial_record = StabchainRecord::new(moved_point, gens, transversal);
+                self.base.push(moved_point);
+                self.chain.push(initial_record);
+                self.up_to_date = self.base.len() + 1;
             } else {
                 //Otherwise add it to the generators at that level, and invoke the SGC at that level.
                 self.check_transversal_augmentation_at_level(invoke_level, collapsed_residue);
+                self.up_to_date = self.current_pos + drop_out_level + 1
             }
             Some(self.current_pos + drop_out_level)
         } else {
