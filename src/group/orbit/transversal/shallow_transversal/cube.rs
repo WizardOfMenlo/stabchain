@@ -9,7 +9,7 @@ where
     A: Action<P>,
 {
     base: A::OrbitT,
-    cube: Vec<HashSet<A::OrbitT>>,
+    cube: HashSet<A::OrbitT>,
     orbit: HashMap<A::OrbitT, P>,
     depth: HashMap<A::OrbitT, usize>,
 }
@@ -59,7 +59,7 @@ where
         Cube {
             base,
             orbit,
-            cube,
+            cube: cube.pop().unwrap(),
             depth,
         }
     }
