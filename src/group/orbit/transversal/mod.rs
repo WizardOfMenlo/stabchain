@@ -1,6 +1,7 @@
 //! Various utilities related to transversals
 
 pub mod factored_transversal;
+pub mod shallow_transversal;
 pub mod simple_transversal;
 pub mod skeleton;
 
