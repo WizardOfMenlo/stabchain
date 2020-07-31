@@ -115,12 +115,14 @@ mod tests {
         ];
         let g = Group::from_list(gens);
         let mut rng = rand::thread_rng();
-        let set_depth = 3;
+        let set_depth = 2;
         let strat = SimpleApplication::default();
         let (fc1, max_depth) = random_transversal(&mut g.clone(), 5, &strat, &mut rng, set_depth);
         assert_eq!(3, fc1.len());
+        assert!(max_depth < set_depth + 1);
         let (fc2, max_depth) = random_transversal(&mut g.clone(), 4, &strat, &mut rng, set_depth);
         assert_eq!(3, fc2.len());
+        assert!(max_depth < set_depth + 1);
         let (fc3, max_depth) = random_transversal(&mut g.clone(), 3, &strat, &mut rng, set_depth);
         assert_eq!(1, fc3.len());
         assert!(max_depth < set_depth + 1);
