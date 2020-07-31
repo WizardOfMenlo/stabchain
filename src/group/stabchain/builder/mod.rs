@@ -9,6 +9,7 @@ use crate::group::Group;
 use crate::perm::{Action, Permutation};
 
 use rand::rngs::ThreadRng;
+use rand::Rng;
 
 mod ift;
 mod naive;
@@ -137,15 +138,16 @@ impl<A, S, R> RandomBuilderStrategy<A, S, R> {
     }
 }
 
-impl<P, S, A> BuilderStrategy<P> for RandomBuilderStrategy<A, S>
+impl<P, S, A, R> BuilderStrategy<P> for RandomBuilderStrategy<A, S, R>
 where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
     S: MovedPointSelector<P, A::OrbitT>,
+    R: Rng,
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
-    type BuilderT = random::StabchainBuilderRandom<P, S, A>;
+    type BuilderT = random::StabchainBuilderRandom<P, S, A, R>;
 
     fn make_builder(self) -> Self::BuilderT {
         random::StabchainBuilderRandom::new(self.selector, self.action, self.random)
