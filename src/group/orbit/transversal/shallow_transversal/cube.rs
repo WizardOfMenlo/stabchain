@@ -2,7 +2,7 @@ use crate::perm::{Action, Permutation};
 use rand::Rng;
 use std::collections::{HashMap, HashSet};
 
-/// Struct to represent the cube like structure from remark 4.4.3 from Seress
+/// Struct to represent the cube like structure from the remark after Lemma 4.4.1 from Seress
 struct Cube<P, A>
 where
     P: Permutation,
@@ -24,12 +24,12 @@ where
         orbit.insert(base.clone(), P::id());
         let mut depth = HashMap::new();
         depth.insert(base.clone(), 0);
-        let mut cube = vec![HashSet::new()];
-        cube[0].insert(base.clone());
+        let mut cubes = vec![HashSet::new()];
+        cubes[0].insert(base.clone());
         for i in 0..2 * seq.len() {
             if i > seq.len() {
                 let mut temp = HashSet::new();
-                for j in cube[i].iter() {
+                for j in cubes[i].iter() {
                     let val = strat.apply(&seq[i - seq.len() - 1], j.clone());
                     orbit.entry(val.clone()).or_insert_with(|| {
                         depth.insert(val.clone(), depth.get(&j).unwrap() + 1);
@@ -38,11 +38,11 @@ where
                     temp.insert(val);
                 }
                 //Take the union of cube[i] and temp.
-                temp.extend(cube[i].iter().cloned());
-                cube.push(temp);
+                temp.extend(cubes[i].iter().cloned());
+                cubes.push(temp);
             } else {
                 let mut temp = HashSet::new();
-                for j in cube[i].iter() {
+                for j in cubes[i].iter() {
                     let p = seq[seq.len() - i].inv();
                     let val = strat.apply(&p, j.clone());
                     orbit.entry(val.clone()).or_insert_with(|| {
@@ -52,14 +52,14 @@ where
                     temp.insert(val);
                 }
                 //Take the union of cube[i] and temp.
-                temp.extend(cube[i].iter().cloned());
-                cube.push(temp);
+                temp.extend(cubes[i].iter().cloned());
+                cubes.push(temp);
             }
         }
         Cube {
             base,
             orbit,
-            cube: cube.pop().unwrap(),
+            cube: cubes.pop().unwrap(),
             depth,
         }
     }
