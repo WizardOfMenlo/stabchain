@@ -6,6 +6,8 @@ use crate::perm::Permutation;
 use rand::Rng;
 use std::collections::{HashMap, VecDeque};
 
+mod cube;
+
 //Make a transversal with depths at most max_depth + 1.
 pub fn random_transversal<P, A, R>(
     g: &mut Group<P>,
@@ -63,7 +65,6 @@ where
         (transversal, max_depth)
     }
 }
-
 
 #[cfg(test)]
 mod tests {
