@@ -13,12 +13,12 @@ pub struct RandomAlgoParameters<R = ThreadRng> {
 
 #[derive(Debug, Clone)]
 pub struct Constants {
-    c1: usize,
-    c2: usize,
-    c3: usize,
-    c4: usize,
-    orbit_bound: usize,
-    base_bound: usize,
+    pub c1: usize,
+    pub c2: usize,
+    pub c3: usize,
+    pub c4: usize,
+    pub orbit_bound: usize,
+    pub base_bound: usize,
 }
 
 impl RandomAlgoParameters {
@@ -58,7 +58,7 @@ impl<R> RandomAlgoParameters<R> {
         self
     }
 
-    pub fn rng<K>(mut self, rng: K) -> RandomAlgoParameters<K> {
+    pub fn rng<K>(self, rng: K) -> RandomAlgoParameters<K> {
         RandomAlgoParameters {
             rng,
             c1: self.c1,

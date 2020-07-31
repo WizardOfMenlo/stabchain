@@ -241,7 +241,8 @@ where
             .cloned()
             .collect::<Vec<P>>();
         //Random products of the form gw
-        let mut random_gens = self.random_schrier_generators_as_word(C1, C2, &gens[..]);
+        let mut random_gens =
+            self.random_schrier_generators_as_word(self.constants.c1, self.constants.c2, &gens[..]);
         //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
         random_gens.iter_mut().for_each(|gw| {
             //Get the residue of this word
@@ -255,28 +256,29 @@ where
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if self.sifted(drop_out_level) {
                 //Pick the points that should be evaluated. This is a heuristic to speed up run times.
-                let evaluated_points: Vec<A::OrbitT> = if record.transversal.len() <= ORBIT_BOUND {
-                    //Evaluate on all points of the current orbit.
-                    record.transversal.keys().cloned().collect()
-                } else if self.base.len() <= BASE_BOUND {
-                    //Evaluate on BASE_BOUND randomly chosen points.
-                    record
-                        .transversal
-                        .keys()
-                        .choose_multiple(&mut *self.rng.borrow_mut(), BASE_BOUND)
-                        .into_iter()
-                        .cloned()
-                        .collect()
-                } else {
-                    //Evaluate on b_star randomly chosen points.
-                    record
-                        .transversal
-                        .keys()
-                        .choose_multiple(&mut *self.rng.borrow_mut(), b_star.len())
-                        .into_iter()
-                        .cloned()
-                        .collect()
-                };
+                let evaluated_points: Vec<A::OrbitT> =
+                    if record.transversal.len() <= self.constants.orbit_bound {
+                        //Evaluate on all points of the current orbit.
+                        record.transversal.keys().cloned().collect()
+                    } else if self.base.len() <= self.constants.base_bound {
+                        //Evaluate on BASE_BOUND randomly chosen points.
+                        record
+                            .transversal
+                            .keys()
+                            .choose_multiple(&mut *self.rng.borrow_mut(), self.constants.base_bound)
+                            .into_iter()
+                            .cloned()
+                            .collect()
+                    } else {
+                        //Evaluate on b_star randomly chosen points.
+                        record
+                            .transversal
+                            .keys()
+                            .choose_multiple(&mut *self.rng.borrow_mut(), b_star.len())
+                            .into_iter()
+                            .cloned()
+                            .collect()
+                    };
                 //If any point is not fixed by the residue, then we add the residue as a generator.
                 if !self.is_trivial_residue(&h_residue, evaluated_points) {
                     //Not all permutations have been discarded
@@ -339,7 +341,11 @@ where
             .clone()
             .iter()
             .map(|p| vec![p.clone()])
-            .chain(self.random_schrier_generators_as_word(C3, C4, &gens[..]))
+            .chain(self.random_schrier_generators_as_word(
+                self.constants.c3,
+                self.constants.c4,
+                &gens[..],
+            ))
             .collect();
         //Sift the original generators, and all products of the form g*w_{1,2}.
         for p in products {

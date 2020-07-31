@@ -368,11 +368,12 @@ mod tests {
     );
     stabchain_tests!(
         {
+            use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
             use rand::SeedableRng;
-            RandomBuilderStrategy::new_with_rng(
+            RandomBuilderStrategy::new_with_params(
                 SimpleApplication::default(),
                 moved_point_selector::FmpSelector::default(),
-                rand::rngs::StdRng::from_seed([42; 32]),
+                RandomAlgoParameters::default().rng(rand::rngs::StdRng::from_seed([42; 32])),
             )
         },
         random
