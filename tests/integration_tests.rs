@@ -69,17 +69,10 @@ where
     let errors = groups
         .par_iter()
         .cloned()
-        .map(|g| {
+        .flat_map(|g| {
             let validation = validator(g.clone());
-            if validation.is_err() {
-                let err = validation.unwrap_err();
-
-                Some((g, err))
-            } else {
-                None
-            }
+            validation.map_err(|err| (g, err)).err()
         })
-        .flatten()
         .collect::<Vec<_>>();
 
     println!(
