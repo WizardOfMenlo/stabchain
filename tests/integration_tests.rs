@@ -73,8 +73,7 @@ where
             let validation = validator(g.clone());
             if validation.is_err() {
                 let err = validation.unwrap_err();
-                println!("[{}] Error {:?}", name, &err);
-                println!("[{}] Error on {}", name, g.group());
+
                 Some((g, err))
             } else {
                 None
@@ -83,7 +82,18 @@ where
         .flatten()
         .collect::<Vec<_>>();
 
-    println!("[{}] {} errors out of {}", name, errors.len(), *LIMIT);
+    println!(
+        "[{}] {} errors out of {}",
+        name,
+        errors.len(),
+        number_of_tests()
+    );
+
+    for (g, err) in &errors {
+        println!("[{}] Error {:?}", name, &err);
+        println!("[{}] Error on {}", name, g.group());
+    }
+
     assert!(errors.len() <= error_limit);
 }
 
