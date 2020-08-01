@@ -42,6 +42,14 @@ fn group_library(path: &str) -> impl IntoIterator<Item = DecoratedGroup<SyncPerm
     groups.into_iter().map(|g| g.map(SyncPermutation::from))
 }
 
+fn number_of_tests() -> usize {
+    if *NO_LIMIT {
+        GROUP_LIBRARY.len()
+    } else {
+        *LIMIT
+    }
+}
+
 fn general_test<F, E>(name: &str, validator: F, error_limit: usize)
 where
     F: Fn(DecoratedGroup<SyncPermutation>) -> Result<(), E> + Send + Sync,
@@ -124,5 +132,5 @@ test_stabilizer_on_strategy!(
 test_stabilizer_on_strategy!(
     RandomBuilderStrategy::new(SimpleApplication::default(), FmpSelector::default(),),
     test_random_stabilizer,
-    (*LIMIT as f32 * 0.05).floor() as usize
+    (number_of_tests() as f32 * 0.05).floor() as usize
 );
