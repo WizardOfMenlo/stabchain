@@ -251,6 +251,7 @@ where
                     let transversal =
                         factored_transversal_complete_opt(&gens, new_base_point, &self.action);
                     let record = StabchainRecord::new(new_base_point, gens, transversal);
+                    self.depths.push(0);
                     self.chain.push(record);
                     //Now up to date beneath the newly added point.
                     self.up_to_date = self.base.len() + 1;
@@ -320,12 +321,14 @@ where
             let collapsed_residue = collapse_perm_word(&residue);
             //If this point sifted through but isn't trivial, then we need a new record and base point.
             if self.sifted(drop_out_level) {
+                //TODO add function to add a new level
                 let moved_point = self.selector.moved_point(&collapsed_residue);
                 let gens = Group::new(&[collapsed_residue]);
                 let transversal =
                     factored_transversal_complete_opt(&gens, moved_point, &self.action);
                 let initial_record = StabchainRecord::new(moved_point, gens, transversal);
                 self.base.push(moved_point);
+                self.depths.push(0);
                 self.chain.push(initial_record);
                 self.up_to_date = self.base.len() + 1;
             } else {
