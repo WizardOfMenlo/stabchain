@@ -232,4 +232,63 @@ mod tests {
         assert!(fc3.contains_key(&3));
         assert_eq!(3, representative_raw(&fc3, 3, 3, &strat).unwrap().apply(3));
     }
+
+    /// Test the factored transversal calculation for a generating set with multiple generators
+    /// when not all elements are in the orbit.
+    #[test]
+    fn shallow_multiple_generators_non_full_orbit() {
+        use crate::perm::export::CyclePermutation;
+        // Cycle notation is used for conveninece, but we do need to switch to 0 indexed for assertions.
+        let gens: Vec<DefaultPermutation> = vec![
+            CyclePermutation::single_cycle(&[1, 2, 6]).into(),
+            CyclePermutation::single_cycle(&[3, 5, 7]).into(),
+        ];
+        let g = Group::from_list(gens);
+        let mut rng = rand::thread_rng();
+        let strat = SimpleApplication::default();
+        let (fc1, max_depth) = shallow_transversal(&mut g.clone(), 5, &strat, &mut rng);
+        assert_eq!(3, fc1.len());
+        let (fc2, max_depth) = shallow_transversal(&mut g.clone(), 4, &strat, &mut rng);
+        assert_eq!(3, fc2.len());
+        let (fc3, max_depth) = shallow_transversal(&mut g.clone(), 3, &strat, &mut rng);
+        assert_eq!(1, fc3.len());
+        for i in [0, 1, 5].iter() {
+            // Tests for fc1
+            assert!(fc1.contains_key(i));
+            assert_eq!(
+                *i,
+                representative_raw(&fc1, 5, *i, &strat).unwrap().apply(5)
+            );
+            // Tests for fc2
+            assert!(!fc2.contains_key(i));
+            assert_eq!(None, representative_raw(&fc2, 4, *i, &strat));
+            // Tests for fc3
+            assert!(!fc3.contains_key(i));
+            assert_eq!(None, representative_raw(&fc3, 3, *i, &strat));
+        }
+        for i in [2, 4, 6].iter() {
+            // Tests for fc1
+            assert!(!fc1.contains_key(i));
+            assert_eq!(None, representative_raw(&fc1, 5, *i, &strat));
+            // Tests for fc2
+            assert!(fc2.contains_key(i));
+            assert_eq!(
+                *i,
+                representative_raw(&fc2, 4, *i, &strat).unwrap().apply(4)
+            );
+            // Tests for fc3
+            assert!(!fc3.contains_key(i));
+            assert_eq!(None, representative_raw(&fc3, 3, *i, &strat));
+        }
+        // Now to test for element 3
+        // Tests for fc1
+        assert!(!fc1.contains_key(&3));
+        assert_eq!(None, representative_raw(&fc1, 5, 3, &strat));
+        // Tests for fc2
+        assert!(!fc2.contains_key(&3));
+        assert_eq!(None, representative_raw(&fc2, 4, 3, &strat));
+        // Tests for fc3
+        assert!(fc3.contains_key(&3));
+        assert_eq!(3, representative_raw(&fc3, 3, 3, &strat).unwrap().apply(3));
+    }
 }
