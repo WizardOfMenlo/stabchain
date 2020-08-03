@@ -2,7 +2,7 @@ use crate::perm::{Action, Permutation};
 use std::collections::{HashMap, HashSet};
 
 /// Struct to represent the cube like structure from the remark after Lemma 4.4.1 from Seress
-struct Cube<P, A>
+pub(super) struct Cube<P, A>
 where
     P: Permutation,
     A: Action<P>,
@@ -25,33 +25,35 @@ where
         depth.insert(base.clone(), 0);
         let mut cubes = vec![HashSet::new()];
         cubes[0].insert(base.clone());
-        for i in 0..2 * seq.len() {
+        for i in 1..=2 * seq.len() {
             if i > seq.len() {
                 let mut temp = HashSet::new();
-                for j in cubes[i].iter() {
-                    let val = strat.apply(&seq[i - seq.len() - 1], j.clone());
+                for j in cubes[i - i].iter() {
+                    let index = i - seq.len() - 1;
+                    let val = strat.apply(&seq[index], j.clone());
                     orbit.entry(val.clone()).or_insert_with(|| {
                         depth.insert(val.clone(), depth.get(&j).unwrap() + 1);
-                        seq[i - seq.len() - 1].inv()
+                        seq[index].inv()
                     });
                     temp.insert(val);
                 }
                 //Take the union of cube[i] and temp.
-                temp.extend(cubes[i].iter().cloned());
+                temp.extend(cubes[i - 1].iter().cloned());
                 cubes.push(temp);
             } else {
                 let mut temp = HashSet::new();
-                for j in cubes[i].iter() {
-                    let p = seq[seq.len() - i].inv();
+                for j in cubes[i - i].iter() {
+                    let index = seq.len() - i;
+                    let p = seq[index].inv();
                     let val = strat.apply(&p, j.clone());
                     orbit.entry(val.clone()).or_insert_with(|| {
                         depth.insert(val.clone(), depth.get(&j).unwrap() + 1);
-                        seq[i - seq.len() - 1].inv()
+                        seq[index].inv()
                     });
                     temp.insert(val);
                 }
                 //Take the union of cube[i] and temp.
-                temp.extend(cubes[i].iter().cloned());
+                temp.extend(cubes[i - 1].iter().cloned());
                 cubes.push(temp);
             }
         }
@@ -60,6 +62,36 @@ where
             orbit,
             cube: cubes.pop().unwrap(),
             depth,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::group::orbit::transversal::factored_transversal::representative_raw;
+    use crate::group::Group;
+    use crate::perm::actions::SimpleApplication;
+    use crate::perm::export::CyclePermutation;
+    use crate::perm::{DefaultPermutation, Permutation};
+    #[test]
+    fn test_single_generator() {
+        let gens: Vec<DefaultPermutation> =
+            vec![CyclePermutation::single_cycle(&[1_usize, 2, 3]).into()];
+        let g = Group::from_list(gens);
+        let strat = SimpleApplication::default();
+        let cube = Cube::new(1, g.generators(), &strat);
+        //Check the orbit is correct. All points should be in the orbit.
+        assert!(cube.orbit.contains_key(&0));
+        assert!(cube.orbit.contains_key(&1));
+        assert!(cube.orbit.contains_key(&2));
+        for &i in cube.orbit.keys() {
+            assert_eq!(
+                i,
+                representative_raw(&cube.orbit, 1, i, &strat)
+                    .unwrap()
+                    .apply(1)
+            );
         }
     }
 }
