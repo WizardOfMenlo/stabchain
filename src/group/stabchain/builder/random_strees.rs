@@ -2,6 +2,7 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::factored_transversal::{
     factored_transversal_complete_opt, representative_raw_as_word,
 };
+use crate::group::orbit::transversal::shallow_transversal::shallow_transversal;
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
 use crate::group::stabchain::{MovedPointSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{
@@ -46,7 +47,7 @@ where
     //For zero indexing this would have to be a signed type, which doesn't really seem worth it just to require one negative value at the end condition.
     up_to_date: usize,
     //Store the depths of each of the schrier trees.
-    depths: Vec<HashMap<usize, usize>>,
+    depths: Vec<usize>,
 }
 
 impl<P, S, A> StabchainBuilderRandomSTrees<P, S, A>
@@ -102,12 +103,12 @@ where
         let moved_point = self.selector.moved_point(moved_point_generator);
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
-        let initial_record = StabchainRecord::new(
-            moved_point,
-            group.clone(),
-            factored_transversal_complete_opt(&group, moved_point, &self.action),
-        );
+        let mut initial_gens = group.clone();
+        let (transversal, initial_depth) =
+            shallow_transversal(&mut initial_gens, moved_point, &self.action, &mut self.rng);
+        let initial_record = StabchainRecord::new(moved_point, initial_gens, transversal);
         self.base.push(moved_point);
+        self.depths.push(initial_depth);
         self.chain.push(initial_record);
         self.sgc();
     }
@@ -171,50 +172,15 @@ where
 
     /// Check if adding a new element modifies the current layer of the chain.
     fn check_transversal_augmentation(&mut self, p: P) {
-        let mut record = self.chain[self.current_pos].clone();
-        //debug_assert!(record.gens.generators().contains(&p));
-        // If this element is already a generator, then we can exit
-        let mut to_check = VecDeque::from_iter(record.transversal.keys().cloned());
-        let mut new_transversal = HashMap::new();
-        while !to_check.is_empty() {
-            let orbit_element = to_check.pop_back().unwrap();
-            let new_image = self.action.apply(&p, orbit_element);
-
-            // If we haven't seen this element.
-            if !(record.transversal.contains_key(&new_image)
-                || new_transversal.contains_key(&new_image))
-            {
-                new_transversal.insert(new_image, p.inv());
-            }
-        }
-
-        // We now want to check all the newly added elements
-        let mut to_check = VecDeque::from_iter(new_transversal.keys().cloned());
-
-        // Update the record
-        record.transversal.extend(new_transversal);
-
-        // While we have orbit elements (and representatives to check)
-        while !to_check.is_empty() {
-            // Get the pair
-            let orbit_element = to_check.pop_back().unwrap();
-            // For each generator (and p)
-            for generator in once(&p).chain(record.gens.generators()) {
-                let new_image = self.action.apply(&generator, orbit_element);
-                // If we haven't already seen the image
-                record.transversal.entry(new_image).or_insert_with(|| {
-                    // Update and ask to check the new image
-                    to_check.push_back(new_image);
-                    generator.inv()
-                });
-            }
-        }
-        // Update the generators adding p if it isn't already present.
-        if !record.gens.generators().contains(&p) {
-            record.gens = Group::from_iter(once(&p).chain(record.gens.generators()).cloned());
-        }
-        // Store the updated record in the chain
-        self.chain[self.current_pos] = record;
+        let mut record = &mut self.chain[self.current_pos];
+        debug_assert!(!record.gens.generators.contains(&p));
+        record.gens.generators.push(p);
+        //Calculate a new shallow transversal.
+        let (transversal, new_depth) =
+            shallow_transversal(&mut record.gens, record.base, &self.action, &mut self.rng);
+        record.transversal = transversal;
+        //Update the depths of the current position.
+        self.depths[self.current_pos] = new_depth;
     }
 
     ///Check if the permutation augments the orbit at a level, resetting the position afterwards.
