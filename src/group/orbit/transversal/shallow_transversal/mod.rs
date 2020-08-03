@@ -3,13 +3,14 @@
 use crate::group::random_perm::RandPerm;
 use crate::group::{Action, Group};
 use crate::perm::Permutation;
+use rand::seq::SliceRandom;
 use rand::Rng;
 use std::collections::{HashMap, VecDeque};
 
 mod cube;
 
 //Make a transversal with depths at most max_depth + 1.
-pub fn random_transversal<P, A, R>(
+pub fn random_transversal_naive<P, A, R>(
     g: &mut Group<P>,
     base: A::OrbitT,
     strat: &A,
@@ -60,10 +61,44 @@ where
             //Update the generating set to contain the new generating element.
             g.generators.push(new_gen);
         }
-        random_transversal(g, base, strat, rng, set_depth)
+        random_transversal_naive(g, base, strat, rng, set_depth)
     } else {
         (transversal, max_depth)
     }
+}
+
+/// Randomised transversal construction, based on Cooperman et al., 1990.
+/// The transvesal is returned, as well as the maximum depth of the tree.
+pub fn shallow_transversal<P, A, R>(
+    g: &mut Group<P>,
+    base: A::OrbitT,
+    strat: &A,
+    rng: &mut R,
+) -> (HashMap<A::OrbitT, P>, usize)
+where
+    P: Permutation,
+    A: Action<P>,
+    R: Rng + Clone,
+{
+    let orbit = g.orbit_of_action(base.clone(), strat).orbit;
+    let mut gen_seq = vec![g.generators().choose(rng).unwrap().clone()];
+    let mut cube = cube::Cube::new(base.clone(), &gen_seq[..], strat);
+    let mut rand_perm_gen = RandPerm::new(11, g, 50, rng.clone());
+    while !cube.cube.eq(&orbit) {
+        let mut new_element = rand_perm_gen.random_permutation();
+        // "extending by the identity is stoopid"
+        if new_element.is_id() {
+            new_element = g.generators().choose(rng).unwrap().clone();
+        }
+        if !gen_seq.contains(&new_element) {
+            gen_seq.push(new_element);
+            cube = cube::Cube::new(base.clone(), &gen_seq[..], strat);
+        }
+    }
+    //Update the generators of the group.
+    g.generators = gen_seq;
+    //Return the shallow transversal orbit, along with the maximum depth of the tree.
+    (cube.orbit, *cube.depth.values().max().unwrap())
 }
 
 #[cfg(test)]
@@ -76,7 +111,7 @@ mod tests {
 
     /// Test the factored transversal calculation for a generating set with multiple generators.
     #[test]
-    fn multiple_generators() {
+    fn naive_multiple_generators() {
         // Cycle notation is used for conveninece, but we do need to switch to 0 indexed for assertions.
         let gens: Vec<DefaultPermutation> = vec![
             CyclePermutation::from_vec(vec![vec![1, 6, 4, 3], vec![2, 7, 5]]).into(),
@@ -89,9 +124,38 @@ mod tests {
         //All points should be in the orbit (according to GAP)
         for i in 0_usize..6 {
             let (transversal, max_depth) =
-                random_transversal(&mut g.clone(), i, &strat, &mut rng, set_depth);
+                random_transversal_naive(&mut g.clone(), i, &strat, &mut rng, set_depth);
             assert!(max_depth < set_depth + 1);
             for j in 0_usize..6 {
+                assert!(transversal.contains_key(&j));
+                assert_eq!(
+                    j,
+                    representative_raw(&transversal, i, j, &strat)
+                        .unwrap()
+                        .apply(i)
+                );
+            }
+        }
+    }
+
+    /// Test the factored transversal calculation for a generating set with multiple generators.
+    #[test]
+    fn shallow_multiple_generators() {
+        // Cycle notation is used for conveninece, but we do need to switch to 0 indexed for assertions.
+        let gens: Vec<DefaultPermutation> = vec![
+            CyclePermutation::from_vec(vec![vec![1, 6, 4, 3], vec![2, 7, 5]]).into(),
+            CyclePermutation::from_vec(vec![vec![1, 4], vec![2, 6, 3]]).into(),
+        ];
+        let g = Group::from_list(gens);
+        let mut rng = rand::thread_rng();
+        let strat = SimpleApplication::default();
+        //All points should be in the orbit (according to GAP)
+        for i in 0_usize..6 {
+            dbg!(&i);
+            let (transversal, max_depth) = shallow_transversal(&mut g.clone(), i, &strat, &mut rng);
+            dbg!(max_depth);
+            for j in 0_usize..6 {
+                dbg!(&j);
                 assert!(transversal.contains_key(&j));
                 assert_eq!(
                     j,
@@ -106,7 +170,7 @@ mod tests {
     /// Test the factored transversal calculation for a generating set with multiple generators
     /// when not all elements are in the orbit.
     #[test]
-    fn multiple_generators_non_full_orbit() {
+    fn naive_multiple_generators_non_full_orbit() {
         use crate::perm::export::CyclePermutation;
         // Cycle notation is used for conveninece, but we do need to switch to 0 indexed for assertions.
         let gens: Vec<DefaultPermutation> = vec![
@@ -117,13 +181,16 @@ mod tests {
         let mut rng = rand::thread_rng();
         let set_depth = 2;
         let strat = SimpleApplication::default();
-        let (fc1, max_depth) = random_transversal(&mut g.clone(), 5, &strat, &mut rng, set_depth);
+        let (fc1, max_depth) =
+            random_transversal_naive(&mut g.clone(), 5, &strat, &mut rng, set_depth);
         assert_eq!(3, fc1.len());
         assert!(max_depth < set_depth + 1);
-        let (fc2, max_depth) = random_transversal(&mut g.clone(), 4, &strat, &mut rng, set_depth);
+        let (fc2, max_depth) =
+            random_transversal_naive(&mut g.clone(), 4, &strat, &mut rng, set_depth);
         assert_eq!(3, fc2.len());
         assert!(max_depth < set_depth + 1);
-        let (fc3, max_depth) = random_transversal(&mut g.clone(), 3, &strat, &mut rng, set_depth);
+        let (fc3, max_depth) =
+            random_transversal_naive(&mut g.clone(), 3, &strat, &mut rng, set_depth);
         assert_eq!(1, fc3.len());
         assert!(max_depth < set_depth + 1);
         for i in [0, 1, 5].iter() {

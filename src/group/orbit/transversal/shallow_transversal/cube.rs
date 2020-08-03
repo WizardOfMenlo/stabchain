@@ -29,11 +29,11 @@ where
             if i > seq.len() {
                 let mut temp = HashSet::new();
                 for j in cubes[i - i].iter() {
-                    let index = i - seq.len() - 1;
-                    let val = strat.apply(&seq[index], j.clone());
+                    let p = seq[i - seq.len() - 1].clone();
+                    let val = strat.apply(&p, j.clone());
                     orbit.entry(val.clone()).or_insert_with(|| {
                         depth.insert(val.clone(), depth.get(&j).unwrap() + 1);
-                        seq[index].inv()
+                        p.inv()
                     });
                     temp.insert(val);
                 }
@@ -43,12 +43,11 @@ where
             } else {
                 let mut temp = HashSet::new();
                 for j in cubes[i - i].iter() {
-                    let index = seq.len() - i;
-                    let p = seq[index].inv();
+                    let p = seq[seq.len() - i].inv();
                     let val = strat.apply(&p, j.clone());
                     orbit.entry(val.clone()).or_insert_with(|| {
                         depth.insert(val.clone(), depth.get(&j).unwrap() + 1);
-                        seq[index].inv()
+                        p.inv()
                     });
                     temp.insert(val);
                 }
