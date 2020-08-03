@@ -16,8 +16,7 @@ use itertools::Itertools;
 use rand::rngs::ThreadRng;
 use rand::seq::IteratorRandom;
 use rand::thread_rng;
-use std::collections::{HashMap, VecDeque};
-use std::iter::{once, repeat_with, FromIterator, Iterator};
+use std::iter::{repeat_with, Iterator};
 
 //Constants for subproduct generation
 const C1: usize = 1;
@@ -120,13 +119,8 @@ where
         coset_representatives: usize,
         gens: &[P],
     ) -> Vec<Vec<P>> {
-        //Sum of all "depths". In reality the transversal doesn't have a depth, so we use this as a upper bound.
-        let t = self
-            .chain
-            .iter()
-            .map(|record| (record.transversal.len() as f64).log2())
-            .sum::<f64>()
-            .floor() as usize;
+        // Sum of all the depths in the tree.
+        let t: usize = self.depths.iter().sum();
         let record = &self.chain[self.current_pos];
         let k = rand::Rng::gen_range(&mut self.rng.clone(), 0, 1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
