@@ -1,5 +1,4 @@
 use crate::perm::{Action, Permutation};
-use rand::Rng;
 use std::collections::{HashMap, HashSet};
 
 /// Struct to represent the cube like structure from the remark after Lemma 4.4.1 from Seress
@@ -8,10 +7,10 @@ where
     P: Permutation,
     A: Action<P>,
 {
-    base: A::OrbitT,
-    cube: HashSet<A::OrbitT>,
-    orbit: HashMap<A::OrbitT, P>,
-    depth: HashMap<A::OrbitT, usize>,
+    pub(super) base: A::OrbitT,
+    pub(super) cube: HashSet<A::OrbitT>,
+    pub(super) orbit: HashMap<A::OrbitT, P>,
+    pub(super) depth: HashMap<A::OrbitT, usize>,
 }
 
 impl<'a, P, A> Cube<P, A>
