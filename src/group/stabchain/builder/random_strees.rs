@@ -14,8 +14,8 @@ use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
 use itertools::Itertools;
 use rand::rngs::ThreadRng;
-use rand::seq::IteratorRandom;
-use rand::thread_rng;
+use rand::{seq::IteratorRandom, Rng};
+use std::cell::RefCell;
 use std::iter::{repeat_with, Iterator};
 
 //Constants for subproduct generation
@@ -29,9 +29,10 @@ const C4: usize = 1;
 
 // Helper struct, used to build the stabilizer chain
 
-pub struct StabchainBuilderRandomSTrees<P, S, A = SimpleApplication<P>>
+pub struct StabchainBuilderRandomSTrees<P, S, A = SimpleApplication<P>, R = ThreadRng>
 where
     A: Action<P, OrbitT = usize>,
+    R: rand::Rng,
 {
     current_pos: usize,
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
@@ -40,7 +41,7 @@ where
     // The maximum degree of the permutations this group generates.
     n: usize,
     base: Vec<A::OrbitT>,
-    rng: ThreadRng,
+    rng: RefCell<R>,
     //The chain is zero indexed, but this field is 1 indexed.
     //This is due to the end condition being when the chain is up to date below the index of the first record position, and this would be -1 with zero indexing.
     //For zero indexing this would have to be a signed type, which doesn't really seem worth it just to require one negative value at the end condition.
@@ -49,13 +50,14 @@ where
     depths: Vec<usize>,
 }
 
-impl<P, S, A> StabchainBuilderRandomSTrees<P, S, A>
+impl<P, S, A, R> StabchainBuilderRandomSTrees<P, S, A, R>
 where
     P: Permutation,
     S: MovedPointSelector<P, A::OrbitT>,
     A: Action<P, OrbitT = usize>,
+    R: Rng + Clone,
 {
-    pub fn new(selector: S, action: A) -> Self {
+    pub fn new(selector: S, action: A, random: R) -> Self {
         StabchainBuilderRandomSTrees {
             current_pos: 0,
             chain: Vec::new(),
@@ -63,7 +65,7 @@ where
             action,
             n: 0,
             base: Vec::new(),
-            rng: thread_rng(),
+            rng: RefCell::new(random),
             up_to_date: 1,
             depths: vec![],
         }
@@ -103,8 +105,12 @@ where
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let mut initial_gens = group.clone();
-        let (transversal, initial_depth) =
-            shallow_transversal(&mut initial_gens, moved_point, &self.action, &mut self.rng);
+        let (transversal, initial_depth) = shallow_transversal(
+            &mut initial_gens,
+            moved_point,
+            &self.action,
+            &mut *self.rng.borrow_mut(),
+        );
         let initial_record = StabchainRecord::new(moved_point, initial_gens, transversal);
         self.base.push(moved_point);
         self.depths.push(initial_depth);
@@ -122,14 +128,15 @@ where
         // Sum of all the depths in the tree.
         let t: usize = self.depths.iter().sum();
         let record = &self.chain[self.current_pos];
-        let k = rand::Rng::gen_range(&mut self.rng.clone(), 0, 1 + gens.len() / 2);
+        let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0, 1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
-            repeat_with(|| random_subproduct_word_full(&mut self.rng.clone(), &gens[..]))
+            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), &gens[..]))
                 .take(subproducts);
-        let subproduct_w2_iter =
-            repeat_with(|| random_subproduct_word_subset(&mut self.rng.clone(), &gens[..], k))
-                .take(subproducts);
+        let subproduct_w2_iter = repeat_with(|| {
+            random_subproduct_word_subset(&mut *self.rng.borrow_mut(), &gens[..], k)
+        })
+        .take(subproducts);
         //Iterleave the two iterators.
         let subproduct_iter: Vec<Vec<P>> =
             subproduct_w1_iter.interleave(subproduct_w2_iter).collect();
@@ -139,7 +146,7 @@ where
             record
                 .transversal
                 .keys()
-                .choose(&mut self.rng.clone())
+                .choose(&mut *self.rng.borrow_mut())
                 .map(|point| {
                     representative_raw_as_word(
                         &record.transversal,
@@ -170,8 +177,12 @@ where
         debug_assert!(!record.gens.generators.contains(&p));
         record.gens.generators.push(p);
         //Calculate a new shallow transversal.
-        let (transversal, new_depth) =
-            shallow_transversal(&mut record.gens, record.base, &self.action, &mut self.rng);
+        let (transversal, new_depth) = shallow_transversal(
+            &mut record.gens,
+            record.base,
+            &self.action,
+            &mut *self.rng.borrow_mut(),
+        );
         record.transversal = transversal;
         //Update the depths of the current position.
         self.depths[self.current_pos] = new_depth;
@@ -222,7 +233,7 @@ where
                     record
                         .transversal
                         .keys()
-                        .choose_multiple(&mut self.rng, BASE_BOUND)
+                        .choose_multiple(&mut *self.rng.borrow_mut(), BASE_BOUND)
                         .into_iter()
                         .cloned()
                         .collect()
@@ -231,7 +242,7 @@ where
                     record
                         .transversal
                         .keys()
-                        .choose_multiple(&mut self.rng, b_star.len())
+                        .choose_multiple(&mut *self.rng.borrow_mut(), b_star.len())
                         .into_iter()
                         .cloned()
                         .collect()
