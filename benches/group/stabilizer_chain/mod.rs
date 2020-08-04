@@ -2,9 +2,7 @@ pub mod selector;
 
 use criterion::{criterion_group, BenchmarkId, Criterion};
 const RANGE_OF_VALUES: [usize; 5] = [8, 10, 16, 20, 32];
-use stabchain::group::stabchain::builder::{
-    IFTBuilderStrategy, NaiveBuilderStrategy, RandomBuilderStrategy,
-};
+use stabchain::group::stabchain::builder::*;
 use stabchain::group::stabchain::moved_point_selector::{DefaultSelector, FmpSelector};
 use stabchain::group::Group;
 use stabchain::perm::actions::SimpleApplication;
@@ -48,6 +46,13 @@ fn stabchain_cyclic(c: &mut Criterion) {
             (|i: &usize| Group::cyclic(*i)),
             RandomBuilderStrategy::new(SimpleApplication::default(), FmpSelector::default())
         );
+        bench_stabchain_impl!(
+            group,
+            "random_shallow",
+            i,
+            (|i: &usize| Group::cyclic(*i)),
+            RandomBuilderStrategyShallow::new(SimpleApplication::default(), FmpSelector::default())
+        );
     }
     group.finish();
 }
@@ -80,6 +85,13 @@ fn stabchain_symmetric(c: &mut Criterion) {
             (|i: &usize| Group::symmetric(*i)),
             RandomBuilderStrategy::new(SimpleApplication::default(), FmpSelector::default())
         );
+        bench_stabchain_impl!(
+            group,
+            "random_shallow",
+            i,
+            (|i: &usize| Group::symmetric(*i)),
+            RandomBuilderStrategyShallow::new(SimpleApplication::default(), FmpSelector::default())
+        );
     }
     group.finish();
 }
@@ -91,6 +103,7 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
             let g = Group::product(&Group::symmetric(*i), &Group::symmetric(*i));
             b.iter(|| g.stabchain())
         });
+        group.sample_size(10);
         bench_stabchain_impl!(
             group,
             "naive",
@@ -106,13 +119,20 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
             IFTBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
         );
         //TODO comment once performance has improved.
-        // bench_stabchain_impl!(
-        //     group,
-        //     "random",
-        //     i,
-        //     (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
-        //     RandomBuilderStrategy::new(SimpleApplication::default(), FmpSelector::default())
-        // );
+        bench_stabchain_impl!(
+            group,
+            "random",
+            i,
+            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
+            RandomBuilderStrategy::new(SimpleApplication::default(), FmpSelector::default())
+        );
+        bench_stabchain_impl!(
+            group,
+            "random_shallow",
+            i,
+            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
+            RandomBuilderStrategyShallow::new(SimpleApplication::default(), FmpSelector::default())
+        );
     }
     group.finish();
 }
