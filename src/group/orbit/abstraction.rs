@@ -3,20 +3,20 @@
 
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
-use std::collections::HashMap;
+use crate::DetHashMap;
 
 /// A trait encapsulating the different ways in which a transversal can access a representative
 pub trait TransversalResolver<P, A = SimpleApplication<P>>: Default
 where
     A: Action<P>,
 {
-    /// The transversal that can be built from a HashMap by this resolver
+    /// The transversal that can be built from a DetHashMap by this resolver
     type AssociatedTransversal: super::transversal::Transversal<P, A>;
 
     /// Compute the representative
     fn representative(
         &self,
-        map: &HashMap<A::OrbitT, P>,
+        map: &DetHashMap<A::OrbitT, P>,
         base: A::OrbitT,
         point: A::OrbitT,
     ) -> Option<P>;
@@ -24,7 +24,7 @@ where
     /// Convert into a full blown transversal
     fn into_transversal(
         &self,
-        map: HashMap<A::OrbitT, P>,
+        map: DetHashMap<A::OrbitT, P>,
         base: A::OrbitT,
     ) -> Self::AssociatedTransversal;
 }
@@ -42,7 +42,7 @@ where
 
     fn representative(
         &self,
-        map: &HashMap<A::OrbitT, P>,
+        map: &DetHashMap<A::OrbitT, P>,
         _: A::OrbitT,
         point: A::OrbitT,
     ) -> Option<P> {
@@ -51,7 +51,7 @@ where
 
     fn into_transversal(
         &self,
-        map: HashMap<A::OrbitT, P>,
+        map: DetHashMap<A::OrbitT, P>,
         base: A::OrbitT,
     ) -> Self::AssociatedTransversal {
         super::transversal::SimpleTransversal::from_raw(base, map, SimpleTransversalResolver)
@@ -71,7 +71,7 @@ where
 
     fn representative(
         &self,
-        map: &HashMap<A::OrbitT, P>,
+        map: &DetHashMap<A::OrbitT, P>,
         base: A::OrbitT,
         point: A::OrbitT,
     ) -> Option<P> {
@@ -81,7 +81,7 @@ where
     // Note that no validation is actually done here
     fn into_transversal(
         &self,
-        map: HashMap<A::OrbitT, P>,
+        map: DetHashMap<A::OrbitT, P>,
         base: A::OrbitT,
     ) -> Self::AssociatedTransversal {
         super::transversal::FactoredTransversal::from_raw(
