@@ -24,7 +24,7 @@ where
         let mut depth = DetHashMap::default();
         depth.insert(base.clone(), 0);
         let mut cubes = vec![HashSet::new()];
-        cubes[0].insert(base.clone());
+        cubes[0].insert(base);
         for i in 1..=2 * seq.len() {
             if i > seq.len() {
                 let mut temp = HashSet::new();
