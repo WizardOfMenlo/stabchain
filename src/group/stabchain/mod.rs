@@ -11,7 +11,7 @@ use crate::perm::*;
 use builder::{Builder, BuilderStrategy};
 use moved_point_selector::MovedPointSelector;
 
-use std::collections::HashMap;
+use crate::DetHashMap;
 
 use num::BigUint;
 
@@ -126,7 +126,7 @@ where
 {
     base: A::OrbitT,
     gens: Group<P>,
-    transversal: HashMap<A::OrbitT, P>,
+    transversal: DetHashMap<A::OrbitT, P>,
     resolver: V,
 }
 
@@ -151,7 +151,11 @@ where
     A: Action<P>,
     V: TransversalResolver<P, A>,
 {
-    pub(crate) fn new(base: A::OrbitT, gens: Group<P>, transversal: HashMap<A::OrbitT, P>) -> Self {
+    pub(crate) fn new(
+        base: A::OrbitT,
+        gens: Group<P>,
+        transversal: DetHashMap<A::OrbitT, P>,
+    ) -> Self {
         StabchainRecord {
             base,
             gens,
@@ -372,7 +376,7 @@ mod tests {
             RandomBuilderStrategy::new_with_rng(
                 SimpleApplication::default(),
                 moved_point_selector::FmpSelector::default(),
-                rand::rngs::StdRng::from_seed([42; 32]),
+                rand_xorshift::XorShiftRng::from_seed([43; 16]),
             )
         },
         random

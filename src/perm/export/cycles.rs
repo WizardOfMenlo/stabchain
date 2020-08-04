@@ -26,7 +26,7 @@ impl CyclePermutation {
     }
 
     pub fn from_vec(cycles: Vec<Vec<usize>>) -> Self {
-        use std::collections::HashMap;
+        use crate::DetHashMap;
         // Check the element range
         assert!(cycles.iter().flatten().all(|&i| i > 0));
 
@@ -37,7 +37,7 @@ impl CyclePermutation {
             return CyclePermutation::from_vec_unchecked(cycles);
         }
 
-        let mut counts = HashMap::new();
+        let mut counts = DetHashMap::default();
 
         for i in cycles.iter().flatten() {
             *counts.entry(*i).or_insert(0) += 1;

@@ -8,7 +8,8 @@ use super::skeleton::TransversalSkeleton;
 use super::Transversal;
 use crate::group::orbit::abstraction::SimpleTransversalResolver;
 
-use std::collections::{HashMap, VecDeque};
+use crate::DetHashMap;
+use std::collections::VecDeque;
 
 /// Transversal using the naive algorithm
 /// Should be quicker computation wise but possibly much more
@@ -74,14 +75,14 @@ where
 
 // Needed since entry requires &mut
 #[allow(clippy::map_entry)]
-pub fn transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: &A) -> HashMap<A::OrbitT, P>
+pub fn transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: &A) -> DetHashMap<A::OrbitT, P>
 where
     P: Permutation,
     A: Action<P>,
 {
     // Get the generatos
     let gens = &g.generators[..];
-    let mut transversal = HashMap::new();
+    let mut transversal = DetHashMap::default();
 
     // Init the transversal
     transversal.insert(base.clone(), P::id());
@@ -114,7 +115,7 @@ pub fn transversal_complete_opt<P, A>(
     g: &Group<P>,
     base: A::OrbitT,
     strat: &A,
-) -> HashMap<A::OrbitT, P>
+) -> DetHashMap<A::OrbitT, P>
 where
     P: Permutation,
     A: Action<P>,
@@ -122,7 +123,7 @@ where
     // Get the generatos
     let gens = &g.generators[..];
     let maximal_orbit_size = g.symmetric_super_order();
-    let mut transversal = HashMap::new();
+    let mut transversal = DetHashMap::default();
 
     // Init the transversal
     transversal.insert(base.clone(), P::id());

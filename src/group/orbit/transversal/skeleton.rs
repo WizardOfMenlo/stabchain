@@ -4,7 +4,7 @@ use super::Transversal;
 use crate::group::orbit::abstraction::TransversalResolver;
 use crate::perm::Action;
 
-use std::collections::HashMap;
+use crate::DetHashMap;
 
 /// Struct that avoids code duplication
 #[derive(Debug)]
@@ -13,7 +13,7 @@ where
     A: Action<P>,
 {
     base: A::OrbitT,
-    transversal: HashMap<A::OrbitT, P>,
+    transversal: DetHashMap<A::OrbitT, P>,
     resolver: R,
     action: std::marker::PhantomData<A>,
 }
@@ -24,7 +24,7 @@ where
 {
     pub(crate) fn from_raw(
         base: A::OrbitT,
-        transversal: HashMap<A::OrbitT, P>,
+        transversal: DetHashMap<A::OrbitT, P>,
         resolver: R,
     ) -> Self {
         TransversalSkeleton {
