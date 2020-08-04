@@ -3,9 +3,10 @@
 use crate::group::random_perm::RandPerm;
 use crate::group::{Action, Group};
 use crate::perm::Permutation;
+use crate::DetHashMap;
 use rand::seq::SliceRandom;
 use rand::Rng;
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 
 mod cube;
 
@@ -16,7 +17,7 @@ pub fn random_transversal_naive<P, A, R>(
     strat: &A,
     rng: &mut R,
     set_depth: usize,
-) -> (HashMap<A::OrbitT, P>, usize)
+) -> (DetHashMap<A::OrbitT, P>, usize)
 where
     P: Permutation,
     A: Action<P>,
@@ -24,9 +25,9 @@ where
 {
     let maximal_orbit_size = g.symmetric_super_order();
     let gens = g.generators();
-    let mut transversal = HashMap::new();
+    let mut transversal = DetHashMap::default();
     //Store the depth of each element.
-    let mut depths = HashMap::new();
+    let mut depths = DetHashMap::default();
     let id = P::id();
     transversal.insert(base.clone(), id);
     depths.insert(base.clone(), 0);
@@ -74,7 +75,7 @@ pub fn shallow_transversal<P, A, R>(
     base: A::OrbitT,
     strat: &A,
     rng: &mut R,
-) -> (HashMap<A::OrbitT, P>, usize)
+) -> (DetHashMap<A::OrbitT, P>, usize)
 where
     P: Permutation,
     A: Action<P>,

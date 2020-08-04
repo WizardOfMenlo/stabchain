@@ -1,5 +1,6 @@
 use crate::perm::{Action, Permutation};
-use std::collections::{HashMap, HashSet};
+use crate::DetHashMap;
+use std::collections::HashSet;
 
 /// Struct to represent the cube like structure from the remark after Lemma 4.4.1 from Seress
 pub(super) struct Cube<P, A>
@@ -8,8 +9,8 @@ where
     A: Action<P>,
 {
     pub(super) cube: HashSet<A::OrbitT>,
-    pub(super) orbit: HashMap<A::OrbitT, P>,
-    pub(super) depth: HashMap<A::OrbitT, usize>,
+    pub(super) orbit: DetHashMap<A::OrbitT, P>,
+    pub(super) depth: DetHashMap<A::OrbitT, usize>,
 }
 
 impl<'a, P, A> Cube<P, A>
@@ -18,9 +19,9 @@ where
     A: Action<P>,
 {
     pub(super) fn new(base: A::OrbitT, seq: &[P], strat: &A) -> Self {
-        let mut orbit = HashMap::new();
+        let mut orbit = DetHashMap::default();
         orbit.insert(base.clone(), P::id());
-        let mut depth = HashMap::new();
+        let mut depth = DetHashMap::default();
         depth.insert(base.clone(), 0);
         let mut cubes = vec![HashSet::new()];
         cubes[0].insert(base.clone());
