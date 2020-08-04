@@ -376,12 +376,13 @@ where
     }
 }
 
-impl<P, S, A> super::Builder<P, FactoredTransversalResolver<A>, A>
-    for StabchainBuilderRandomSTrees<P, S, A>
+impl<P, S, A, R> super::Builder<P, FactoredTransversalResolver<A>, A>
+    for StabchainBuilderRandomSTrees<P, S, A, R>
 where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
     S: MovedPointSelector<P, A::OrbitT>,
+    R: Rng + Clone,
 {
     fn set_generators(&mut self, gens: &Group<P>) {
         self.construct_strong_generating_set(gens);
