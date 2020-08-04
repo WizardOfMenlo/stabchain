@@ -103,7 +103,7 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
             let g = Group::product(&Group::symmetric(*i), &Group::symmetric(*i));
             b.iter(|| g.stabchain())
         });
-        group.sample_size(10);
+        group.sample_size(20);
         bench_stabchain_impl!(
             group,
             "naive",
