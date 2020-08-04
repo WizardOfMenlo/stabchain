@@ -246,11 +246,11 @@ mod tests {
         let g = Group::from_list(gens);
         let mut rng = rand::thread_rng();
         let strat = SimpleApplication::default();
-        let (fc1, max_depth) = shallow_transversal(&mut g.clone(), 5, &strat, &mut rng);
+        let (fc1, _max_depth) = shallow_transversal(&mut g.clone(), 5, &strat, &mut rng);
         assert_eq!(3, fc1.len());
-        let (fc2, max_depth) = shallow_transversal(&mut g.clone(), 4, &strat, &mut rng);
+        let (fc2, _max_depth) = shallow_transversal(&mut g.clone(), 4, &strat, &mut rng);
         assert_eq!(3, fc2.len());
-        let (fc3, max_depth) = shallow_transversal(&mut g.clone(), 3, &strat, &mut rng);
+        let (fc3, _max_depth) = shallow_transversal(&mut g.clone(), 3, &strat, &mut rng);
         assert_eq!(1, fc3.len());
         for i in [0, 1, 5].iter() {
             // Tests for fc1
