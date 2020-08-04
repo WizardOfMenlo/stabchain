@@ -7,7 +7,6 @@ where
     P: Permutation,
     A: Action<P>,
 {
-    pub(super) base: A::OrbitT,
     pub(super) cube: HashSet<A::OrbitT>,
     pub(super) orbit: HashMap<A::OrbitT, P>,
     pub(super) depth: HashMap<A::OrbitT, usize>,
@@ -57,7 +56,6 @@ where
             }
         }
         Cube {
-            base,
             orbit,
             cube: cubes.pop().unwrap(),
             depth,
