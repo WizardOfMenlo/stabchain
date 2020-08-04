@@ -54,7 +54,7 @@ where
             }
         }
     }
-    let max_depth = *depths.values().into_iter().max().unwrap();
+    let max_depth = *depths.values().max().unwrap();
     if max_depth > set_depth {
         //TODO perhaps use a more efficient method than creating the entire thing.
         let new_gen = RandPerm::new(10, g, 50, rng.clone()).random_permutation();
