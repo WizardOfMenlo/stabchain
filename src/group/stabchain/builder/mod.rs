@@ -159,7 +159,7 @@ where
     }
 }
 
-/// Randomised Stabiliser chain construction.
+/// Randomised Stabiliser chain construction, optimised by using shallow trees.
 /// This should be faster than the naive and IFT methods, but is not deterministic.
 #[derive(Debug, Clone)]
 pub struct RandomBuilderStrategyShallow<A, S, R = ThreadRng> {
