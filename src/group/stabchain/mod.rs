@@ -383,4 +383,16 @@ mod tests {
         },
         random
     );
+    stabchain_tests!(
+        {
+            use rand::SeedableRng;
+            RandomBuilderStrategyShallow::new_with_rng(
+                SimpleApplication::default(),
+                moved_point_selector::FmpSelector::default(),
+                //TODO find a seed that works for this.
+                rand::rngs::StdRng::from_seed([42; 32]),
+            )
+        },
+        random_shallow
+    );
 }
