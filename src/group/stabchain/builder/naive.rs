@@ -4,7 +4,8 @@ use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
-use std::collections::{HashMap, VecDeque};
+use crate::DetHashMap;
+use std::collections::VecDeque;
 use std::iter::FromIterator;
 
 // Helper struct, used to build the stabilizer chain
@@ -89,7 +90,7 @@ where
         let mut record = self.chain[self.current_pos].clone();
 
         let mut to_check = VecDeque::from_iter(record.transversal.keys().cloned());
-        let mut new_transversal = HashMap::new();
+        let mut new_transversal = DetHashMap::default();
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
             let orbit_element_repr = record.transversal.get(&orbit_element).unwrap();

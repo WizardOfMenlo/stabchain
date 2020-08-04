@@ -70,6 +70,7 @@ where
     P: Permutation,
     R: Rng,
 {
+    // TODO: CHeck 1 + k/2
     gens.choose_multiple(rng, k)
         .filter(|_| rng.gen::<bool>())
         .cloned()

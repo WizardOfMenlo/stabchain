@@ -11,7 +11,7 @@ use crate::perm::*;
 use builder::{Builder, BuilderStrategy};
 use moved_point_selector::MovedPointSelector;
 
-use std::collections::HashMap;
+use crate::DetHashMap;
 
 use num::BigUint;
 
@@ -126,7 +126,7 @@ where
 {
     base: A::OrbitT,
     gens: Group<P>,
-    transversal: HashMap<A::OrbitT, P>,
+    transversal: DetHashMap<A::OrbitT, P>,
     resolver: V,
 }
 
@@ -151,7 +151,11 @@ where
     A: Action<P>,
     V: TransversalResolver<P, A>,
 {
-    pub(crate) fn new(base: A::OrbitT, gens: Group<P>, transversal: HashMap<A::OrbitT, P>) -> Self {
+    pub(crate) fn new(
+        base: A::OrbitT,
+        gens: Group<P>,
+        transversal: DetHashMap<A::OrbitT, P>,
+    ) -> Self {
         StabchainRecord {
             base,
             gens,
@@ -352,6 +356,66 @@ macro_rules! stabchain_tests {
 #[cfg(test)]
 mod tests {
 
+    use rand::RngCore;
+
+    pub struct WrappingRand<R>(R);
+
+    impl<R> RngCore for WrappingRand<R>
+    where
+        R: RngCore,
+    {
+        fn next_u32(&mut self) -> u32 {
+            dbg!(self.0.next_u32())
+        }
+
+        fn next_u64(&mut self) -> u64 {
+            dbg!(self.0.next_u64())
+        }
+
+        fn fill_bytes(&mut self, dest: &mut [u8]) {
+            self.0.fill_bytes(dest);
+            dbg!(dest);
+        }
+
+        fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand::Error> {
+            let res = self.0.try_fill_bytes(dest);
+            dbg!(dest);
+            res
+        }
+    }
+
+    impl<R> rand::SeedableRng for WrappingRand<R>
+    where
+        R: rand::SeedableRng,
+    {
+        type Seed = R::Seed;
+
+        fn from_seed(seed: Self::Seed) -> Self {
+            WrappingRand(R::from_seed(seed))
+        }
+    }
+
+    #[test]
+    fn symmetric_chain() {
+        use crate::group::stabchain::builder::*;
+        use crate::group::stabchain::moved_point_selector;
+        use crate::group::stabchain::{valid_stabchain, Stabchain};
+        use crate::group::Group;
+        use crate::perm::actions::*;
+        use rand::SeedableRng;
+
+        let g = Group::symmetric(10);
+        let chain = Stabchain::new_with_strategy(
+            &g,
+            RandomBuilderStrategy::new_with_rng(
+                SimpleApplication::default(),
+                moved_point_selector::FmpSelector::default(),
+                WrappingRand(rand_xorshift::XorShiftRng::from_seed([42; 16])),
+            ),
+        );
+        valid_stabchain(&chain).unwrap();
+    }
+
     stabchain_tests!(
         NaiveBuilderStrategy::new(
             SimpleApplication::default(),
@@ -368,11 +432,12 @@ mod tests {
     );
     stabchain_tests!(
         {
+            use super::WrappingRand;
             use rand::SeedableRng;
             RandomBuilderStrategy::new_with_rng(
                 SimpleApplication::default(),
                 moved_point_selector::FmpSelector::default(),
-                rand::rngs::StdRng::from_seed([42; 32]),
+                WrappingRand(rand_xorshift::XorShiftRng::from_seed([42; 16])),
             )
         },
         random

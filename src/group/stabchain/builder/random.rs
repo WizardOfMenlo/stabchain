@@ -11,13 +11,13 @@ use crate::group::utils::{
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
+use crate::DetHashMap;
 use itertools::Itertools;
 use rand::rngs::ThreadRng;
 use rand::seq::IteratorRandom;
 use rand::Rng;
 use std::cell::RefCell;
-use std::collections::{HashMap, VecDeque};
-use std::iter::Iterator;
+use std::collections::VecDeque;
 use std::iter::{repeat_with, FromIterator};
 
 //Constants for subproduct generation
@@ -130,15 +130,15 @@ where
         let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0, 1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
-            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), &gens[..]))
-                .take(subproducts);
+            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), &gens[..]));
         let subproduct_w2_iter = repeat_with(|| {
             random_subproduct_word_subset(&mut *self.rng.borrow_mut(), &gens[..], k)
-        })
-        .take(subproducts);
+        });
         //Iterleave the two iterators.
-        let subproduct_iter: Vec<Vec<P>> =
-            subproduct_w1_iter.interleave(subproduct_w2_iter).collect();
+        let subproduct_iter: Vec<Vec<P>> = subproduct_w1_iter
+            .interleave(subproduct_w2_iter)
+            .take(2 * subproducts)
+            .collect();
         //TODO check if precalculating all transversal elements would be faster.
         // Iterator of random coset representatives.
         let g_iter = repeat_with(|| {
@@ -176,7 +176,7 @@ where
         //debug_assert!(record.gens.generators().contains(&p));
         // If this element is already a generator, then we can exit
         let mut to_check = VecDeque::from_iter(record.transversal.keys().cloned());
-        let mut new_transversal = HashMap::new();
+        let mut new_transversal = DetHashMap::default();
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
             let new_image = self.action.apply(&p, orbit_element);
