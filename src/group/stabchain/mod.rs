@@ -378,7 +378,7 @@ mod tests {
                 SimpleApplication::default(),
                 moved_point_selector::FmpSelector::default(),
                 RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
+                    .rng(rand_xorshift::XorShiftRng::from_seed([43; 16])),
             )
         },
         random
