@@ -26,8 +26,10 @@ jobs:
         run: |
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
-            mv target/criterion criterion
-            find . ! -name 'criterion' -type d -exec rm -r -f {} +
+            mkdir backup
+            mv -r * backup
+            mv backup/target/criterion criterion
+            rm -rf backup
             git commit -m "Criterion Update" -a
       # Get old benches (if any)
       - name: Push to Branch
