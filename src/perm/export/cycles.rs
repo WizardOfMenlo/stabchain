@@ -103,7 +103,7 @@ impl fmt::Display for CyclePermutation {
 
 impl From<ClassicalPermutation> for CyclePermutation {
     fn from(perm: ClassicalPermutation) -> Self {
-        use std::collections::HashSet;
+        use crate::DetHashSet;
 
         let n = perm.lmp();
         // This path means that the permutation is the identity
@@ -112,7 +112,7 @@ impl From<ClassicalPermutation> for CyclePermutation {
         }
 
         let n = n.unwrap();
-        let mut accounted = HashSet::new();
+        let mut accounted = DetHashSet::default();
 
         let mut cycles = Vec::new();
         for i in 1..=n {

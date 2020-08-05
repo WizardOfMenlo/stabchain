@@ -135,8 +135,8 @@ where
 
     /// Deduplicate the generators
     pub fn deduplicate(&self) -> Self {
-        use std::collections::HashSet;
-        let set: HashSet<_> = HashSet::from_iter(self.generators.iter().cloned());
+        use crate::DetHashSet;
+        let set: DetHashSet<_> = DetHashSet::from_iter(self.generators.iter().cloned());
         Group::from_list(set.into_iter())
     }
 
@@ -417,14 +417,14 @@ mod tests {
     fn test_product() {
         use crate::perm::export::CyclePermutation;
         use crate::perm::DefaultPermutation;
-        use std::collections::HashSet;
+        use crate::DetHashSet;
 
         let perm: DefaultPermutation = CyclePermutation::single_cycle(&[1, 2, 3]).into();
 
         let g = Group::new(&[perm.clone()]);
         let prod = Group::product(&g, &g);
 
-        let gens: HashSet<_> = prod.generators().iter().cloned().collect();
+        let gens: DetHashSet<_> = prod.generators().iter().cloned().collect();
         assert_eq!(prod.generators().len(), 2);
         assert!(gens.contains(&perm));
         assert!(gens.contains(&(CyclePermutation::single_cycle(&[4, 5, 6]).into())));
@@ -439,14 +439,14 @@ mod tests {
 
     #[test]
     fn random_regenerator() {
-        use std::collections::HashSet;
+        use crate::DetHashSet;
         use std::iter::FromIterator;
 
         let g = Group::product(&Group::dihedral_2n(12), &Group::symmetric(5));
         let reg = g.random_generators();
 
-        let g_el: HashSet<_> = HashSet::from_iter(g.bruteforce_elements().into_iter());
-        let reg_el = HashSet::from_iter(reg.bruteforce_elements().into_iter());
+        let g_el: DetHashSet<_> = DetHashSet::from_iter(g.bruteforce_elements().into_iter());
+        let reg_el = DetHashSet::from_iter(reg.bruteforce_elements().into_iter());
         assert_eq!(g_el, reg_el);
     }
 

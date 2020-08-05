@@ -6,13 +6,14 @@ pub mod transversal;
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
-use std::collections::{HashSet, VecDeque};
+use crate::DetHashSet;
+use std::collections::VecDeque;
 
 /// w^G = { w^g | g \in G }
 #[derive(Debug)]
 pub struct Orbit<OrbitT = usize> {
     base: OrbitT,
-    orbit: HashSet<OrbitT>,
+    orbit: DetHashSet<OrbitT>,
 }
 
 impl<OrbitT> PartialEq for Orbit<OrbitT>
@@ -50,7 +51,7 @@ impl<OrbitT> Orbit<OrbitT>
 where
     OrbitT: std::hash::Hash + Eq,
 {
-    pub(crate) fn from_raw(base: OrbitT, orbit: HashSet<OrbitT>) -> Self {
+    pub(crate) fn from_raw(base: OrbitT, orbit: DetHashSet<OrbitT>) -> Self {
         Orbit { base, orbit }
     }
 
@@ -67,7 +68,7 @@ where
     }
 
     /// Get the computed orbit
-    pub fn to_set(&self) -> &HashSet<OrbitT> {
+    pub fn to_set(&self) -> &DetHashSet<OrbitT> {
         &self.orbit
     }
 
@@ -89,13 +90,13 @@ impl fmt::Display for Orbit {
             f,
             "[Orbit: base := {}, elements := {:?} ]",
             self.base() + 1,
-            self.orbit.iter().map(|i| i + 1).collect::<HashSet<_>>()
+            self.orbit.iter().map(|i| i + 1).collect::<DetHashSet<_>>()
         )
     }
 }
 
 /// Algorithm to compute orbit from a group
-pub fn orbit<P, A>(g: &Group<P>, w: A::OrbitT, strat: &A) -> HashSet<A::OrbitT>
+pub fn orbit<P, A>(g: &Group<P>, w: A::OrbitT, strat: &A) -> DetHashSet<A::OrbitT>
 where
     P: Permutation,
     A: Action<P>,
@@ -103,7 +104,7 @@ where
     let gens = g.generators();
 
     // Orbit are the ones that have been acted on by the generators
-    let mut orbit = HashSet::new();
+    let mut orbit = DetHashSet::default();
     orbit.insert(w.clone());
 
     // To traverse are those still to be expanded
@@ -129,7 +130,7 @@ where
 
 /// Algorithm to compute orbit from a group. This variant optimizes by checking
 /// if the orbit is complete before doing more work
-pub fn orbit_complete_opt<P, A>(g: &Group<P>, w: A::OrbitT, strat: &A) -> HashSet<A::OrbitT>
+pub fn orbit_complete_opt<P, A>(g: &Group<P>, w: A::OrbitT, strat: &A) -> DetHashSet<A::OrbitT>
 where
     P: Permutation,
     A: Action<P>,
@@ -138,7 +139,7 @@ where
     let gens = g.generators();
 
     // Orbit are the ones that have been acted on by the generators
-    let mut orbit = HashSet::new();
+    let mut orbit = DetHashSet::default();
     orbit.insert(w.clone());
 
     // To traverse are those still to be expanded
@@ -169,7 +170,7 @@ where
 mod tests {
     use super::*;
 
-    fn orbit_simple<P: Permutation>(g: &Group<P>, w: usize) -> HashSet<usize> {
+    fn orbit_simple<P: Permutation>(g: &Group<P>, w: usize) -> DetHashSet<usize> {
         orbit(g, w, &SimpleApplication::default())
     }
 
@@ -179,9 +180,9 @@ mod tests {
 
         let g = Group::trivial();
         // No points is deranged
-        assert_eq!(orbit_simple(&g, 1), HashSet::from_iter(vec![1]));
-        assert_eq!(orbit_simple(&g, 2), HashSet::from_iter(vec![2]));
-        assert_eq!(orbit_simple(&g, 3), HashSet::from_iter(vec![3]));
+        assert_eq!(orbit_simple(&g, 1), DetHashSet::from_iter(vec![1]));
+        assert_eq!(orbit_simple(&g, 2), DetHashSet::from_iter(vec![2]));
+        assert_eq!(orbit_simple(&g, 3), DetHashSet::from_iter(vec![3]));
     }
 
     #[test]
@@ -196,7 +197,7 @@ mod tests {
         let g = Group::dihedral_2n(5);
         // All points are deranged
 
-        assert_eq!(orbit_simple(&g, 1), HashSet::from_iter(0..5));
+        assert_eq!(orbit_simple(&g, 1), DetHashSet::from_iter(0..5));
     }
 
     #[test]
@@ -205,7 +206,7 @@ mod tests {
 
         let g = Group::symmetric(10);
         // All points are deranged
-        assert_eq!(orbit_simple(&g, 1), HashSet::from_iter(0..10));
-        assert_eq!(orbit_simple(&g, 2), HashSet::from_iter(0..10));
+        assert_eq!(orbit_simple(&g, 1), DetHashSet::from_iter(0..10));
+        assert_eq!(orbit_simple(&g, 2), DetHashSet::from_iter(0..10));
     }
 }
