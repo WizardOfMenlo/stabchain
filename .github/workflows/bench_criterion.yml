@@ -33,7 +33,7 @@ jobs:
             mv target/criterion ../criterion
             rm -rf *
             rm -rf .github
-            git add criterion
+            git add . 
             git commit -m "Criterion Update"
       # Get old benches (if any)
       - name: Push to Branch
