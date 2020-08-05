@@ -26,7 +26,6 @@ jobs:
         run: |
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
-            mkdir backup
             mv * backup
             mv backup/target/criterion criterion
             rm -rf backup
