@@ -307,7 +307,6 @@ where
         let products: Vec<Vec<P>> = self.chain[0]
             .gens
             .generators
-            .clone()
             .iter()
             .map(|p| vec![p.clone()])
             .chain(self.random_schrier_generators_as_word(C3, C4, &gens[..]))
