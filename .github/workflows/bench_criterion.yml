@@ -36,7 +36,7 @@ jobs:
             rm -rf ../backup
             rm -rf .github
             git add criterion
-            git commit -m "Criterion Update"
+            git commit -m "Criterion Update" -a
       # Get old benches (if any)
       - name: Push to Branch
         uses: ad-m/github-push-action@master
