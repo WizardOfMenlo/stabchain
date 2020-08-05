@@ -23,7 +23,7 @@ jobs:
       - name: Run benchmark
         #run: cargo bench -- permutation__random_creation/default/8
         run: |
-            mkdir target/criterion
+            mkdir -p target/criterion
             touch target/criterion/test.txt
             echo "Hi" >> target/criterion/test.txt 
       - name: Git Commit 
