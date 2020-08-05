@@ -33,10 +33,8 @@ jobs:
             mv target/criterion ../criterion
             rm -rf *
             rm -rf .github
-            mv ../criterion ./criterion
-            git rm -r *
             git add criterion
-            git commit -m "Criterion Update" -a
+            git commit -m "Criterion Update"
       # Get old benches (if any)
       - name: Push to Branch
         uses: ad-m/github-push-action@master
