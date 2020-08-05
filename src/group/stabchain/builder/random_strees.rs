@@ -131,15 +131,17 @@ where
         let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0, 1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
-            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), &gens[..]))
+            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), &gens[..]));
                 .take(subproducts);
         let subproduct_w2_iter = repeat_with(|| {
             random_subproduct_word_subset(&mut *self.rng.borrow_mut(), &gens[..], k)
-        })
+        });
         .take(subproducts);
         //Iterleave the two iterators.
-        let subproduct_iter: Vec<Vec<P>> =
-            subproduct_w1_iter.interleave(subproduct_w2_iter).collect();
+        let subproduct_iter: Vec<Vec<P>> = subproduct_w1_iter
+            .interleave(subproduct_w2_iter)
+            .take(2 * subproducts)
+            .collect();
         //TODO check if precalculating all transversal elements would be faster.
         // Iterator of random coset representatives.
         let g_iter = repeat_with(|| {
