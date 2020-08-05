@@ -29,7 +29,7 @@ jobs:
             git config --local user.name "GitHub Action"
             mv * ../backup
             mv ../backup/target/criterion criterion
-            rm -rf backup
+            rm -rf ../backup
             git commit -m "Criterion Update" -a
       # Get old benches (if any)
       - name: Push to Branch
