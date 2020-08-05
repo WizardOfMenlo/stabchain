@@ -82,9 +82,9 @@ where
     R: Rng + Clone,
 {
     let orbit = g.orbit_of_action(base.clone(), strat).orbit;
-    let mut gen_seq = vec![g.generators().choose(rng).unwrap().clone()];
-    let mut cube = cube::Cube::new(base.clone(), &gen_seq[..], strat);
     let mut rand_perm_gen = RandPerm::new(11, g, 50, rng.clone());
+    let mut gen_seq = vec![rand_perm_gen.random_permutation()];
+    let mut cube = cube::Cube::new(base.clone(), &gen_seq[..], strat);
     while !cube.cube.eq(&orbit) {
         let mut new_element = rand_perm_gen.random_permutation();
         // "extending by the identity is stoopid"
@@ -152,11 +152,9 @@ mod tests {
         let strat = SimpleApplication::default();
         //All points should be in the orbit (according to GAP)
         for i in 0_usize..6 {
-            dbg!(&i);
             let (transversal, max_depth) = shallow_transversal(&mut g.clone(), i, &strat, &mut rng);
             dbg!(max_depth);
             for j in 0_usize..6 {
-                dbg!(&j);
                 assert!(transversal.contains_key(&j));
                 assert_eq!(
                     j,

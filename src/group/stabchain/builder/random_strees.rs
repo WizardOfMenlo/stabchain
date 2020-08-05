@@ -48,6 +48,7 @@ where
     up_to_date: usize,
     //Store the depths of each of the schrier trees.
     depths: Vec<usize>,
+    original_generators: Group<P>,
 }
 
 impl<P, S, A, R> StabchainBuilderRandomSTrees<P, S, A, R>
@@ -68,6 +69,7 @@ where
             rng: RefCell::new(random),
             up_to_date: 1,
             depths: vec![],
+            original_generators: Group::new(&[]),
         }
     }
 
@@ -105,6 +107,7 @@ where
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let mut initial_gens = group.clone();
+        self.original_generators = initial_gens.clone();
         let (transversal, initial_depth) = shallow_transversal(
             &mut initial_gens,
             moved_point,
@@ -304,9 +307,9 @@ where
             .cloned()
             .collect::<Vec<P>>();
         //Create an iterator that first has the original generators, and then the random schrier generators.
-        let products: Vec<Vec<P>> = self.chain[0]
-            .gens
-            .generators
+        let products: Vec<Vec<P>> = self
+            .original_generators
+            .generators()
             .iter()
             .map(|p| vec![p.clone()])
             .chain(self.random_schrier_generators_as_word(C3, C4, &gens[..]))
