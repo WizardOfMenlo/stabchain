@@ -2,8 +2,9 @@
 
 use super::Group;
 use crate::perm::Permutation;
+use crate::DetHashSet;
 
-use std::collections::{HashSet, VecDeque};
+use std::collections::VecDeque;
 use std::iter::FromIterator;
 
 /// Very naive way to get all elements in a group
@@ -14,7 +15,7 @@ use std::iter::FromIterator;
 #[deprecated = "Usage of orbit algorithm is much quicker"]
 pub fn group_elements<P: Permutation>(g: &Group<P>) -> Vec<P> {
     let gens = g.generators();
-    let mut res = HashSet::new();
+    let mut res = DetHashSet::default();
     // Get everything that is not the identity
     let mut to_check = VecDeque::from_iter(gens.iter().cloned().filter(|p| !p.is_id()));
     while !to_check.is_empty() {
