@@ -52,7 +52,7 @@ impl From<CyclePermutation> for ClassicalPermutation {
             return ClassicalPermutation::id();
         }
 
-        let mut images = Vec::new();
+        let mut images = Vec::with_capacity(n);
 
         for i in 1..=n {
             let cycle = cycles.iter().find(|cycle| cycle.contains(&i));

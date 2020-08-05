@@ -58,9 +58,11 @@ where
         return Some(Vec::new());
     }
 
+    let it = it.into_iter();
+
     let applicator = A::default();
 
-    let mut res = Vec::new();
+    let mut res = Vec::with_capacity(it.size_hint().0);
     let mut g = p.clone();
     for record in it {
         let base = record.base.clone();
