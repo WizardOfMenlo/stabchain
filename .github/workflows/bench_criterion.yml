@@ -30,11 +30,11 @@ jobs:
         run: |
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
-            mkdir ../backup
-            mv * ../backup
-            mv ../backup/target/criterion criterion
-            rm -rf ../backup
+            mv target/criterion ../criterion
+            rm -rf *
             rm -rf .github
+            mv ../criterion ./criterion
+            git rm -r *
             git add criterion
             git commit -m "Criterion Update" -a
       # Get old benches (if any)
