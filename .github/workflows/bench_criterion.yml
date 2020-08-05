@@ -27,7 +27,8 @@ jobs:
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             mv target/criterion criterion
-            git commit -m "Criterion Update" criterion
+            git add criterion
+            git commit -m "Criterion Update" 
       # Get old benches (if any)
       - name: Push to Branch
         uses: ad-m/github-push-action@master
