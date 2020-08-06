@@ -7,11 +7,11 @@ pub mod random_perm;
 pub mod stabchain;
 pub mod utils;
 
+use self::stabchain::base::selectors::FixedBaseSelector;
 use self::stabchain::builder::DefaultStrategy;
-use self::stabchain::moved_point_selector::FixedBaseSelector;
 use crate::group::orbit::abstraction::TransversalResolver;
+use crate::group::stabchain::base::selectors::MovedPointSelector;
 use crate::group::stabchain::builder::BuilderStrategy;
-use crate::group::stabchain::moved_point_selector::MovedPointSelector;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::export::CyclePermutation;
 use crate::perm::utils::order_n_permutation;
@@ -207,7 +207,7 @@ where
 
     /// Computes a stabilizer chain for this group
     pub fn stabchain(&self) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
-        use self::stabchain::moved_point_selector::DefaultSelector;
+        use self::stabchain::base::selectors::DefaultSelector;
         stabchain::Stabchain::new_with_strategy(
             self,
             DefaultStrategy::new(SimpleApplication::default(), DefaultSelector::default()),

@@ -1,10 +1,10 @@
 //! Traits for creating chains
 
-use super::MovedPointSelector;
 use super::Stabchain;
 use crate::group::orbit::abstraction::{
     FactoredTransversalResolver, SimpleTransversalResolver, TransversalResolver,
 };
+use crate::group::stabchain::base::selectors::MovedPointSelector;
 use crate::group::Group;
 use crate::perm::{Action, Permutation};
 

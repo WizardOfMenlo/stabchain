@@ -1,3 +1,5 @@
+pub mod selectors;
+
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, DefaultPermutation, Permutation};
 

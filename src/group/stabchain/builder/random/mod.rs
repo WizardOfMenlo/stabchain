@@ -7,7 +7,7 @@ use crate::group::orbit::transversal::factored_transversal::{
     factored_transversal_complete_opt, representative_raw_as_word,
 };
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
-use crate::group::stabchain::{MovedPointSelector, Stabchain, StabchainRecord};
+use crate::group::stabchain::{base::selectors::MovedPointSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{
     apply_permutation_word, collapse_perm_word, random_subproduct_word_full,
     random_subproduct_word_subset,
