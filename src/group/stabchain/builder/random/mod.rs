@@ -94,11 +94,13 @@ where
             .min_by(|g1, g2| {
                 self.selector
                     .clone()
-                    .moved_point(g1)
-                    .cmp(&self.selector.clone().moved_point(g2))
+                    .moved_point(g1, self.current_pos)
+                    .cmp(&self.selector.clone().moved_point(g2, self.current_pos))
             })
             .unwrap();
-        let moved_point = self.selector.moved_point(moved_point_generator);
+        let moved_point = self
+            .selector
+            .moved_point(moved_point_generator, self.current_pos);
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let initial_record = StabchainRecord::new(
@@ -285,7 +287,7 @@ where
                     all_discarded = false;
                     let h_star = collapse_perm_word(&h_residue);
                     //Add a new base point, along with a new record for that base point.
-                    let new_base_point = self.selector.moved_point(&h_star);
+                    let new_base_point = self.selector.moved_point(&h_star, self.current_pos);
                     //self.check_transversal_augmentation(h_star);
                     debug_assert!(!self.base.contains(&new_base_point));
                     self.base.push(new_base_point);
@@ -367,7 +369,9 @@ where
             let collapsed_residue = collapse_perm_word(&residue);
             //If this point sifted through but isn't trivial, then we need a new record and base point.
             if self.sifted(drop_out_level) {
-                let moved_point = self.selector.moved_point(&collapsed_residue);
+                let moved_point = self
+                    .selector
+                    .moved_point(&collapsed_residue, self.current_pos);
                 let gens = Group::new(&[collapsed_residue]);
                 let transversal =
                     factored_transversal_complete_opt(&gens, moved_point, &self.action);

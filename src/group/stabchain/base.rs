@@ -27,7 +27,7 @@ where
         Self { points, action }
     }
 
-    /// Find any perm which fixes all the points and is not the id
+    /// Find if there is perm which fixes all the points and is not the id
     pub fn base_for_subset(&self, perms: impl IntoIterator<Item = P>) -> bool {
         !perms
             .into_iter()
@@ -41,7 +41,7 @@ where
     }
 
     /// Find any perm that fixes all the points and is not the id
-    pub fn base_for_subset_counter(&self, perms: impl IntoIterator<Item = P>) -> Option<P> {
+    pub fn base_for_subset_counterexample(&self, perms: impl IntoIterator<Item = P>) -> Option<P> {
         perms
             .into_iter()
             .filter(|p| !p.is_id())
@@ -98,7 +98,7 @@ mod tests {
     fn test_invalid_base_counter() {
         let base = Base::new(vec![0, 1]);
         let els = Group::symmetric(4).bruteforce_elements();
-        let counter = base.base_for_subset_counter(els);
+        let counter = base.base_for_subset_counterexample(els);
         assert!(counter.is_some());
         let counter = counter.unwrap();
         assert!(!counter.is_id());

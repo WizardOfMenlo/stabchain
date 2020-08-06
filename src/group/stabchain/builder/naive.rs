@@ -64,7 +64,7 @@ where
 
         // Bottom of the chain
         if self.bottom_of_the_chain() {
-            let moved_point = self.selector.moved_point(&p);
+            let moved_point = self.selector.moved_point(&p, self.current_pos);
             let mut record = StabchainRecord::new(
                 moved_point.clone(),
                 Group::new(&[p.clone()]),
