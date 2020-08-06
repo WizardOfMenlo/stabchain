@@ -1,7 +1,7 @@
 //! Collection of functions that will compute shallow(er) transversals.
 
 use crate::group::random_perm::RandPerm;
-use crate::group::{Action, Group};
+use crate::group::{utils::apply_permutation_word, Action, Group};
 use crate::perm::Permutation;
 use crate::DetHashMap;
 use rand::seq::SliceRandom;
@@ -100,6 +100,38 @@ where
     g.generators = gen_seq;
     //Return the shallow transversal orbit, along with the maximum depth of the tree.
     (cube.orbit, *cube.depth.values().max().unwrap())
+}
+
+/// Calculate a representative from the given orbit.
+/// This has the added optimisation of setting the vector capacity from the maximum depth of the transversal.
+pub(crate) fn representative_raw_as_word<P, A>(
+    transversal: &DetHashMap<A::OrbitT, P>,
+    base: A::OrbitT,
+    point: A::OrbitT,
+    strat: &A,
+    depth: usize,
+) -> Option<Vec<P>>
+where
+    P: Permutation,
+    A: Action<P>,
+{
+    // Check if the element is in the orbit.
+    if !transversal.contains_key(&point) {
+        None
+    } else {
+        let mut orbit_point = point.clone();
+        let mut rep = Vec::with_capacity(depth);
+        // Move along the orbit till we reach a representative that the base moves to the point.
+        while orbit_point != base {
+            let g_inv = transversal.get(&orbit_point).unwrap();
+            rep.push(g_inv.inv());
+            debug_assert!(rep.len() <= depth);
+            orbit_point = strat.apply(&g_inv, orbit_point);
+        }
+        rep.reverse();
+        debug_assert!(apply_permutation_word(&rep, base, strat) == point);
+        Some(rep)
+    }
 }
 
 #[cfg(test)]
