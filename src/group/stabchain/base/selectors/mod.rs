@@ -9,7 +9,7 @@ pub use moved_point::{FmpSelector, LmpSelector};
 
 /// A very small trait, used to seamlessly switch between
 /// an automatic base repr, and one which uses a precomputed one
-pub trait MovedPointSelector<P, OrbitT = usize>: Clone {
+pub trait BaseSelector<P, OrbitT = usize>: Clone {
     /// Contract, should never be called with id
     fn moved_point(&mut self, p: &P, pos: usize) -> OrbitT;
 }

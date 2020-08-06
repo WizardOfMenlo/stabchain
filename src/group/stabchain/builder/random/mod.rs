@@ -7,7 +7,7 @@ use crate::group::orbit::transversal::factored_transversal::{
     factored_transversal_complete_opt, representative_raw_as_word,
 };
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
-use crate::group::stabchain::{base::selectors::MovedPointSelector, Stabchain, StabchainRecord};
+use crate::group::stabchain::{base::selectors::BaseSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{
     apply_permutation_word, collapse_perm_word, random_subproduct_word_full,
     random_subproduct_word_subset,
@@ -48,7 +48,7 @@ where
 impl<P, S, A, R> StabchainBuilderRandom<P, S, A, R>
 where
     P: Permutation,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
     A: Action<P, OrbitT = usize>,
     R: Rng,
 {
@@ -418,7 +418,7 @@ impl<P, S, A, R> super::Builder<P, FactoredTransversalResolver<A>, A>
 where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
     R: Rng,
 {
     fn set_generators(&mut self, gens: &Group<P>) {

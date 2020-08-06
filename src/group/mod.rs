@@ -10,7 +10,7 @@ pub mod utils;
 use self::stabchain::base::selectors::FixedBaseSelector;
 use self::stabchain::builder::DefaultStrategy;
 use crate::group::orbit::abstraction::TransversalResolver;
-use crate::group::stabchain::base::selectors::MovedPointSelector;
+use crate::group::stabchain::base::selectors::BaseSelector;
 use crate::group::stabchain::builder::BuilderStrategy;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::export::CyclePermutation;
@@ -236,7 +236,7 @@ where
     /// Computes a stabilizer chain for this group with a chosen selector
     pub fn stabchain_with_selector(
         &self,
-        selector: impl MovedPointSelector<P>,
+        selector: impl BaseSelector<P>,
     ) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
         stabchain::Stabchain::new_with_strategy(
             self,

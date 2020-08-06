@@ -1,4 +1,4 @@
-use super::MovedPointSelector;
+use super::BaseSelector;
 
 /// A selector that chooses elements in order from a common base i.e. [1,2,3,4]
 #[derive(Default, Clone)]
@@ -18,7 +18,7 @@ where
     }
 }
 
-impl<P, T> MovedPointSelector<P, T> for FixedBaseSelector<T>
+impl<P, T> BaseSelector<P, T> for FixedBaseSelector<T>
 where
     T: Clone,
 {

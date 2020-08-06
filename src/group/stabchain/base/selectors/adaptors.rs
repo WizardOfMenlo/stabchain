@@ -1,4 +1,4 @@
-use super::MovedPointSelector;
+use super::BaseSelector;
 
 #[derive(Debug, Clone)]
 pub struct PartialSelector<F, S> {
@@ -17,10 +17,10 @@ impl<F, S> PartialSelector<F, S> {
     }
 }
 
-impl<P, OrbitT, F, S> MovedPointSelector<P, OrbitT> for PartialSelector<F, S>
+impl<P, OrbitT, F, S> BaseSelector<P, OrbitT> for PartialSelector<F, S>
 where
-    F: MovedPointSelector<P, OrbitT>,
-    S: MovedPointSelector<P, OrbitT>,
+    F: BaseSelector<P, OrbitT>,
+    S: BaseSelector<P, OrbitT>,
 {
     fn moved_point(&mut self, p: &P, pos: usize) -> OrbitT {
         if self.limit < pos {

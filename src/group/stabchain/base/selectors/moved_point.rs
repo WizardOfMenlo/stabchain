@@ -1,13 +1,13 @@
 use crate::perm::Permutation;
 const ID_ERROR: &str = "Should never be id";
 
-use super::MovedPointSelector;
+use super::BaseSelector;
 
 /// A selector that always chooses the biggest moved point in a permutation
 #[derive(Default, Debug, Copy, Clone)]
 pub struct LmpSelector;
 
-impl<P> MovedPointSelector<P, usize> for LmpSelector
+impl<P> BaseSelector<P, usize> for LmpSelector
 where
     P: Permutation,
 {
@@ -20,7 +20,7 @@ where
 #[derive(Default, Debug, Copy, Clone)]
 pub struct FmpSelector;
 
-impl<P> MovedPointSelector<P, usize> for FmpSelector
+impl<P> BaseSelector<P, usize> for FmpSelector
 where
     P: Permutation,
 {
