@@ -1,8 +1,7 @@
 use crate::group::orbit::abstraction::FactoredTransversalResolver;
-use crate::group::orbit::transversal::factored_transversal::{
-    factored_transversal_complete_opt, representative_raw_as_word,
+use crate::group::orbit::transversal::shallow_transversal::{
+    representative_raw_as_word, shallow_transversal,
 };
-use crate::group::orbit::transversal::shallow_transversal::shallow_transversal;
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
 use crate::group::stabchain::{MovedPointSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{
@@ -156,6 +155,7 @@ where
                         record.base,
                         *point,
                         &self.action,
+                        self.depths[self.current_pos],
                     )
                     .unwrap()
                 })
@@ -261,11 +261,15 @@ where
                     debug_assert!(!self.base.contains(&new_base_point));
                     self.base.push(new_base_point);
                     //Fields for the new record.
-                    let gens = Group::new(&[h_star]);
-                    let transversal =
-                        factored_transversal_complete_opt(&gens, new_base_point, &self.action);
+                    let mut gens = Group::new(&[h_star]);
+                    let (transversal, depths) = shallow_transversal(
+                        &mut gens,
+                        new_base_point,
+                        &self.action,
+                        &mut *self.rng.borrow_mut(),
+                    );
                     let record = StabchainRecord::new(new_base_point, gens, transversal);
-                    self.depths.push(0);
+                    self.depths.push(depths);
                     self.chain.push(record);
                     //Now up to date beneath the newly added point.
                     self.up_to_date = self.base.len() + 1;
@@ -336,12 +340,16 @@ where
             if self.sifted(drop_out_level) {
                 //TODO add function to add a new level
                 let moved_point = self.selector.moved_point(&collapsed_residue);
-                let gens = Group::new(&[collapsed_residue]);
-                let transversal =
-                    factored_transversal_complete_opt(&gens, moved_point, &self.action);
+                let mut gens = Group::new(&[collapsed_residue]);
+                let (transversal, depth) = shallow_transversal(
+                    &mut gens,
+                    moved_point,
+                    &self.action,
+                    &mut *self.rng.borrow_mut(),
+                );
                 let initial_record = StabchainRecord::new(moved_point, gens, transversal);
                 self.base.push(moved_point);
-                self.depths.push(0);
+                self.depths.push(depth);
                 self.chain.push(initial_record);
                 self.up_to_date = self.base.len() + 1;
             } else {
