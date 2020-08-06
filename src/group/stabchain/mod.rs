@@ -278,6 +278,8 @@ macro_rules! stabchain_tests {
             use crate::group::stabchain::{valid_stabchain, Stabchain};
             use crate::group::Group;
             use crate::perm::actions::*;
+            use crate::perm::export::CyclePermutation;
+            use crate::perm::DefaultPermutation;
             use num::BigUint;
 
             #[test]
@@ -348,6 +350,39 @@ macro_rules! stabchain_tests {
                 .into()]);
                 let chain = Stabchain::new_with_strategy(&g, $strategy);
                 valid_stabchain(&chain).unwrap();
+            }
+
+            /// This was a regularly failing group for the random implementations.
+            #[test]
+            fn failing_example() {
+                let g: Group<DefaultPermutation> = Group::from_list(vec![
+                    CyclePermutation::from_vec(vec![
+                        vec![1, 2],
+                        vec![5, 6],
+                        vec![7, 15],
+                        vec![8, 16],
+                        vec![9, 10],
+                        vec![13, 14],
+                    ])
+                    .into_perm(),
+                    CyclePermutation::from_vec(vec![
+                        vec![1, 4, 5, 16],
+                        vec![2, 3, 6, 15],
+                        vec![7, 10, 11, 14],
+                        vec![8, 9, 12, 13],
+                    ])
+                    .into_perm(),
+                    CyclePermutation::from_vec(vec![
+                        vec![1, 5],
+                        vec![2, 6],
+                        vec![9, 13],
+                        vec![10, 14],
+                    ])
+                    .into_perm(),
+                ]);
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+                assert_eq!(i(128), chain.order())
             }
         }
     };
