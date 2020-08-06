@@ -13,7 +13,7 @@ where
     /// Create from the given base
     pub fn new(base: &[T]) -> Self {
         FixedBaseSelector {
-            base: base.iter().cloned().collect(),
+            base: base.to_vec(),
         }
     }
 }
