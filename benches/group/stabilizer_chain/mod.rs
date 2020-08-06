@@ -136,9 +136,51 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
     group.finish();
 }
 
+fn stabchain_copies_of_cyclic(c: &mut Criterion) {
+    use stabchain::group::utils::copies_of_cyclic;
+    let mut group = c.benchmark_group("group__stabchain__ss__copies_cyclic");
+    group.sample_size(10);
+    for i in RANGE_OF_VALUES.iter() {
+        group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
+            let g = copies_of_cyclic(&[*i, *i, *i, *i, *i]);
+            b.iter(|| g.stabchain())
+        });
+        bench_stabchain_impl!(
+            group,
+            "naive",
+            i,
+            (|i: &usize| copies_of_cyclic(&[*i, *i, *i, *i, *i])),
+            NaiveBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
+        );
+        bench_stabchain_impl!(
+            group,
+            "ift",
+            i,
+            (|i: &usize| copies_of_cyclic(&[*i, *i, *i, *i, *i])),
+            IFTBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
+        );
+        bench_stabchain_impl!(
+            group,
+            "random",
+            i,
+            (|i: &usize| copies_of_cyclic(&[*i, *i, *i, *i, *i])),
+            RandomBuilderStrategy::new(SimpleApplication::default(), FmpSelector::default())
+        );
+        bench_stabchain_impl!(
+            group,
+            "random_shallow",
+            i,
+            (|i: &usize| copies_of_cyclic(&[*i, *i, *i, *i, *i])),
+            RandomBuilderStrategyShallow::new(SimpleApplication::default(), FmpSelector::default())
+        );
+    }
+    group.finish();
+}
+
 criterion_group!(
     stabchain,
     stabchain_cyclic,
     stabchain_symmetric,
     stabchain_direct_product_symm,
+    stabchain_copies_of_cyclic,
 );
