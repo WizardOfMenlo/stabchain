@@ -13,8 +13,7 @@ use rand::Rng;
 
 mod ift;
 mod naive;
-mod random;
-mod random_strees;
+pub(crate) mod random;
 
 /// A builder is a datastructure to be used for constructing
 /// a stabilizer chain. While the ultimate record is the same for any kind of
@@ -152,10 +151,10 @@ where
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
-    type BuilderT = random::StabchainBuilderRandom<P, S, A, R>;
+    type BuilderT = random::random_ift::StabchainBuilderRandom<P, S, A, R>;
 
     fn make_builder(self) -> Self::BuilderT {
-        random::StabchainBuilderRandom::new(self.selector, self.action, self.params)
+        random::random_ift::StabchainBuilderRandom::new(self.selector, self.action, self.params)
     }
 }
 
@@ -197,9 +196,13 @@ where
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
-    type BuilderT = random_strees::StabchainBuilderRandomSTrees<P, S, A, R>;
+    type BuilderT = random::random_strees::StabchainBuilderRandomSTrees<P, S, A, R>;
 
     fn make_builder(self) -> Self::BuilderT {
-        random_strees::StabchainBuilderRandomSTrees::new(self.selector, self.action, self.random)
+        random::random_strees::StabchainBuilderRandomSTrees::new(
+            self.selector,
+            self.action,
+            self.random,
+        )
     }
 }

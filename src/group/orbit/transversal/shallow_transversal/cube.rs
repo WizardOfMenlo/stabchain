@@ -1,6 +1,5 @@
 use crate::perm::{Action, Permutation};
-use crate::DetHashMap;
-use std::collections::HashSet;
+use crate::{DetHashMap, DetHashSet};
 
 /// Struct to represent the cube like structure from the remark after Lemma 4.4.1 from Seress
 pub(super) struct Cube<P, A>
@@ -8,7 +7,7 @@ where
     P: Permutation,
     A: Action<P>,
 {
-    pub(super) cube: HashSet<A::OrbitT>,
+    pub(super) cube: DetHashSet<A::OrbitT>,
     pub(super) orbit: DetHashMap<A::OrbitT, P>,
     pub(super) depth: DetHashMap<A::OrbitT, usize>,
 }
@@ -23,11 +22,11 @@ where
         orbit.insert(base.clone(), P::id());
         let mut depth = DetHashMap::default();
         depth.insert(base.clone(), 0);
-        let mut cubes = vec![HashSet::new()];
+        let mut cubes = vec![DetHashSet::default()];
         cubes[0].insert(base);
         for i in 1..=2 * seq.len() {
             if i > seq.len() {
-                let mut temp = HashSet::new();
+                let mut temp = DetHashSet::default();
                 for j in cubes[i - 1].iter() {
                     let p = seq[i - seq.len() - 1].clone();
                     let val = strat.apply(&p, j.clone());
@@ -41,7 +40,7 @@ where
                 temp.extend(cubes[i - 1].iter().cloned());
                 cubes.push(temp);
             } else {
-                let mut temp = HashSet::new();
+                let mut temp = DetHashSet::default();
                 for j in cubes[i - 1].iter() {
                     let p = seq[seq.len() - i].inv();
                     let val = strat.apply(&p, j.clone());
