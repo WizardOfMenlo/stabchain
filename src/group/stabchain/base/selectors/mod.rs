@@ -1,5 +1,6 @@
 //! Utilities for selecting base points of a stabilizer chain
 
+pub mod adaptors;
 pub mod fixed_base;
 pub mod moved_point;
 
