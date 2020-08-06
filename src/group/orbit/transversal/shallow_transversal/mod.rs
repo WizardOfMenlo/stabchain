@@ -120,7 +120,8 @@ where
         None
     } else {
         let mut orbit_point = point.clone();
-        let mut rep = Vec::with_capacity(depth);
+        // The +1 is because the base point has depth 0.
+        let mut rep = Vec::with_capacity(depth + 1);
         // Move along the orbit till we reach a representative that the base moves to the point.
         while orbit_point != base {
             let g_inv = transversal.get(&orbit_point).unwrap();
@@ -129,7 +130,7 @@ where
         }
         rep.reverse();
         debug_assert!(apply_permutation_word(&rep, base, strat) == point);
-        debug_assert!(rep.len() <= depth);
+        debug_assert!(rep.len() <= depth + 1);
         Some(rep)
     }
 }
