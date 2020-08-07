@@ -120,15 +120,17 @@ where
         let t = self
             .chain
             .iter()
-            .map(|record| (record.transversal.len() as f64).log2())
-            .sum::<f64>()
-            .floor() as usize;
+            .map(|record| {
+                2 * (record.transversal.len() as f64).log2().ceil() as usize
+                    + record.gens.generators().len()
+            })
+            .sum::<usize>();
         let record = &self.chain[self.current_pos];
-        let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0, 1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
             repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), &gens[..]));
         let subproduct_w2_iter = repeat_with(|| {
+            let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0, 1 + gens.len() / 2);
             random_subproduct_word_subset(&mut *self.rng.borrow_mut(), &gens[..], k)
         });
         //Iterleave the two iterators.

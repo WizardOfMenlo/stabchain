@@ -354,7 +354,7 @@ macro_rules! stabchain_tests {
 
             /// This was a regularly failing group for the random implementations.
             #[test]
-            fn failing_example() {
+            fn failing_example_shallow() {
                 let g: Group<DefaultPermutation> = Group::from_list(vec![
                     CyclePermutation::from_vec(vec![
                         vec![1, 2],
@@ -383,6 +383,33 @@ macro_rules! stabchain_tests {
                 let chain = Stabchain::new_with_strategy(&g, $strategy);
                 valid_stabchain(&chain).unwrap();
                 assert_eq!(i(128), chain.order())
+            }
+
+            /// This was a regularly failing group for the random implementations.
+            #[test]
+            fn failing_example_random() {
+                let g: Group<DefaultPermutation> = Group::from_list(vec![
+                    CyclePermutation::from_vec(vec![
+                        vec![1, 15, 24, 36, 20, 30, 2, 14, 21, 35, 18, 29],
+                        vec![3, 16, 22, 34, 17, 31, 4, 13, 23, 33, 19, 32],
+                        vec![5, 9, 27, 8, 12, 26],
+                        vec![6, 11, 28],
+                        vec![7, 10, 25],
+                    ])
+                    .into_perm(),
+                    CyclePermutation::from_vec(vec![
+                        vec![1, 21, 13, 3, 22, 14, 2, 23, 15],
+                        vec![4, 24, 16],
+                        vec![5, 25, 17, 7, 28, 19, 6, 27, 18],
+                        vec![8, 26, 20],
+                        vec![9, 35, 31, 12, 36, 29, 11, 33, 32],
+                        vec![10, 34, 30],
+                    ])
+                    .into_perm(),
+                ]);
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+                assert_eq!(i(10368), chain.order());
             }
         }
     };
