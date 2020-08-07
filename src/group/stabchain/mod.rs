@@ -413,18 +413,20 @@ mod tests {
                 SimpleApplication::default(),
                 moved_point_selector::FmpSelector::default(),
                 RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([43; 16])),
+                    .rng(rand_xorshift::XorShiftRng::from_seed([55; 16])),
             )
         },
         random
     );
     stabchain_tests!(
         {
+            use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
             use rand::SeedableRng;
-            RandomBuilderStrategyShallow::new_with_rng(
+            RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
                 moved_point_selector::FmpSelector::default(),
-                rand::rngs::StdRng::from_seed([1; 32]),
+                RandomAlgoParameters::default()
+                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
             )
         },
         random_shallow

@@ -164,7 +164,7 @@ where
 pub struct RandomBuilderStrategyShallow<A, S, R = ThreadRng> {
     selector: S,
     action: A,
-    random: R,
+    params: RandomAlgoParameters<R>,
 }
 
 impl<A, S> RandomBuilderStrategyShallow<A, S> {
@@ -172,17 +172,17 @@ impl<A, S> RandomBuilderStrategyShallow<A, S> {
         RandomBuilderStrategyShallow {
             action,
             selector,
-            random: rand::thread_rng(),
+            params: RandomAlgoParameters::default(),
         }
     }
 }
 
 impl<A, S, R> RandomBuilderStrategyShallow<A, S, R> {
-    pub fn new_with_rng(action: A, selector: S, random: R) -> Self {
+    pub fn new_with_params(action: A, selector: S, params: RandomAlgoParameters<R>) -> Self {
         RandomBuilderStrategyShallow {
             action,
             selector,
-            random,
+            params,
         }
     }
 }
@@ -202,7 +202,7 @@ where
         random::random_strees::StabchainBuilderRandomSTrees::new(
             self.selector,
             self.action,
-            self.random,
+            self.params,
         )
     }
 }
