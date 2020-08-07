@@ -121,8 +121,8 @@ where
             .chain
             .iter()
             .map(|record| {
-                2 * (record.transversal.len() as f64).log2().ceil() as usize
-                    + record.gens.generators().len()
+                2 * ((record.transversal.len() as f64).log2().ceil() as usize
+                    + record.gens.generators().len())
             })
             .sum::<usize>();
         let record = &self.chain[self.current_pos];
