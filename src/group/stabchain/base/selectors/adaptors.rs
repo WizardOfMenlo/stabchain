@@ -1,5 +1,6 @@
 use super::BaseSelector;
 
+/// A struct for partial base selectors
 #[derive(Debug, Clone)]
 pub struct PartialSelector<F, S> {
     limit: usize,
@@ -8,6 +9,8 @@ pub struct PartialSelector<F, S> {
 }
 
 impl<F, S> PartialSelector<F, S> {
+    /// Create a new selector, that uses the first selector for limit number of points, and
+    /// the second from there on
     pub fn new(first: F, limit: usize, second: S) -> Self {
         PartialSelector {
             first,
@@ -23,10 +26,40 @@ where
     S: BaseSelector<P, OrbitT>,
 {
     fn moved_point(&mut self, p: &P, pos: usize) -> OrbitT {
-        if self.limit < pos {
+        if pos < self.limit {
             self.first.moved_point(p, pos)
         } else {
-            self.second.moved_point(p, pos + self.limit)
+            self.second.moved_point(p, pos - self.limit)
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fixed_test() {
+        use super::super::FixedBaseSelector;
+
+        use crate::perm::*;
+
+        let base = [0, 1, 2, 3, 4, 5];
+
+        let mut selector = PartialSelector::new(
+            FixedBaseSelector::new(&base[0..3]),
+            3,
+            FixedBaseSelector::new(&base[3..6]),
+        );
+
+        let mut full_selector = FixedBaseSelector::new(&base);
+
+        for (i, b) in base.iter().enumerate() {
+            let full = full_selector.moved_point(&DefaultPermutation::id(), i);
+            let partial = selector.moved_point(&DefaultPermutation::id(), i);
+
+            assert_eq!(full, partial);
+            assert_eq!(full, *b);
         }
     }
 }
