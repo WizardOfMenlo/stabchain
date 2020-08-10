@@ -8,6 +8,7 @@ pub struct RandomAlgoParameters<R = ThreadRng> {
     c4: usize,
     orbit_bound: usize,
     base_bound: usize,
+    quick_test: bool,
     rng: R,
 }
 
@@ -19,6 +20,7 @@ pub struct Constants {
     pub c4: usize,
     pub orbit_bound: usize,
     pub base_bound: usize,
+    pub quick_test: bool,
 }
 
 impl RandomAlgoParameters {
@@ -58,6 +60,11 @@ impl<R> RandomAlgoParameters<R> {
         self
     }
 
+    pub fn quick_test(mut self, quick_test: bool) -> Self {
+        self.quick_test = quick_test;
+        self
+    }
+
     pub fn rng<K>(self, rng: K) -> RandomAlgoParameters<K> {
         RandomAlgoParameters {
             rng,
@@ -67,6 +74,7 @@ impl<R> RandomAlgoParameters<R> {
             c4: self.c4,
             orbit_bound: self.orbit_bound,
             base_bound: self.base_bound,
+            quick_test: self.quick_test,
         }
     }
 
@@ -79,6 +87,7 @@ impl<R> RandomAlgoParameters<R> {
                 c4: self.c4,
                 orbit_bound: self.orbit_bound,
                 base_bound: self.base_bound,
+                quick_test: self.quick_test,
             },
             self.rng,
         )
@@ -94,6 +103,7 @@ impl Default for RandomAlgoParameters {
             c4: 1,
             orbit_bound: 50,
             base_bound: 5,
+            quick_test: false,
             rng: rand::thread_rng(),
         }
     }
