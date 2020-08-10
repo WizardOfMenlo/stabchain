@@ -451,6 +451,20 @@ mod tests {
         {
             use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
             use rand::SeedableRng;
+            RandomBuilderStrategy::new_with_params(
+                SimpleApplication::default(),
+                moved_point_selector::FmpSelector::default(),
+                RandomAlgoParameters::default()
+                    .rng(rand_xorshift::XorShiftRng::from_seed([37; 16]))
+                    .quick_test(true),
+            )
+        },
+        random_quick_test
+    );
+    stabchain_tests!(
+        {
+            use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
+            use rand::SeedableRng;
             RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
                 crate::group::stabchain::base::selectors::FmpSelector::default(),
@@ -459,5 +473,19 @@ mod tests {
             )
         },
         random_shallow
+    );
+    stabchain_tests!(
+        {
+            use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
+            use rand::SeedableRng;
+            RandomBuilderStrategyShallow::new_with_params(
+                SimpleApplication::default(),
+                moved_point_selector::FmpSelector::default(),
+                RandomAlgoParameters::default()
+                    .rng(rand_xorshift::XorShiftRng::from_seed([41; 16]))
+                    .quick_test(true),
+            )
+        },
+        random_shallow_quick_test
     );
 }
