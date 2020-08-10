@@ -5,11 +5,10 @@ use crate::group::orbit::transversal::factored_transversal::factored_transversal
 use crate::group::Group;
 use crate::perm::*;
 use crate::DetHashMap;
-use std::collections::VecDeque;
 
 pub fn from_base_and_strong_gen_set<P, A>(
     base: &[A::OrbitT],
-    sgs: Vec<P>,
+    sgs: &[P],
     strat: A,
 ) -> Stabchain<P, FactoredTransversalResolver<A>, A>
 where
@@ -21,14 +20,12 @@ where
         .iter()
         .map(|point| StabchainRecord::new(point.clone(), Group::new(&[]), DetHashMap::default()))
         .collect();
-    let mut to_add = VecDeque::from(sgs.clone());
     //Add the generators in the correct location.
-    while !to_add.is_empty() {
-        let p = to_add.pop_front().unwrap();
+    for p in sgs.iter() {
         for record in chain.iter_mut() {
             //If this permutation isn't fixed by this base point, then we insert it in the chain here.
-            if strat.apply(&p, record.base.clone()) != record.base {
-                record.gens.generators.push(p);
+            if strat.apply(p, record.base.clone()) != record.base {
+                record.gens.generators.push(p.clone());
                 break;
             }
         }
