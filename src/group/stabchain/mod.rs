@@ -92,6 +92,8 @@ where
         self.chain
             .iter()
             .flat_map(|g| g.gens.generators().iter().cloned())
+            .collect::<DetHashSet<P>>()
+            .drain()
             .collect()
     }
 
@@ -252,7 +254,7 @@ use super::orbit::{
     abstraction::FactoredTransversalResolver,
     transversal::factored_transversal::factored_transversal_complete_opt,
 };
-use crate::group::orbit::transversal::TransversalError;
+use crate::{group::orbit::transversal::TransversalError, DetHashSet};
 
 #[derive(Debug)]
 pub enum StabchainError<P, OrbitT> {
