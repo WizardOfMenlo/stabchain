@@ -214,6 +214,8 @@ where
         });
         //To see if all generators are discarded.
         let mut all_discarded = true;
+        //If the element we are testing is the first schrier generator tested.
+        let mut first_test = true;
         for h in random_gens {
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if self.sifted(drop_out_level) {
@@ -264,6 +266,9 @@ where
                     self.chain.push(record);
                     //Now up to date beneath the newly added point.
                     self.up_to_date = self.base.len() + 1;
+                } else if self.constants.quick_test && first_test {
+                    //The quick test is only sifting one generator, and early exit if this sifts through.
+                    break;
                 }
             } else {
                 //We have found a residue that has not sifted through, so we add a new base point with this point as a generator.
@@ -275,6 +280,8 @@ where
                 //Consider the chain now up to date below level j + 1. The +1 is for 1 indexing.
                 self.up_to_date = j + 1;
             }
+            //This is now not the first element to be tested.
+            first_test = false;
         }
         if all_discarded {
             //Really is setting this to i - 1, but as the position is zero indexed it would be doing (i - 1 + 1).
