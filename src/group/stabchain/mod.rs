@@ -117,6 +117,39 @@ where
     }
 }
 
+impl<P, A> Stabchain<P, FactoredTransversalResolver<A>, A>
+where
+    P: Permutation,
+    A: Action<P>,
+{
+    /// Create the stabiliser chain from a known base and strong generating set.
+    pub fn from_base_and_strong_gen_set(base: &[A::OrbitT], sgs: &[P], strat: A) -> Self {
+        //Skeleton of the chain.
+        let mut chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>> = base
+            .iter()
+            .map(|point| {
+                StabchainRecord::new(point.clone(), Group::new(&[]), DetHashMap::default())
+            })
+            .collect();
+        //Add the generators in the correct location.
+        for p in sgs.iter() {
+            for record in chain.iter_mut() {
+                //If this permutation isn't fixed by this base point, then we insert it in the chain here.
+                if strat.apply(p, record.base.clone()) != record.base {
+                    record.gens.generators.push(p.clone());
+                    break;
+                }
+            }
+        }
+        //Now fill in the transversal
+        chain.iter_mut().for_each(|record| {
+            record.transversal =
+                factored_transversal_complete_opt(&record.group(), record.base.clone(), &strat)
+        });
+        Stabchain { chain }
+    }
+}
+
 impl<P, V, A> IntoIterator for Stabchain<P, V, A>
 where
     A: Action<P>,
@@ -215,6 +248,10 @@ where
     }
 }
 
+use super::orbit::{
+    abstraction::FactoredTransversalResolver,
+    transversal::factored_transversal::factored_transversal_complete_opt,
+};
 use crate::group::orbit::transversal::TransversalError;
 
 #[derive(Debug)]
