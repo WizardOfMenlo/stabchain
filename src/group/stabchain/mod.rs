@@ -87,6 +87,14 @@ where
         )
     }
 
+    /// Get the strong generating set of this stabiliser chain.
+    pub fn strong_generating_set(&self) -> Vec<P> {
+        self.chain
+            .iter()
+            .flat_map(|g| g.gens.generators().iter().cloned())
+            .collect()
+    }
+
     /// Get chain length
     pub fn len(&self) -> usize {
         // We don't include the end item here
