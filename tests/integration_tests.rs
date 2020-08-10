@@ -12,6 +12,7 @@ use stabchain::group::stabchain::{correct_stabchain_order, valid_stabchain};
 use stabchain::perm::export::ExportablePermutation;
 use stabchain::perm::impls::sync::SyncPermutation;
 
+use stabchain::group::stabchain::builder::random::parameters::RandomAlgoParameters;
 use stabchain::group::stabchain::base::selectors::*;
 use stabchain::group::stabchain::builder::*;
 use stabchain::perm::actions::*;
@@ -141,5 +142,15 @@ test_stabilizer_on_strategy!(
 test_stabilizer_on_strategy!(
     RandomBuilderStrategyShallow::new(SimpleApplication::default(), FmpSelector::default(),),
     test_random_shallow_stabilizer,
+    (number_of_tests() as f32 * 0.05).floor() as usize
+);
+
+test_stabilizer_on_strategy!(
+    RandomBuilderStrategyShallow::new_with_params(
+        SimpleApplication::default(),
+        FmpSelector::default(),
+        RandomAlgoParameters::default().quick_test(true)
+    ),
+    test_random_shallow_stabilizer_quick_test,
     (number_of_tests() as f32 * 0.05).floor() as usize
 );
