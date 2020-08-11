@@ -2,8 +2,8 @@ pub mod selector;
 
 use criterion::{criterion_group, BenchmarkId, Criterion};
 const RANGE_OF_VALUES: [usize; 5] = [8, 10, 16, 20, 32];
+use stabchain::group::stabchain::base::selectors::DefaultSelector;
 use stabchain::group::stabchain::builder::*;
-use stabchain::group::stabchain::moved_point_selector::DefaultSelector;
 use stabchain::group::Group;
 use stabchain::perm::actions::SimpleApplication;
 

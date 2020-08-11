@@ -100,7 +100,7 @@ impl Default for RandomAlgoParameters {
             c1: 1,
             c2: 1,
             c3: 1,
-            c4: 1,
+            c4: 3,
             orbit_bound: 50,
             base_bound: 5,
             quick_test: false,

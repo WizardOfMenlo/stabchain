@@ -13,7 +13,7 @@ use rand::Rng;
 
 mod ift;
 mod naive;
-pub mod random;
+pub(crate) mod random;
 
 /// A builder is a datastructure to be used for constructing
 /// a stabilizer chain. While the ultimate record is the same for any kind of
