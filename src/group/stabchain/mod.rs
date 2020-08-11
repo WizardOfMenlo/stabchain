@@ -134,17 +134,17 @@ where
             })
             .collect();
         //Add the generators in the correct location, from back to front.
-        let mut to_add = sgs.iter().cloned().collect::<VecDeque<P>>();
-        while !to_add.is_empty() {
-            let p = to_add.pop_front().unwrap();
-            for i in (0..chain.len()).rev() {
+        for p in sgs {
+            for i in 0..chain.len() {
                 //If this permutation is fixed by all previous points but not by this one, then add it at this level.
                 if base[..i]
                     .iter()
                     .all(|base| strat.apply(&p, base.clone()) == base.clone())
-                    && strat.apply(&p, base[i].clone()) != base[i].clone()
                 {
                     chain[i].gens.generators.push(p.clone());
+                } else {
+                    //If it doesn't fix all points currently, it isn't going to moving forward.
+                    break;
                 }
             }
         }
@@ -227,7 +227,7 @@ where
     }
 }
 
-use std::{collections::VecDeque, fmt};
+use std::fmt;
 
 impl<P, V, A> fmt::Display for Stabchain<P, V, A>
 where
