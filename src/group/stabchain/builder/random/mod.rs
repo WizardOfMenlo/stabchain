@@ -7,7 +7,7 @@ use crate::group::orbit::transversal::factored_transversal::{
     factored_transversal_complete_opt, representative_raw_as_word,
 };
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
-use crate::group::stabchain::{MovedPointSelector, Stabchain, StabchainRecord};
+use crate::group::stabchain::{base::selectors::BaseSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{
     apply_permutation_word, collapse_perm_word, random_subproduct_word_full,
     random_subproduct_word_subset,
@@ -48,7 +48,7 @@ where
 impl<P, S, A, R> StabchainBuilderRandom<P, S, A, R>
 where
     P: Permutation,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
     A: Action<P, OrbitT = usize>,
     R: Rng,
 {
@@ -94,11 +94,13 @@ where
             .min_by(|g1, g2| {
                 self.selector
                     .clone()
-                    .moved_point(g1)
-                    .cmp(&self.selector.clone().moved_point(g2))
+                    .moved_point(g1, self.current_pos)
+                    .cmp(&self.selector.clone().moved_point(g2, self.current_pos))
             })
             .unwrap();
-        let moved_point = self.selector.moved_point(moved_point_generator);
+        let moved_point = self
+            .selector
+            .moved_point(moved_point_generator, self.current_pos);
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let initial_record = StabchainRecord::new(
@@ -285,7 +287,7 @@ where
                     all_discarded = false;
                     let h_star = collapse_perm_word(&h_residue);
                     //Add a new base point, along with a new record for that base point.
-                    let new_base_point = self.selector.moved_point(&h_star);
+                    let new_base_point = self.selector.moved_point(&h_star, self.current_pos);
                     //self.check_transversal_augmentation(h_star);
                     debug_assert!(!self.base.contains(&new_base_point));
                     self.base.push(new_base_point);
@@ -367,7 +369,9 @@ where
             let collapsed_residue = collapse_perm_word(&residue);
             //If this point sifted through but isn't trivial, then we need a new record and base point.
             if self.sifted(drop_out_level) {
-                let moved_point = self.selector.moved_point(&collapsed_residue);
+                let moved_point = self
+                    .selector
+                    .moved_point(&collapsed_residue, self.current_pos);
                 let gens = Group::new(&[collapsed_residue]);
                 let transversal =
                     factored_transversal_complete_opt(&gens, moved_point, &self.action);
@@ -414,7 +418,7 @@ impl<P, S, A, R> super::Builder<P, FactoredTransversalResolver<A>, A>
 where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
     R: Rng,
 {
     fn set_generators(&mut self, gens: &Group<P>) {

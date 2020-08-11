@@ -1,6 +1,7 @@
-use super::{MovedPointSelector, Stabchain};
+use super::Stabchain;
 use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::factored_transversal::representative_raw;
+use crate::group::stabchain::base::selectors::BaseSelector;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
@@ -47,7 +48,7 @@ where
 impl<P, S, A> StabchainBuilderIFT<P, S, A>
 where
     P: Permutation,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
     A: Action<P>,
 {
     fn extend_lower_level(&mut self, p: P) {
@@ -65,7 +66,7 @@ where
 
         // Bottom of the chain
         if self.bottom_of_the_chain() {
-            let moved_point = self.selector.moved_point(&p);
+            let moved_point = self.selector.moved_point(&p, self.current_pos);
             let mut record = StabchainRecord::new(
                 moved_point.clone(),
                 Group::new(&[p.clone()]),
@@ -191,7 +192,7 @@ impl<P, S, A> super::Builder<P, FactoredTransversalResolver<A>, A> for Stabchain
 where
     P: Permutation,
     A: Action<P>,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
 {
     fn set_generators(&mut self, gens: &Group<P>) {
         for gen in gens.generators() {

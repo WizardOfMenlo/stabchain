@@ -1,10 +1,10 @@
 //! Traits for creating chains
 
-use super::MovedPointSelector;
 use super::Stabchain;
 use crate::group::orbit::abstraction::{
     FactoredTransversalResolver, SimpleTransversalResolver, TransversalResolver,
 };
+use crate::group::stabchain::base::selectors::BaseSelector;
 use crate::group::Group;
 use crate::perm::{Action, Permutation};
 
@@ -68,7 +68,7 @@ impl<P, S, A> BuilderStrategy<P> for NaiveBuilderStrategy<A, S>
 where
     P: Permutation,
     A: Action<P>,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
 {
     type Action = A;
     type Transversal = SimpleTransversalResolver;
@@ -98,7 +98,7 @@ impl<P, S, A> BuilderStrategy<P> for IFTBuilderStrategy<A, S>
 where
     P: Permutation,
     A: Action<P>,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
@@ -144,7 +144,7 @@ impl<P, S, A, R> BuilderStrategy<P> for RandomBuilderStrategy<A, S, R>
 where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
     R: Rng,
 {
     type Action = A;

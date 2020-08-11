@@ -1,6 +1,6 @@
 use criterion::{criterion_group, BenchmarkId, Criterion};
 const RANGE_OF_VALUES: [usize; 5] = [8, 10, 16, 20, 32];
-use stabchain::group::stabchain::moved_point_selector::{FixedBaseSelector, LmpSelector};
+use stabchain::group::stabchain::base::selectors::{FixedBaseSelector, LmpSelector};
 use stabchain::group::Group;
 use std::iter::FromIterator;
 

@@ -1,15 +1,15 @@
 //! Mod which contains the definition of a stabilizer chain, complete with all the ways of creating such a chain
 
+pub mod base;
 pub mod builder;
 pub mod element_testing;
-pub mod moved_point_selector;
 
 use crate::group::orbit::abstraction::TransversalResolver;
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::*;
+use base::Base;
 use builder::{Builder, BuilderStrategy};
-use moved_point_selector::MovedPointSelector;
 
 use crate::DetHashMap;
 
@@ -80,8 +80,11 @@ where
     }
 
     /// Get the base corresponding to this stabilizer chain
-    pub fn base(&self) -> Vec<A::OrbitT> {
-        self.chain.iter().map(|g| &g.base).cloned().collect()
+    pub fn base(&self) -> Base<P, A> {
+        Base::new_with_action(
+            self.chain.iter().map(|g| &g.base).cloned().collect(),
+            A::default(),
+        )
     }
 
     /// Get chain length
@@ -274,7 +277,6 @@ macro_rules! stabchain_tests {
     ($strategy:expr, $short:ident) => {
         mod $short {
             use crate::group::stabchain::builder::*;
-            use crate::group::stabchain::moved_point_selector;
             use crate::group::stabchain::{valid_stabchain, Stabchain};
             use crate::group::Group;
             use crate::perm::actions::*;
@@ -359,14 +361,14 @@ mod tests {
     stabchain_tests!(
         NaiveBuilderStrategy::new(
             SimpleApplication::default(),
-            moved_point_selector::LmpSelector::default()
+            crate::group::stabchain::base::selectors::LmpSelector::default()
         ),
         naive
     );
     stabchain_tests!(
         IFTBuilderStrategy::new(
             SimpleApplication::default(),
-            moved_point_selector::LmpSelector::default()
+            crate::group::stabchain::base::selectors::LmpSelector::default()
         ),
         ift
     );
@@ -376,7 +378,7 @@ mod tests {
             use rand::SeedableRng;
             RandomBuilderStrategy::new_with_params(
                 SimpleApplication::default(),
-                moved_point_selector::FmpSelector::default(),
+                crate::group::stabchain::base::selectors::FmpSelector::default(),
                 RandomAlgoParameters::default()
                     .rng(rand_xorshift::XorShiftRng::from_seed([43; 16])),
             )
