@@ -109,12 +109,13 @@ where
     }
 }
 
-pub type RandomBuilderStrategy<A, S, R> = RandomBuilderStrategyNaive<A, S, R>;
+pub type RandomBuilderStrategy<A, S, R> = RandomBuilderStrategyShallow<A, S, R>;
 
 use random::parameters::RandomAlgoParameters;
 
 /// Randomised Stabiliser chain construction.
 /// This should be faster than the naive and IFT methods, but is not deterministic.
+/// This should not be used, as the shallow version is faster and more reliable.
 #[derive(Debug, Clone)]
 pub struct RandomBuilderStrategyNaive<A, S, R = ThreadRng> {
     selector: S,
@@ -124,7 +125,7 @@ pub struct RandomBuilderStrategyNaive<A, S, R = ThreadRng> {
 
 impl<A, S> RandomBuilderStrategyNaive<A, S> {
     pub fn new(action: A, selector: S) -> Self {
-        RandomBuilderStrategy {
+        RandomBuilderStrategyNaive {
             action,
             selector,
             params: random::parameters::RandomAlgoParameters::default(),
@@ -132,9 +133,9 @@ impl<A, S> RandomBuilderStrategyNaive<A, S> {
     }
 }
 
-impl<A, S, R> RandomBuilderStrategy<A, S, R> {
+impl<A, S, R> RandomBuilderStrategyNaive<A, S, R> {
     pub fn new_with_params(action: A, selector: S, params: RandomAlgoParameters<R>) -> Self {
-        RandomBuilderStrategy {
+        RandomBuilderStrategyNaive {
             action,
             selector,
             params,
