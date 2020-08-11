@@ -5,7 +5,7 @@ use crate::group::orbit::transversal::factored_transversal::{
     factored_transversal_complete_opt, representative_raw_as_word,
 };
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
-use crate::group::stabchain::{MovedPointSelector, Stabchain, StabchainRecord};
+use crate::group::stabchain::{base::selectors::BaseSelector, Stabchain, StabchainRecord};
 use crate::group::utils::{
     apply_permutation_word, collapse_perm_word, random_subproduct_word_full,
     random_subproduct_word_subset,
@@ -46,7 +46,7 @@ where
 impl<P, S, A, R> StabchainBuilderRandom<P, S, A, R>
 where
     P: Permutation,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
     A: Action<P, OrbitT = usize>,
     R: Rng,
 {
@@ -84,19 +84,13 @@ where
         //Find the largest moved point of any generator, i.e find which size of the symmetric group the generators form a subgroup of.
         // The minus 1 is to account for this being zero indexed, e.g S_4 moves points 0..3.
         self.n = group.symmetric_super_order() - 1;
-        //Pick an initial generator for the moved point.
-        //This is required so that the moved point selector can consume any fields it may have, e.g with a fixed base.
-        let moved_point_generator = group
-            .generators
+        //Pick the initial moved point.
+        let moved_point = group
+            .generators()
             .iter()
-            .min_by(|g1, g2| {
-                self.selector
-                    .clone()
-                    .moved_point(g1)
-                    .cmp(&self.selector.clone().moved_point(g2))
-            })
+            .map(|p| self.selector.moved_point(p, 0))
+            .min()
             .unwrap();
-        let moved_point = self.selector.moved_point(moved_point_generator);
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let initial_record = StabchainRecord::new(
@@ -285,7 +279,7 @@ where
                     all_discarded = false;
                     let h_star = collapse_perm_word(&h_residue);
                     //Add a new base point, along with a new record for that base point.
-                    let new_base_point = self.selector.moved_point(&h_star);
+                    let new_base_point = self.selector.moved_point(&h_star, self.current_pos);
                     //self.check_transversal_augmentation(h_star);
                     debug_assert!(!self.base.contains(&new_base_point));
                     self.base.push(new_base_point);
@@ -366,7 +360,9 @@ where
             let collapsed_residue = collapse_perm_word(&residue);
             //If this point sifted through but isn't trivial, then we need a new record and base point.
             if self.sifted(drop_out_level) {
-                let moved_point = self.selector.moved_point(&collapsed_residue);
+                let moved_point = self
+                    .selector
+                    .moved_point(&collapsed_residue, self.current_pos);
                 let gens = Group::new(&[collapsed_residue]);
                 let transversal =
                     factored_transversal_complete_opt(&gens, moved_point, &self.action);
@@ -413,7 +409,7 @@ impl<P, S, A, R> crate::group::stabchain::builder::Builder<P, FactoredTransversa
 where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
     R: Rng,
 {
     fn set_generators(&mut self, gens: &Group<P>) {

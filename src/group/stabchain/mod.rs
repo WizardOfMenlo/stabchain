@@ -442,7 +442,7 @@ mod tests {
                 SimpleApplication::default(),
                 crate::group::stabchain::base::selectors::FmpSelector::default(),
                 RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([55; 16])),
+                    .rng(rand_xorshift::XorShiftRng::from_seed([58; 16])),
             )
         },
         random
@@ -453,7 +453,7 @@ mod tests {
             use rand::SeedableRng;
             RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
-                moved_point_selector::FmpSelector::default(),
+                crate::group::stabchain::base::selectors::FmpSelector::default(),
                 RandomAlgoParameters::default()
                     .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
             )

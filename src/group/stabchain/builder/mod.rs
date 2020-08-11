@@ -191,7 +191,7 @@ impl<P, S, A, R> BuilderStrategy<P> for RandomBuilderStrategyShallow<A, S, R>
 where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
     R: Rng + Clone,
 {
     type Action = A;
