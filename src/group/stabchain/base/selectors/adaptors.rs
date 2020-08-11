@@ -62,4 +62,29 @@ mod tests {
             assert_eq!(full, *b);
         }
     }
+
+    #[test]
+    fn partial_lmp() {
+        use super::super::{FixedBaseSelector, LmpSelector};
+        use crate::group::Group;
+
+        use crate::perm::*;
+
+        let base = [0, 1, 2, 3, 4, 5];
+
+        let mut selector =
+            PartialSelector::new(FixedBaseSelector::new(&base), 6, LmpSelector::default());
+
+        let g = Group::symmetric(10);
+        let mut rand = g.rng();
+        for (i, perm) in (0..6).zip(std::iter::repeat_with(|| rand.random_permutation())) {
+            assert_eq!(selector.moved_point(&perm, i), i);
+        }
+
+        for (i, perm) in
+            (6..20).zip(std::iter::repeat_with(|| rand.random_permutation()).filter(|p| !p.is_id()))
+        {
+            assert_eq!(selector.moved_point(&perm, i), perm.lmp().unwrap());
+        }
+    }
 }
