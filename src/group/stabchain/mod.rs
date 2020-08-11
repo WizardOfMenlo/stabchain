@@ -415,37 +415,45 @@ mod tests {
     use crate::perm::actions::SimpleApplication;
     use rand::{seq::SliceRandom, thread_rng};
 
-    #[test]
-    pub fn reconstruction() {
-        let g = Group::symmetric(13);
-        let chain = g.stabchain();
-        let base = chain.base();
-        let mut sgs = chain.strong_generating_set();
-        //To make sure we aren't relying on the ordering of the sgs.
-        sgs.shuffle(&mut thread_rng());
-        let reconstructed_chain = Stabchain::from_base_and_strong_gen_set(
-            base.base(),
-            &sgs[..],
-            SimpleApplication::default(),
-        );
-        println!("{}", chain);
-        println!("{}", reconstructed_chain);
-        assert_eq!(chain.len(), reconstructed_chain.len());
-        assert_eq!(base.base(), reconstructed_chain.base().base());
-        assert_eq!(chain.order(), reconstructed_chain.order());
-        valid_stabchain(&reconstructed_chain).unwrap();
-        for (record1, record2) in chain.iter().zip(reconstructed_chain.iter()) {
-            assert_eq!(record1.base(), record2.base());
-            //Check the orbits are the same
-            assert!(
-                record1.transversal.len() == record2.transversal.len()
-                    && record1
-                        .transversal
-                        .keys()
-                        .all(|point| record2.transversal.contains_key(point))
-            );
-        }
+    //Macro for testing the reconstruction of a group.
+    macro_rules! reconstruction_test {
+        ($group:expr, $name:ident) => {
+            #[test]
+            fn $name() {
+                let g = $group;
+                let chain = g.stabchain();
+                let base = chain.base();
+                let mut sgs = chain.strong_generating_set();
+                //To make sure we aren't relying on the ordering of the sgs.
+                sgs.shuffle(&mut thread_rng());
+                let reconstructed_chain = Stabchain::from_base_and_strong_gen_set(
+                    base.base(),
+                    &sgs[..],
+                    SimpleApplication::default(),
+                );
+                assert_eq!(chain.len(), reconstructed_chain.len());
+                assert_eq!(base.base(), reconstructed_chain.base().base());
+                assert_eq!(chain.order(), reconstructed_chain.order());
+                valid_stabchain(&reconstructed_chain).unwrap();
+                for (record1, record2) in chain.iter().zip(reconstructed_chain.iter()) {
+                    assert_eq!(record1.base(), record2.base());
+                    //Check the orbits are the same
+                    assert!(
+                        record1.transversal.len() == record2.transversal.len()
+                            && record1
+                                .transversal
+                                .keys()
+                                .all(|point| record2.transversal.contains_key(point))
+                    );
+                }
+            }
+        };
     }
+
+    reconstruction_test!(Group::symmetric(20), reconstruction_symmetric);
+    reconstruction_test!(Group::trivial(), reconstruction_trivial);
+    reconstruction_test!(Group::cyclic(30), reconstruction_cyclic);
+    reconstruction_test!(Group::dihedral_2n(10), reconstruction_dihedral);
 
     stabchain_tests!(
         NaiveBuilderStrategy::new(
