@@ -438,7 +438,7 @@ mod tests {
         {
             use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
             use rand::SeedableRng;
-            RandomBuilderStrategy::new_with_params(
+            RandomBuilderStrategyNaive::new_with_params(
                 SimpleApplication::default(),
                 crate::group::stabchain::base::selectors::FmpSelector::default(),
                 RandomAlgoParameters::default()
@@ -451,7 +451,7 @@ mod tests {
         {
             use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
             use rand::SeedableRng;
-            RandomBuilderStrategy::new_with_params(
+            RandomBuilderStrategyNaive::new_with_params(
                 SimpleApplication::default(),
                 crate::group::stabchain::base::selectors::FmpSelector::default(),
                 RandomAlgoParameters::default()

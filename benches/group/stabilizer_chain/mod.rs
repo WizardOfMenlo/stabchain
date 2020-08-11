@@ -44,7 +44,7 @@ fn stabchain_cyclic(c: &mut Criterion) {
             "random",
             i,
             (|i: &usize| Group::cyclic(*i)),
-            RandomBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
+            RandomBuilderStrategyNaive::new(SimpleApplication::default(), DefaultSelector::default())
         );
         bench_stabchain_impl!(
             group,
@@ -86,7 +86,7 @@ fn stabchain_symmetric(c: &mut Criterion) {
             "random",
             i,
             (|i: &usize| Group::symmetric(*i)),
-            RandomBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
+            RandomBuilderStrategyNaive::new(SimpleApplication::default(), DefaultSelector::default())
         );
         bench_stabchain_impl!(
             group,
@@ -129,7 +129,7 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
             "random",
             i,
             (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
-            RandomBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
+            RandomBuilderStrategyNaive::new(SimpleApplication::default(), DefaultSelector::default())
         );
         bench_stabchain_impl!(
             group,
@@ -173,7 +173,7 @@ fn stabchain_copies_of_cyclic(c: &mut Criterion) {
             "random",
             i,
             (|i: &usize| copies_of_cyclic(&[*i, *i, *i, *i, *i])),
-            RandomBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
+            RandomBuilderStrategyNaive::new(SimpleApplication::default(), DefaultSelector::default())
         );
         bench_stabchain_impl!(
             group,
