@@ -455,7 +455,7 @@ mod tests {
                 SimpleApplication::default(),
                 crate::group::stabchain::base::selectors::FmpSelector::default(),
                 RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([37; 16]))
+                    .rng(rand_xorshift::XorShiftRng::from_seed([33; 16]))
                     .quick_test(true),
             )
         },
