@@ -21,20 +21,17 @@ jobs:
 
       # Run benchmark, storing in target/criterion
       - name: Run benchmark
-        #run: cargo bench -- permutation__random_creation/default/8
-        run: |
-            mkdir -p target/criterion
-            touch target/criterion/test.txt
-            echo "Hi" >> target/criterion/test.txt 
+        run: cargo bench
       - name: Git Commit 
         run: |
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
-            mkdir ../backup
-            mv * ../backup
-            mv ../backup/target/criterion criterion
-            rm -rf ../backup
-            git commit -m "Criterion Update" -a
+            mv target/criterion ../criterion
+            rm -rf .github
+            rm -rf *
+            mv ../criterion ./criterion
+            git add .
+            git commit -m "Criterion Update"
       # Get old benches (if any)
       - name: Push to Branch
         uses: ad-m/github-push-action@master

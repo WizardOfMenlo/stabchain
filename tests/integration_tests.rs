@@ -20,8 +20,7 @@ use stabchain::perm::actions::*;
 const DEFAULT_LIMIT: usize = 1000;
 
 lazy_static! {
-    static ref GROUP_LIBRARY: Vec<DecoratedGroup<SyncPermutation>> =
-        load_libraries(&["data/small.json", "data/transitive.json"]);
+    static ref GROUP_LIBRARY: Vec<DecoratedGroup<SyncPermutation>> = load_libraries("data.zip");
     static ref LIMIT: usize = std::env::var("STABCHAIN_GROUP_TESTING_LIMIT")
         .ok()
         .and_then(|s| s.parse::<usize>().ok())
@@ -29,11 +28,33 @@ lazy_static! {
     static ref NO_LIMIT: bool = std::env::var("STABCHAIN_GROUP_TESTING_NO_LIMIT").is_ok();
 }
 
-fn load_libraries(paths: &[&str]) -> Vec<DecoratedGroup<SyncPermutation>> {
-    paths.iter().map(|p| group_library(*p)).flatten().collect()
+fn load_libraries(zip: &str) -> Vec<DecoratedGroup<SyncPermutation>> {
+    let zip_file = File::open(zip).unwrap();
+    let mut archive = zip::ZipArchive::new(zip_file).unwrap();
+
+    let mut paths = Vec::new();
+
+    for i in 0..archive.len() {
+        let mut file = archive.by_index(i).unwrap();
+        let outpath = file.sanitized_name();
+
+        if let Some(p) = outpath.parent() {
+            if !p.exists() {
+                std::fs::create_dir_all(&p).unwrap();
+            }
+        }
+
+        let mut outfile = File::create(&outpath).unwrap();
+        std::io::copy(&mut file, &mut outfile).unwrap();
+        paths.push(outpath);
+    }
+
+    paths.iter().map(|p| group_library(p)).flatten().collect()
 }
 
-fn group_library(path: &str) -> impl IntoIterator<Item = DecoratedGroup<SyncPermutation>> {
+fn group_library(
+    path: &std::path::Path,
+) -> impl IntoIterator<Item = DecoratedGroup<SyncPermutation>> {
     let input = File::open(path).unwrap();
     let input = BufReader::new(input);
 
