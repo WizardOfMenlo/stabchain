@@ -133,13 +133,18 @@ where
                 StabchainRecord::new(point.clone(), Group::new(&[]), DetHashMap::default())
             })
             .collect();
-        //Add the generators in the correct location.
-        for p in sgs.iter() {
-            for record in chain.iter_mut() {
-                //If this permutation isn't fixed by this base point, then we insert it in the chain here.
-                if strat.apply(p, record.base.clone()) != record.base {
-                    record.gens.generators.push(p.clone());
-                    break;
+        //Add the generators in the correct location, from back to front.
+        let mut to_add = sgs.iter().cloned().collect::<VecDeque<P>>();
+        while !to_add.is_empty() {
+            let p = to_add.pop_front().unwrap();
+            for i in (0..chain.len()).rev() {
+                //If this permutation is fixed by all previous points but not by this one, then add it at this level.
+                if base[..i]
+                    .iter()
+                    .all(|base| strat.apply(&p, base.clone()) == base.clone())
+                    && strat.apply(&p, base[i].clone()) != base[i].clone()
+                {
+                    chain[i].gens.generators.push(p.clone());
                 }
             }
         }
@@ -222,7 +227,7 @@ where
     }
 }
 
-use std::fmt;
+use std::{collections::VecDeque, fmt};
 
 impl<P, V, A> fmt::Display for Stabchain<P, V, A>
 where
@@ -404,6 +409,43 @@ macro_rules! stabchain_tests {
 
 #[cfg(test)]
 mod tests {
+    use super::valid_stabchain;
+    use super::*;
+    use crate::group::Group;
+    use crate::perm::actions::SimpleApplication;
+    use rand::{seq::SliceRandom, thread_rng};
+
+    #[test]
+    pub fn reconstruction() {
+        let g = Group::symmetric(13);
+        let chain = g.stabchain();
+        let base = chain.base();
+        let mut sgs = chain.strong_generating_set();
+        //To make sure we aren't relying on the ordering of the sgs.
+        sgs.shuffle(&mut thread_rng());
+        let reconstructed_chain = Stabchain::from_base_and_strong_gen_set(
+            base.base(),
+            &sgs[..],
+            SimpleApplication::default(),
+        );
+        println!("{}", chain);
+        println!("{}", reconstructed_chain);
+        assert_eq!(chain.len(), reconstructed_chain.len());
+        assert_eq!(base.base(), reconstructed_chain.base().base());
+        assert_eq!(chain.order(), reconstructed_chain.order());
+        valid_stabchain(&reconstructed_chain).unwrap();
+        for (record1, record2) in chain.iter().zip(reconstructed_chain.iter()) {
+            assert_eq!(record1.base(), record2.base());
+            //Check the orbits are the same
+            assert!(
+                record1.transversal.len() == record2.transversal.len()
+                    && record1
+                        .transversal
+                        .keys()
+                        .all(|point| record2.transversal.contains_key(point))
+            );
+        }
+    }
 
     stabchain_tests!(
         NaiveBuilderStrategy::new(
