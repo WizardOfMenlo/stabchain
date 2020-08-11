@@ -12,8 +12,8 @@ use stabchain::group::stabchain::{correct_stabchain_order, valid_stabchain};
 use stabchain::perm::export::ExportablePermutation;
 use stabchain::perm::impls::sync::SyncPermutation;
 
+use stabchain::group::stabchain::base::selectors::*;
 use stabchain::group::stabchain::builder::*;
-use stabchain::group::stabchain::moved_point_selector::*;
 use stabchain::perm::actions::*;
 
 // We use this to limit the number of groups to test

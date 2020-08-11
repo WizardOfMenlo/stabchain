@@ -1,4 +1,4 @@
-use super::{MovedPointSelector, Stabchain};
+use super::{BaseSelector, Stabchain};
 use crate::group::orbit::abstraction::SimpleTransversalResolver;
 use crate::group::stabchain::{element_testing, StabchainRecord};
 use crate::group::Group;
@@ -47,7 +47,7 @@ impl<P, S, A> StabchainBuilderNaive<P, S, A>
 where
     P: Permutation,
     A: Action<P>,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
 {
     fn extend_lower_level(&mut self, p: P) {
         self.current_pos += 1;
@@ -64,7 +64,7 @@ where
 
         // Bottom of the chain
         if self.bottom_of_the_chain() {
-            let moved_point = self.selector.moved_point(&p);
+            let moved_point = self.selector.moved_point(&p, self.current_pos);
             let mut record = StabchainRecord::new(
                 moved_point.clone(),
                 Group::new(&[p.clone()]),
@@ -165,7 +165,7 @@ impl<P, S, A> super::Builder<P, SimpleTransversalResolver, A> for StabchainBuild
 where
     P: Permutation,
     A: Action<P>,
-    S: MovedPointSelector<P, A::OrbitT>,
+    S: BaseSelector<P, A::OrbitT>,
 {
     fn set_generators(&mut self, gens: &Group<P>) {
         for gen in gens.generators() {

@@ -182,7 +182,7 @@ mod tests {
 
     #[test]
     fn book_example() {
-        use super::super::moved_point_selector::FixedBaseSelector;
+        use super::super::base::selectors::FixedBaseSelector;
         use crate::perm::export::CyclePermutation;
 
         let g = Group::new(&[
@@ -215,7 +215,7 @@ mod tests {
 
     #[test]
     fn book_example_complete_test() {
-        use super::super::moved_point_selector::FixedBaseSelector;
+        use super::super::base::selectors::FixedBaseSelector;
         use crate::perm::export::CyclePermutation;
 
         let g = Group::<DefaultPermutation>::new(&[
