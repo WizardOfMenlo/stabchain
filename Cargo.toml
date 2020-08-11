@@ -22,6 +22,7 @@ walkdir = "2"
 rayon = "1.3"
 rand_xorshift = "0.2"
 zip = "0.5"
+indicatif = "0.15"
 
 # Needed as otherwise cargo tries to run benchmarks as tests and messes cmdline args
 [lib]
