@@ -280,6 +280,8 @@ macro_rules! stabchain_tests {
             use crate::group::stabchain::{valid_stabchain, Stabchain};
             use crate::group::Group;
             use crate::perm::actions::*;
+            use crate::perm::export::CyclePermutation;
+            use crate::perm::DefaultPermutation;
             use num::BigUint;
 
             #[test]
@@ -351,6 +353,66 @@ macro_rules! stabchain_tests {
                 let chain = Stabchain::new_with_strategy(&g, $strategy);
                 valid_stabchain(&chain).unwrap();
             }
+
+            /// This was a regularly failing group for the random implementations.
+            #[test]
+            fn failing_example_shallow() {
+                let g: Group<DefaultPermutation> = Group::from_list(vec![
+                    CyclePermutation::from_vec(vec![
+                        vec![1, 2],
+                        vec![5, 6],
+                        vec![7, 15],
+                        vec![8, 16],
+                        vec![9, 10],
+                        vec![13, 14],
+                    ])
+                    .into_perm(),
+                    CyclePermutation::from_vec(vec![
+                        vec![1, 4, 5, 16],
+                        vec![2, 3, 6, 15],
+                        vec![7, 10, 11, 14],
+                        vec![8, 9, 12, 13],
+                    ])
+                    .into_perm(),
+                    CyclePermutation::from_vec(vec![
+                        vec![1, 5],
+                        vec![2, 6],
+                        vec![9, 13],
+                        vec![10, 14],
+                    ])
+                    .into_perm(),
+                ]);
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+                assert_eq!(i(128), chain.order())
+            }
+
+            /// This was a regularly failing group for the random implementations.
+            #[test]
+            fn failing_example_random() {
+                let g: Group<DefaultPermutation> = Group::from_list(vec![
+                    CyclePermutation::from_vec(vec![
+                        vec![1, 15, 24, 36, 20, 30, 2, 14, 21, 35, 18, 29],
+                        vec![3, 16, 22, 34, 17, 31, 4, 13, 23, 33, 19, 32],
+                        vec![5, 9, 27, 8, 12, 26],
+                        vec![6, 11, 28],
+                        vec![7, 10, 25],
+                    ])
+                    .into_perm(),
+                    CyclePermutation::from_vec(vec![
+                        vec![1, 21, 13, 3, 22, 14, 2, 23, 15],
+                        vec![4, 24, 16],
+                        vec![5, 25, 17, 7, 28, 19, 6, 27, 18],
+                        vec![8, 26, 20],
+                        vec![9, 35, 31, 12, 36, 29, 11, 33, 32],
+                        vec![10, 34, 30],
+                    ])
+                    .into_perm(),
+                ]);
+                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                valid_stabchain(&chain).unwrap();
+                assert_eq!(i(10368), chain.order());
+            }
         }
     };
 }
@@ -380,9 +442,22 @@ mod tests {
                 SimpleApplication::default(),
                 crate::group::stabchain::base::selectors::FmpSelector::default(),
                 RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([43; 16])),
+                    .rng(rand_xorshift::XorShiftRng::from_seed([58; 16])),
             )
         },
         random
+    );
+    stabchain_tests!(
+        {
+            use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
+            use rand::SeedableRng;
+            RandomBuilderStrategyShallow::new_with_params(
+                SimpleApplication::default(),
+                crate::group::stabchain::base::selectors::FmpSelector::default(),
+                RandomAlgoParameters::default()
+                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
+            )
+        },
+        random_shallow
     );
 }

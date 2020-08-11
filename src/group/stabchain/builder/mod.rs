@@ -13,7 +13,7 @@ use rand::Rng;
 
 mod ift;
 mod naive;
-pub mod random;
+pub(crate) mod random;
 
 /// A builder is a datastructure to be used for constructing
 /// a stabilizer chain. While the ultimate record is the same for any kind of
@@ -109,18 +109,20 @@ where
     }
 }
 
+pub type RandomBuilderStrategy<A, S, R> = RandomBuilderStrategyNaive<A, S, R>;
+
 use random::parameters::RandomAlgoParameters;
 
 /// Randomised Stabiliser chain construction.
 /// This should be faster than the naive and IFT methods, but is not deterministic.
 #[derive(Debug, Clone)]
-pub struct RandomBuilderStrategy<A, S, R = ThreadRng> {
+pub struct RandomBuilderStrategyNaive<A, S, R = ThreadRng> {
     selector: S,
     action: A,
     params: RandomAlgoParameters<R>,
 }
 
-impl<A, S> RandomBuilderStrategy<A, S> {
+impl<A, S> RandomBuilderStrategyNaive<A, S> {
     pub fn new(action: A, selector: S) -> Self {
         RandomBuilderStrategy {
             action,
@@ -140,7 +142,7 @@ impl<A, S, R> RandomBuilderStrategy<A, S, R> {
     }
 }
 
-impl<P, S, A, R> BuilderStrategy<P> for RandomBuilderStrategy<A, S, R>
+impl<P, S, A, R> BuilderStrategy<P> for RandomBuilderStrategyNaive<A, S, R>
 where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
@@ -149,9 +151,58 @@ where
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
-    type BuilderT = random::StabchainBuilderRandom<P, S, A, R>;
+    type BuilderT = random::random_ift::StabchainBuilderRandom<P, S, A, R>;
 
     fn make_builder(self) -> Self::BuilderT {
-        random::StabchainBuilderRandom::new(self.selector, self.action, self.params)
+        random::random_ift::StabchainBuilderRandom::new(self.selector, self.action, self.params)
+    }
+}
+
+/// Randomised Stabiliser chain construction, optimised by using shallow trees.
+/// This should be faster than the naive and IFT methods, but is not deterministic.
+#[derive(Debug, Clone)]
+pub struct RandomBuilderStrategyShallow<A, S, R = ThreadRng> {
+    selector: S,
+    action: A,
+    params: RandomAlgoParameters<R>,
+}
+
+impl<A, S> RandomBuilderStrategyShallow<A, S> {
+    pub fn new(action: A, selector: S) -> Self {
+        RandomBuilderStrategyShallow {
+            action,
+            selector,
+            params: RandomAlgoParameters::default(),
+        }
+    }
+}
+
+impl<A, S, R> RandomBuilderStrategyShallow<A, S, R> {
+    pub fn new_with_params(action: A, selector: S, params: RandomAlgoParameters<R>) -> Self {
+        RandomBuilderStrategyShallow {
+            action,
+            selector,
+            params,
+        }
+    }
+}
+
+impl<P, S, A, R> BuilderStrategy<P> for RandomBuilderStrategyShallow<A, S, R>
+where
+    P: Permutation,
+    A: Action<P, OrbitT = usize>,
+    S: BaseSelector<P, A::OrbitT>,
+    R: Rng + Clone,
+{
+    type Action = A;
+    type Transversal = FactoredTransversalResolver<A>;
+    type BuilderT = random::random_strees::StabchainBuilderRandomSTrees<P, S, A, R>;
+
+    fn make_builder(self) -> Self::BuilderT {
+        random::random_strees::StabchainBuilderRandomSTrees::new(
+            self.selector,
+            self.action,
+            self.params,
+        )
     }
 }

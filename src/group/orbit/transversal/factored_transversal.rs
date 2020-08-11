@@ -2,6 +2,7 @@
 
 use super::skeleton::TransversalSkeleton;
 use crate::group::orbit::transversal::Transversal;
+use crate::group::utils::apply_permutation_word;
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, DefaultPermutation, Permutation};
@@ -31,7 +32,7 @@ where
     if !transversal.contains_key(&point) {
         None
     } else {
-        let mut orbit_point = point;
+        let mut orbit_point = point.clone();
         let mut rep = P::id();
         // Move along the orbit till we reach a representative that the base moves to the point.
         while orbit_point != base {
@@ -41,6 +42,7 @@ where
         }
         // Invert at the end, as the inverses are used.
         // If we want fgh, then we can instead do (h^-1, g^-1, f^-1)^-1.
+        debug_assert!(strat.apply(&rep.inv(), base) == point);
         Some(rep.inv())
     }
 }
@@ -60,7 +62,7 @@ where
     if !transversal.contains_key(&point) {
         None
     } else {
-        let mut orbit_point = point;
+        let mut orbit_point = point.clone();
         let mut rep = vec![];
         // Move along the orbit till we reach a representative that the base moves to the point.
         while orbit_point != base {
@@ -68,6 +70,8 @@ where
             rep.push(g_inv.inv());
             orbit_point = strat.apply(&g_inv, orbit_point);
         }
+        rep.reverse();
+        debug_assert!(apply_permutation_word(&rep, base, strat) == point);
         Some(rep)
     }
 }
