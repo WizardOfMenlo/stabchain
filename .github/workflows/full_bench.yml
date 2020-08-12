@@ -20,9 +20,7 @@ jobs:
           override: true
 
       - name: Unzip
-        run: unzip data.zip
-      - name: Look Around
-        run: ls
+        run: unzip data.zip -d data/
       - name: Build Release
         run: cargo build --release --example benchmark
 
