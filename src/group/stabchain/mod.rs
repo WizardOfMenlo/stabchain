@@ -87,6 +87,16 @@ where
         )
     }
 
+    /// Get the strong generating set of this stabiliser chain.
+    pub fn strong_generating_set(&self) -> Vec<P> {
+        self.chain
+            .iter()
+            .flat_map(|g| g.gens.generators().iter().cloned())
+            .collect::<DetHashSet<P>>()
+            .drain()
+            .collect()
+    }
+
     /// Get chain length
     pub fn len(&self) -> usize {
         // We don't include the end item here
@@ -106,6 +116,44 @@ where
     /// Get an iterator over the records
     pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord<P, V, A>> {
         self.chain.iter()
+    }
+}
+
+impl<P, A> Stabchain<P, FactoredTransversalResolver<A>, A>
+where
+    P: Permutation,
+    A: Action<P>,
+{
+    /// Create the stabiliser chain from a known base and strong generating set.
+    pub fn from_base_and_strong_gen_set(base: &[A::OrbitT], sgs: &[P], strat: A) -> Self {
+        //Skeleton of the chain.
+        let mut chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>> = base
+            .iter()
+            .map(|point| {
+                StabchainRecord::new(point.clone(), Group::new(&[]), DetHashMap::default())
+            })
+            .collect();
+        //Add the generators in the correct location, from back to front.
+        for p in sgs {
+            for i in 0..chain.len() {
+                //If this permutation is fixed by all previous points but not by this one, then add it at this level.
+                if base[..i]
+                    .iter()
+                    .all(|base| strat.apply(&p, base.clone()) == base.clone())
+                {
+                    chain[i].gens.generators.push(p.clone());
+                } else {
+                    //If it doesn't fix all points currently, it isn't going to moving forward.
+                    break;
+                }
+            }
+        }
+        //Now fill in the transversal
+        chain.iter_mut().for_each(|record| {
+            record.transversal =
+                factored_transversal_complete_opt(&record.group(), record.base.clone(), &strat)
+        });
+        Stabchain { chain }
     }
 }
 
@@ -207,7 +255,11 @@ where
     }
 }
 
-use crate::group::orbit::transversal::TransversalError;
+use super::orbit::{
+    abstraction::FactoredTransversalResolver,
+    transversal::factored_transversal::factored_transversal_complete_opt,
+};
+use crate::{group::orbit::transversal::TransversalError, DetHashSet};
 
 #[derive(Debug)]
 pub enum StabchainError<P, OrbitT> {
@@ -419,6 +471,51 @@ macro_rules! stabchain_tests {
 
 #[cfg(test)]
 mod tests {
+    use super::valid_stabchain;
+    use super::*;
+    use crate::group::Group;
+    use crate::perm::actions::SimpleApplication;
+    use rand::{seq::SliceRandom, thread_rng};
+
+    //Macro for testing the reconstruction of a group.
+    macro_rules! reconstruction_test {
+        ($group:expr, $name:ident) => {
+            #[test]
+            fn $name() {
+                let g = $group;
+                let chain = g.stabchain();
+                let base = chain.base();
+                let mut sgs = chain.strong_generating_set();
+                //To make sure we aren't relying on the ordering of the sgs.
+                sgs.shuffle(&mut thread_rng());
+                let reconstructed_chain = Stabchain::from_base_and_strong_gen_set(
+                    base.base(),
+                    &sgs[..],
+                    SimpleApplication::default(),
+                );
+                assert_eq!(chain.len(), reconstructed_chain.len());
+                assert_eq!(base.base(), reconstructed_chain.base().base());
+                assert_eq!(chain.order(), reconstructed_chain.order());
+                valid_stabchain(&reconstructed_chain).unwrap();
+                for (record1, record2) in chain.iter().zip(reconstructed_chain.iter()) {
+                    assert_eq!(record1.base(), record2.base());
+                    //Check the orbits are the same
+                    assert!(
+                        record1.transversal.len() == record2.transversal.len()
+                            && record1
+                                .transversal
+                                .keys()
+                                .all(|point| record2.transversal.contains_key(point))
+                    );
+                }
+            }
+        };
+    }
+
+    reconstruction_test!(Group::symmetric(20), reconstruction_symmetric);
+    reconstruction_test!(Group::trivial(), reconstruction_trivial);
+    reconstruction_test!(Group::cyclic(30), reconstruction_cyclic);
+    reconstruction_test!(Group::dihedral_2n(10), reconstruction_dihedral);
 
     stabchain_tests!(
         NaiveBuilderStrategy::new(
