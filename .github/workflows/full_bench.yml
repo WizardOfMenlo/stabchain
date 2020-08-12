@@ -21,6 +21,8 @@ jobs:
 
       - name: Unzip
         run: unzip data.zip
+      - name: Look Around
+        run: ls
       - name: Build Release
         run: cargo build --release --example benchmark
 
