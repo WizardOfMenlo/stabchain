@@ -10,25 +10,23 @@ use crate::{
 };
 
 // Helper struct, used to build the stabilizer chain
-pub struct RandomBaseChangeBuilder<P, S, A = SimpleApplication<P>>
+pub struct RandomBaseChangeBuilder<P, A = SimpleApplication<P>>
 where
     A: Action<P>,
 {
     current_pos: usize,
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
-    selector: S,
     action: A,
 }
 
-impl<P, S, A> RandomBaseChangeBuilder<P, S, A>
+impl<P, A> RandomBaseChangeBuilder<P, A>
 where
     A: Action<P>,
 {
-    pub(super) fn new(selector: S, action: A) -> Self {
+    pub(super) fn new(action: A) -> Self {
         RandomBaseChangeBuilder {
             current_pos: 0,
             chain: Vec::new(),
-            selector,
             action,
         }
     }
@@ -44,12 +42,11 @@ where
     }
 }
 
-impl<P, S, A> super::BaseChangeBuilder<P, FactoredTransversalResolver<A>, A>
-    for RandomBaseChangeBuilder<P, S, A>
+impl<P, A> super::BaseChangeBuilder<P, FactoredTransversalResolver<A>, A>
+    for RandomBaseChangeBuilder<P, A>
 where
     P: Permutation,
     A: Action<P>,
-    S: BaseSelector<P, A::OrbitT>,
 {
     fn set_base(
         &mut self,

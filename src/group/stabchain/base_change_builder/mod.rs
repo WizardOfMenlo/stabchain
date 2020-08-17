@@ -43,34 +43,32 @@ pub trait BaseChangeBuilderStrategy<P> {
 }
 
 ///// The strategy that is to be used by default
-pub type DefaultStrategy<A, S> = RandomBaseChangeStrategy<A, S>;
+pub type DefaultStrategy<A> = RandomBaseChangeStrategy<A>;
 
 /// Schreir Sims with unfactored transversal. Faster than the
 /// factored transversal version, yet more memory intensive
 #[derive(Debug, Clone)]
-pub struct RandomBaseChangeStrategy<A, S> {
-    selector: S,
+pub struct RandomBaseChangeStrategy<A> {
     action: A,
 }
 
-impl<A, S> RandomBaseChangeStrategy<A, S> {
+impl<A> RandomBaseChangeStrategy<A> {
     /// Create the strategy
-    pub fn new(action: A, selector: S) -> Self {
-        RandomBaseChangeStrategy { selector, action }
+    pub fn new(action: A) -> Self {
+        RandomBaseChangeStrategy { action }
     }
 }
 
-impl<P, S, A> BaseChangeBuilderStrategy<P> for RandomBaseChangeStrategy<A, S>
+impl<P, A> BaseChangeBuilderStrategy<P> for RandomBaseChangeStrategy<A>
 where
     P: Permutation,
     A: Action<P>,
-    S: BaseSelector<P, A::OrbitT>,
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
-    type BuilderT = random::RandomBaseChangeBuilder<P, S, A>;
+    type BuilderT = random::RandomBaseChangeBuilder<P, A>;
 
     fn make_builder(self) -> Self::BuilderT {
-        random::RandomBaseChangeBuilder::new(self.selector, self.action)
+        random::RandomBaseChangeBuilder::new(self.action)
     }
 }
