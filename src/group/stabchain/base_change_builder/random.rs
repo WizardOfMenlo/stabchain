@@ -71,6 +71,9 @@ where
                     &self.action,
                 )
                 .unwrap();
+                debug_assert!(
+                    g.multiply(&h.inv()).apply(record.base.clone()) == g.apply(record.base.clone())
+                );
                 self.schrier_tree_stabilise(g.multiply(&h.inv()))
             } else {
                 (g, i)
