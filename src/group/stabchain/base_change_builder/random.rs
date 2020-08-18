@@ -1,3 +1,4 @@
+use crate::group::orbit::transversal::factored_transversal::representative_raw;
 use crate::{
     group::{
         orbit::abstraction::FactoredTransversalResolver,
@@ -9,6 +10,7 @@ use crate::{
         Group,
     },
     perm::{actions::SimpleApplication, Action, Permutation},
+    DetHashSet,
 };
 use num::BigUint;
 
@@ -50,7 +52,29 @@ where
     fn schrier_tree_stabilise(&mut self, g: P) -> (P, usize) {
         //Find the first moved point.
         if let Some(i) = (0..g.lmp().unwrap()).find(|x| self.action.apply(&g, *x) != *x) {
-            (P::id(), 0)
+            let record = &self.chain[i];
+            let pts = record
+                .transversal
+                .keys()
+                .cloned()
+                .collect::<DetHashSet<usize>>();
+            let moved_pts = pts
+                .clone()
+                .into_iter()
+                .map(|x| g.apply(x))
+                .collect::<DetHashSet<usize>>();
+            if pts == moved_pts {
+                let h = representative_raw(
+                    &record.transversal,
+                    record.base.clone(),
+                    g.apply(i),
+                    &self.action,
+                )
+                .unwrap();
+                self.schrier_tree_stabilise(g.multiply(&h.inv()))
+            } else {
+                (g, i)
+            }
         } else {
             (P::id(), self.n)
         }
