@@ -1,4 +1,5 @@
 use crate::group::orbit::transversal::factored_transversal::representative_raw;
+use crate::group::orbit::transversal::shallow_transversal::shallow_transversal;
 use crate::{
     group::{
         orbit::abstraction::FactoredTransversalResolver,
@@ -46,7 +47,25 @@ where
         //Loop till the new chain has the correct order.
         while self.current_chain_order() < target_order {
             let g = rand_perm.random_permutation();
+            let (g_dash, i) = self.schrier_tree_stabilise(g);
+            //If the permutation doesn't sift through then add it as a new generator at level i.
+            if i < self.n {
+                self.update_schrier_tree(i, g_dash);
+            }
         }
+    }
+
+    fn update_schrier_tree(&mut self, level: usize, g: P) {
+        //TODO see which method is better for update.
+        let record = &mut self.chain[level];
+        record.gens.generators.push(g);
+        record.transversal = shallow_transversal(
+            &mut record.gens,
+            record.base.clone(),
+            &self.action,
+            &mut rand::thread_rng(),
+        )
+        .0;
     }
 
     fn schrier_tree_stabilise(&mut self, g: P) -> (P, usize) {
