@@ -19,7 +19,7 @@ where
     A: Action<P>,
 {
     /// The group and base to be used for construction.
-    fn set_base(&mut self, chain: Stabchain<P, V, A>, base: Base<P, A>);
+    fn set_base(&mut self, chain: &Stabchain<P, V, A>, base: Base<P, A>);
 
     /// Build the stabilizer chain
     fn build(self) -> Stabchain<P, V, A>;
@@ -62,7 +62,7 @@ impl<A> RandomBaseChangeStrategy<A> {
 impl<P, A> BaseChangeBuilderStrategy<P> for RandomBaseChangeStrategy<A>
 where
     P: Permutation,
-    A: Action<P>,
+    A: Action<P, OrbitT = usize>,
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
