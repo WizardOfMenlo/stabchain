@@ -235,6 +235,15 @@ where
             resolver: V::default(),
         }
     }
+    ///Create a trivial record that represents the trivial group.
+    pub(crate) fn trivial_record(base: A::OrbitT) -> Self {
+        StabchainRecord {
+            base: base.clone(),
+            gens: Group::new(&[]),
+            transversal: [(base, P::id())].iter().cloned().collect(),
+            resolver: V::default(),
+        }
+    }
 
     /// Get the resolver of the record
     pub(crate) fn resolver(&self) -> &V {
