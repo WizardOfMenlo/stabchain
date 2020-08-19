@@ -1,0 +1,23 @@
+name: Full test suite Naive
+on:
+  schedule:
+    - cron: "0 0 * * *"
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+          - 1.43.0 # MSRV
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test -- test_naive_stabilizer
+        env:
+          STABCHAIN_GROUP_TESTING_NO_LIMIT: true
