@@ -10,6 +10,7 @@ use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::*;
 use base::Base;
+use base_change_builder::{BaseChangeBuilder, BaseChangeBuilderStrategy};
 use builder::{Builder, BuilderStrategy};
 
 use crate::DetHashMap;
@@ -155,6 +156,21 @@ where
                 factored_transversal_complete_opt(&record.group(), record.base.clone(), &strat)
         });
         Stabchain { chain }
+    }
+
+    pub fn from_known_base_with_strategy<S, B>(&self, base: Base<P, A>, build_strategy: S) -> Self
+    where
+        B: BaseChangeBuilder<P, FactoredTransversalResolver<A>, A>,
+        S: BaseChangeBuilderStrategy<
+            P,
+            Action = A,
+            Transversal = FactoredTransversalResolver<A>,
+            BuilderT = B,
+        >,
+    {
+        let mut builder = build_strategy.make_builder();
+        builder.set_base(self, base);
+        builder.build()
     }
 }
 
