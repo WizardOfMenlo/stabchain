@@ -224,8 +224,7 @@ where
             .base
             .iter()
             .filter(|&b| record.transversal.contains_key(b))
-            .cloned()
-            .collect::<Vec<A::OrbitT>>();
+            .count();
         let gens = self
             .current_chain()
             .flat_map(|record| record.gens.generators())
@@ -265,7 +264,7 @@ where
                         record
                             .transversal
                             .keys()
-                            .choose_multiple(&mut *self.rng.borrow_mut(), b_star.len())
+                            .choose_multiple(&mut *self.rng.borrow_mut(), b_star)
                             .into_iter()
                             .cloned()
                             .collect()
