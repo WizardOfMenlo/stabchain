@@ -47,13 +47,7 @@ where
             .base()
             .iter()
             .cloned()
-            .map(|base| {
-                StabchainRecord::new(
-                    base,
-                    Group::new(&[]),
-                    [(base.clone(), P::id())].iter().cloned().collect(),
-                )
-            })
+            .map(|base| StabchainRecord::trivial_record(base))
             .collect::<Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>>();
         //TODO update for passing in an rng.
         let mut rand_perm = RandPerm::new(11, &sgs, 50, rand::thread_rng());
