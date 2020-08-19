@@ -2,7 +2,7 @@ pub mod selectors;
 
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, DefaultPermutation, Permutation};
-
+#[derive(Clone)]
 pub struct Base<P = DefaultPermutation, A = SimpleApplication<P>>
 where
     A: Action<P>,
