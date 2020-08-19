@@ -2,7 +2,7 @@ use crate::group::orbit::transversal::factored_transversal::representative_raw;
 use crate::group::orbit::transversal::shallow_transversal::shallow_transversal;
 use crate::{
     group::{
-        orbit::abstraction::FactoredTransversalResolver,
+        orbit::abstraction::{FactoredTransversalResolver, TransversalResolver},
         random_perm::RandPerm,
         stabchain::{base::Base, Stabchain, StabchainRecord},
         Group,
@@ -35,11 +35,10 @@ where
         }
     }
 
-    fn random_base_change(
-        &mut self,
-        chain: &Stabchain<P, FactoredTransversalResolver<A>, A>,
-        base: Base<P, A>,
-    ) {
+    fn random_base_change<V>(&mut self, chain: &Stabchain<P, V, A>, base: Base<P, A>)
+    where
+        V: TransversalResolver<P, A>,
+    {
         let target_order = chain.order();
         let sgs = Group::from_list(chain.strong_generating_set());
         self.n = sgs.symmetric_super_order() - 1;
@@ -126,11 +125,10 @@ where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
 {
-    fn set_base(
-        &mut self,
-        chain: &Stabchain<P, FactoredTransversalResolver<A>, A>,
-        base: Base<P, A>,
-    ) {
+    fn set_base<V>(&mut self, chain: &Stabchain<P, V, A>, base: Base<P, A>)
+    where
+        V: TransversalResolver<P, A>,
+    {
         //Bases should simply be alternative orderings
         debug_assert!(
             chain.base().base().len() == base.base().len()

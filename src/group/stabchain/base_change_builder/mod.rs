@@ -13,7 +13,10 @@ where
     A: Action<P>,
 {
     /// The group and base to be used for construction.
-    fn set_base(&mut self, chain: &Stabchain<P, V, A>, base: Base<P, A>);
+    // There is an alternative transversal type, as it doesn't need to create chains that use the same transversal type.
+    fn set_base<W>(&mut self, chain: &Stabchain<P, W, A>, base: Base<P, A>)
+    where
+        W: TransversalResolver<P, A>;
 
     /// Build the stabilizer chain
     fn build(self) -> Stabchain<P, V, A>;
@@ -64,5 +67,24 @@ where
 
     fn make_builder(self) -> Self::BuilderT {
         random::RandomBaseChangeBuilder::new(self.action)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::group::Group;
+    use rand::seq::SliceRandom;
+    #[test]
+    fn test_symmetric() {
+        let g = Group::symmetric(10);
+        let original_chain = g.stabchain();
+        let base = original_chain.base();
+        let mut rng = rand::thread_rng();
+        for _ in 0..5 {
+            let mut new_base = Vec::from(base.base());
+            new_base.shuffle(&mut rng);
+            let new_chain = original_chain;
+        }
     }
 }

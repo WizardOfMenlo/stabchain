@@ -119,6 +119,25 @@ where
     pub fn iter(&self) -> impl Iterator<Item = &StabchainRecord<P, V, A>> {
         self.chain.iter()
     }
+
+    pub fn from_known_base_with_strategy<S, B>(
+        &self,
+        base: Base<P, A>,
+        build_strategy: S,
+    ) -> Stabchain<P, FactoredTransversalResolver<A>, A>
+    where
+        B: BaseChangeBuilder<P, FactoredTransversalResolver<A>, A>,
+        S: BaseChangeBuilderStrategy<
+            P,
+            Action = A,
+            Transversal = FactoredTransversalResolver<A>,
+            BuilderT = B,
+        >,
+    {
+        let mut builder = build_strategy.make_builder();
+        builder.set_base(self, base);
+        builder.build()
+    }
 }
 
 impl<P, A> Stabchain<P, FactoredTransversalResolver<A>, A>
@@ -156,21 +175,6 @@ where
                 factored_transversal_complete_opt(&record.group(), record.base.clone(), &strat)
         });
         Stabchain { chain }
-    }
-
-    pub fn from_known_base_with_strategy<S, B>(&self, base: Base<P, A>, build_strategy: S) -> Self
-    where
-        B: BaseChangeBuilder<P, FactoredTransversalResolver<A>, A>,
-        S: BaseChangeBuilderStrategy<
-            P,
-            Action = A,
-            Transversal = FactoredTransversalResolver<A>,
-            BuilderT = B,
-        >,
-    {
-        let mut builder = build_strategy.make_builder();
-        builder.set_base(self, base);
-        builder.build()
     }
 }
 
