@@ -73,7 +73,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::group::Group;
+    use crate::{group::Group, perm::actions::SimpleApplication};
     use rand::seq::SliceRandom;
     #[test]
     fn test_symmetric() {
@@ -84,7 +84,10 @@ mod tests {
         for _ in 0..5 {
             let mut new_base = Vec::from(base.base());
             new_base.shuffle(&mut rng);
-            let new_chain = original_chain;
+            let new_chain = original_chain.from_known_base_with_strategy(
+                Base::new(new_base),
+                RandomBaseChangeStrategy::new(SimpleApplication::default()),
+            );
         }
     }
 }
