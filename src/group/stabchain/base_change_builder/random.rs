@@ -4,14 +4,11 @@ use crate::{
     group::{
         orbit::abstraction::FactoredTransversalResolver,
         random_perm::RandPerm,
-        stabchain::{
-            base::{selectors::BaseSelector, Base},
-            Stabchain, StabchainRecord,
-        },
+        stabchain::{base::Base, Stabchain, StabchainRecord},
         Group,
     },
     perm::{actions::SimpleApplication, Action, Permutation},
-    DetHashSet,
+    DetHashMap, DetHashSet,
 };
 use num::BigUint;
 
@@ -38,10 +35,21 @@ where
         }
     }
 
-    fn random_base_change(&mut self, chain: &Stabchain<P, FactoredTransversalResolver<A>, A>) {
+    fn random_base_change(
+        &mut self,
+        chain: &Stabchain<P, FactoredTransversalResolver<A>, A>,
+        base: Base<P, A>,
+    ) {
         let target_order = chain.order();
         let sgs = Group::from_list(chain.strong_generating_set());
         self.n = sgs.symmetric_super_order() - 1;
+        // Create the trivial chain with all the new base points.
+        self.chain = base
+            .base()
+            .iter()
+            .cloned()
+            .map(|base| StabchainRecord::new(base, Group::new(&[]), DetHashMap::default()))
+            .collect::<Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>>();
         //TODO update for passing in an rng.
         let mut rand_perm = RandPerm::new(11, &sgs, 50, rand::thread_rng());
         //Loop till the new chain has the correct order.
@@ -123,6 +131,12 @@ where
         chain: &Stabchain<P, FactoredTransversalResolver<A>, A>,
         base: Base<P, A>,
     ) {
+        //Bases should simply be alternative orderings
+        debug_assert!(
+            chain.base().base().len() == base.base().len()
+                && chain.base().iter().all(|point| base.base().contains(point))
+        );
+        self.random_base_change(chain, base);
     }
 
     fn build(self) -> Stabchain<P, FactoredTransversalResolver<A>, A> {

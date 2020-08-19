@@ -1,15 +1,9 @@
 //! Traits for creating chains
 
 use super::Stabchain;
-use crate::group::orbit::abstraction::{
-    FactoredTransversalResolver, SimpleTransversalResolver, TransversalResolver,
-};
-use crate::group::stabchain::base::{selectors::BaseSelector, Base};
-use crate::group::Group;
+use crate::group::orbit::abstraction::{FactoredTransversalResolver, TransversalResolver};
+use crate::group::stabchain::base::Base;
 use crate::perm::{Action, Permutation};
-
-use rand::rngs::ThreadRng;
-use rand::Rng;
 
 mod random;
 
