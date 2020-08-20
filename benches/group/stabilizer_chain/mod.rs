@@ -112,7 +112,8 @@ fn stabchain_symmetric(c: &mut Criterion) {
             RandomBuilderStrategyNaive::new_with_params(
                 SimpleApplication::default(),
                 DefaultSelector::default(),
-                RandomAlgoParameters::default().rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
+                RandomAlgoParameters::default()
+                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
             )
         );
         bench_stabchain_impl!(
@@ -123,7 +124,8 @@ fn stabchain_symmetric(c: &mut Criterion) {
             RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
                 DefaultSelector::default(),
-                RandomAlgoParameters::default().rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
+                RandomAlgoParameters::default()
+                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
             )
         );
         bench_stabchain_impl!(
