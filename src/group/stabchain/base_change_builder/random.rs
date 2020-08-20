@@ -54,9 +54,9 @@ where
         //Loop till the new chain has the correct order.
         while self.current_chain_order() < target_order {
             let g = rand_perm.random_permutation();
-            let (g_dash, i) = self.schrier_tree_stabilise(g);
+            let (g_dash, i) = self.residue_with_dropout(g);
             //If the permutation doesn't sift through then add it as a new generator at level i.
-            if i < self.n {
+            if i < base.base().len() {
                 self.update_schrier_tree(i, g_dash);
             }
         }
@@ -75,36 +75,75 @@ where
         .0;
     }
 
+    fn residue_with_dropout(&self, p: P) -> (P, usize) {
+        // Early exit
+        if p.is_id() {
+            return (p, self.chain.len());
+        }
+
+        let applicator = A::default();
+        let mut i = 0;
+        let mut g = p.clone();
+        for record in self.chain.iter() {
+            let base = record.base.clone();
+            let application = applicator.apply(&g, base.clone());
+
+            if !record.transversal.contains_key(&application) {
+                break;
+            }
+
+            let representative = record
+                .resolver()
+                .representative(&record.transversal, base, application)
+                .unwrap();
+            g = g.divide(&representative);
+            i += 1;
+        }
+        if g.is_id() {
+            i = self.n;
+        }
+        (g, i)
+    }
+
     fn schrier_tree_stabilise(&mut self, g: P) -> (P, usize) {
         //Find the first moved point.
         if let Some(i) = (0..g.lmp().unwrap()).find(|x| self.action.apply(&g, *x) != *x) {
+            println!("{}", i);
+            println!("{:?}", g);
             let record = &self.chain[i];
             let pts = record
                 .transversal
                 .keys()
                 .cloned()
                 .collect::<DetHashSet<usize>>();
+            dbg!(&pts);
             let moved_pts = pts
                 .clone()
                 .into_iter()
                 .map(|x| g.apply(x))
                 .collect::<DetHashSet<usize>>();
+            dbg!(&moved_pts);
             if pts == moved_pts {
+                println!("Gone Through");
                 let h = representative_raw(
                     &record.transversal,
                     record.base.clone(),
-                    g.apply(i),
+                    g.apply(record.base().clone()),
                     &self.action,
                 )
-                .unwrap();
-                debug_assert!(
-                    g.multiply(&h.inv()).apply(record.base.clone()) == g.apply(record.base.clone())
-                );
-                self.schrier_tree_stabilise(g.multiply(&h.inv()))
+                .unwrap()
+                .inv();
+                debug_assert!(h.apply(record.base.clone()) == g.apply(record.base.clone()));
+                // debug_assert!(
+                //     g.divide(&h).apply(record.base.clone()) == g.apply(record.base.clone())
+                // );
+                self.schrier_tree_stabilise(g.divide(&h))
             } else {
+                println!("Returned");
                 (g, i)
             }
         } else {
+            println!("Got id");
             (P::id(), self.n)
         }
     }
