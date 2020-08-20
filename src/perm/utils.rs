@@ -38,7 +38,7 @@ pub fn valid_images(images: &[usize]) -> Result<(), ImageError> {
     use std::cmp::Ordering;
 
     let mut vec: Vec<_> = images.into();
-    vec.sort();
+    vec.sort_unstable();
     for (index, &value) in vec.iter().enumerate() {
         return match value.cmp(&index) {
             Ordering::Less => Err(ImageError::DuplicatedImage(value)),
