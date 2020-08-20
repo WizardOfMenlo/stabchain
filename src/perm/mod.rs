@@ -69,7 +69,7 @@ pub trait Permutation: Clone + Eq + Hash {
         self.multiply(&other.inv())
     }
 
-    /// Get the smallest moved point
+    /// Get the largest moved point
     fn lmp(&self) -> Option<usize>;
 }
 
