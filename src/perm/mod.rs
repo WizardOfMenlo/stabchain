@@ -9,6 +9,7 @@ pub mod export;
 pub mod impls;
 pub mod utils;
 
+use std::fmt::Debug;
 use std::hash::Hash;
 
 // Very much arbitrary
@@ -19,7 +20,7 @@ const ORDER_LIMIT: usize = 12;
 pub type DefaultPermutation = impls::standard::StandardPermutation;
 
 /// A trait encapsulating what being a permutation is like (permutation on points ndr)
-pub trait Permutation: Clone + Eq + Hash {
+pub trait Permutation: Clone + Eq + Hash + Debug {
     /// Given some images, build a permutation
     fn from_images(images: &[usize]) -> Self;
 
