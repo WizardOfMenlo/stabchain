@@ -501,7 +501,7 @@ macro_rules! stabchain_tests {
 
 #[cfg(test)]
 macro_rules! known_base_tests {
-    ($strategy:expr, $short:ident) => {
+    ($strategy:expr, $short:ident, $repeats:expr) => {
         mod $short {
             use crate::group::stabchain::base_change_builder::*;
             use crate::group::stabchain::{base::Base, valid_stabchain};
@@ -516,7 +516,7 @@ macro_rules! known_base_tests {
                 let original_chain = g.stabchain();
                 let base = original_chain.base();
                 let mut rng = rand::thread_rng();
-                for _ in 0..5 {
+                for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
                     let new_chain = original_chain
@@ -531,7 +531,7 @@ macro_rules! known_base_tests {
                 let original_chain = g.stabchain();
                 let base = original_chain.base();
                 let mut rng = rand::thread_rng();
-                for _ in 0..5 {
+                for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
                     let new_chain = original_chain
@@ -546,7 +546,7 @@ macro_rules! known_base_tests {
                 let original_chain = g.stabchain();
                 let base = original_chain.base();
                 let mut rng = rand::thread_rng();
-                for _ in 0..5 {
+                for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
                     let new_chain = original_chain
@@ -565,7 +565,7 @@ macro_rules! known_base_tests {
                 let original_chain = g.stabchain();
                 let base = original_chain.base();
                 let mut rng = rand::thread_rng();
-                for _ in 0..5 {
+                for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
                     let new_chain = original_chain
@@ -580,7 +580,7 @@ macro_rules! known_base_tests {
                 let original_chain = g.stabchain();
                 let base = original_chain.base();
                 let mut rng = rand::thread_rng();
-                for _ in 0..5 {
+                for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
                     let new_chain = original_chain
@@ -595,7 +595,7 @@ macro_rules! known_base_tests {
                 let original_chain = g.stabchain();
                 let base = original_chain.base();
                 let mut rng = rand::thread_rng();
-                for _ in 0..5 {
+                for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
                     let new_chain = original_chain
@@ -610,7 +610,7 @@ macro_rules! known_base_tests {
                 let original_chain = g.stabchain();
                 let base = original_chain.base();
                 let mut rng = rand::thread_rng();
-                for _ in 0..5 {
+                for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
                     let new_chain = original_chain
@@ -631,7 +631,7 @@ macro_rules! known_base_tests {
                 let original_chain = g.stabchain();
                 let base = original_chain.base();
                 let mut rng = rand::thread_rng();
-                for _ in 0..5 {
+                for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
                     let new_chain = original_chain
@@ -762,6 +762,7 @@ mod tests {
 
     known_base_tests!(
         RandomBaseChangeStrategy::new(SimpleApplication::default()),
-        base_change_random
+        base_change_random,
+        5
     );
 }
