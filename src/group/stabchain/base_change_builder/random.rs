@@ -15,7 +15,7 @@ use num::BigUint;
 const MIN_SIZE: usize = 11;
 const INITIAL_RUNS: usize = 50;
 
-// Helper struct, used to build the stabilizer chain
+/// Helper struct, used to build the stabilizer chain
 pub struct RandomBaseChangeBuilder<P, A = SimpleApplication<P>>
 where
     A: Action<P, OrbitT = usize>,
@@ -66,6 +66,7 @@ where
         debug_assert_eq!(self.current_chain_order(), target_order);
     }
 
+    /// Add a given generator at a specific level, and update the transversal.
     fn update_schrier_tree(&mut self, level: usize, g: P) {
         debug_assert!(!g.is_id());
         let record = &mut self.chain[level];

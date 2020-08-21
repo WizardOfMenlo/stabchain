@@ -42,8 +42,7 @@ pub trait BaseChangeBuilderStrategy<P> {
 ///// The strategy that is to be used by default
 pub type DefaultStrategy<A> = RandomBaseChangeStrategy<A>;
 
-/// Schreir Sims with unfactored transversal. Faster than the
-/// factored transversal version, yet more memory intensive
+/// Builder strategy for building a stabiliser chain from a reordering of a known stabiliser base.
 #[derive(Debug, Clone)]
 pub struct RandomBaseChangeStrategy<A> {
     action: A,
