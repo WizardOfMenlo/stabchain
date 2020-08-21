@@ -58,7 +58,7 @@ impl<A> RandomBaseChangeStrategy<A> {
 impl<P, A> BaseChangeBuilderStrategy<P> for RandomBaseChangeStrategy<A>
 where
     P: Permutation,
-    A: Action<P, OrbitT = usize>,
+    A: Action<P>,
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;

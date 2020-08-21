@@ -1,4 +1,3 @@
-use crate::group::orbit::transversal::factored_transversal::representative_raw;
 use crate::group::orbit::transversal::shallow_transversal::shallow_transversal;
 use crate::{
     group::{
@@ -8,7 +7,6 @@ use crate::{
         Group,
     },
     perm::{actions::SimpleApplication, Action, Permutation},
-    DetHashSet,
 };
 use num::BigUint;
 
@@ -18,7 +16,7 @@ const INITIAL_RUNS: usize = 50;
 /// Helper struct, used to build the stabilizer chain
 pub struct RandomBaseChangeBuilder<P, A = SimpleApplication<P>>
 where
-    A: Action<P, OrbitT = usize>,
+    A: Action<P>,
 {
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
     action: A,
@@ -28,7 +26,7 @@ where
 impl<P, A> RandomBaseChangeBuilder<P, A>
 where
     P: Permutation,
-    A: Action<P, OrbitT = usize>,
+    A: Action<P>,
 {
     pub(super) fn new(action: A) -> Self {
         RandomBaseChangeBuilder {
@@ -50,7 +48,7 @@ where
             .base()
             .iter()
             .cloned()
-            .map(|base| StabchainRecord::trivial_record(base))
+            .map(StabchainRecord::trivial_record)
             .collect::<Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>>();
         //Random permutation generator.
         let mut rand_perm = RandPerm::new(MIN_SIZE, &sgs, INITIAL_RUNS, rand::thread_rng());
@@ -90,7 +88,7 @@ where
 
         let applicator = A::default();
         let mut i = 0;
-        let mut g = p.clone();
+        let mut g = p;
         for record in self.chain.iter() {
             let base = record.base.clone();
             let application = applicator.apply(&g, base.clone());
@@ -101,52 +99,12 @@ where
 
             let representative = record
                 .resolver()
-                .representative(&record.transversal, base, application)
+                .representative(&record.transversal, base.clone(), application)
                 .unwrap();
             g = g.divide(&representative);
             i += 1;
         }
         (g, i)
-    }
-
-    #[deprecated = "This doesn't work and is just another sifting method."]
-    #[allow(dead_code)]
-    fn schrier_tree_stabilise(&mut self, g: P) -> (P, usize) {
-        //Find the first moved point.
-        if let Some(i) = (0..g.lmp().unwrap()).find(|x| self.action.apply(&g, *x) != *x) {
-            let record = &self.chain[i];
-            let pts = record
-                .transversal
-                .keys()
-                .cloned()
-                .collect::<DetHashSet<usize>>();
-            dbg!(&pts);
-            let moved_pts = pts
-                .clone()
-                .into_iter()
-                .map(|x| g.apply(x))
-                .collect::<DetHashSet<usize>>();
-            dbg!(&moved_pts);
-            if pts == moved_pts {
-                let h = representative_raw(
-                    &record.transversal,
-                    record.base.clone(),
-                    g.apply(record.base().clone()),
-                    &self.action,
-                )
-                .unwrap()
-                .inv();
-                debug_assert!(h.apply(record.base.clone()) == g.apply(record.base.clone()));
-                // debug_assert!(
-                //     g.divide(&h).apply(record.base.clone()) == g.apply(record.base.clone())
-                // );
-                self.schrier_tree_stabilise(g.divide(&h))
-            } else {
-                (g, i)
-            }
-        } else {
-            (P::id(), self.n)
-        }
     }
 
     /// Calculate the current order of the group this stabiliser chain stabilises.
@@ -163,7 +121,7 @@ impl<P, A> super::BaseChangeBuilder<P, FactoredTransversalResolver<A>, A>
     for RandomBaseChangeBuilder<P, A>
 where
     P: Permutation,
-    A: Action<P, OrbitT = usize>,
+    A: Action<P>,
 {
     fn set_base<V>(&mut self, chain: &Stabchain<P, V, A>, base: Base<P, A>)
     where
