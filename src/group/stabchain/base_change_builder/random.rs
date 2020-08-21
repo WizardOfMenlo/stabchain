@@ -8,7 +8,7 @@ use crate::{
         Group,
     },
     perm::{actions::SimpleApplication, Action, Permutation},
-    DetHashMap, DetHashSet,
+    DetHashSet,
 };
 use num::BigUint;
 
@@ -105,6 +105,8 @@ where
         (g, i)
     }
 
+    #[deprecated = "This doesn't work and is just another sifting method."]
+    #[allow(dead_code)]
     fn schrier_tree_stabilise(&mut self, g: P) -> (P, usize) {
         //Find the first moved point.
         if let Some(i) = (0..g.lmp().unwrap()).find(|x| self.action.apply(&g, *x) != *x) {
