@@ -18,6 +18,7 @@ jobs:
 
       - uses: actions-rs/cargo@v1
         with:
-          command: test -- test_naive_stabilizer
+          command: test
+          args: -- test_naive_stabilizer
         env:
           STABCHAIN_GROUP_TESTING_NO_LIMIT: true

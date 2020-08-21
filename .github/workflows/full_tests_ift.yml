@@ -18,6 +18,7 @@ jobs:
 
       - uses: actions-rs/cargo@v1
         with:
-          command: test -- test_ift_stabilizer
+          command: test
+          args: -- test_ift_stabilizer
         env:
           STABCHAIN_GROUP_TESTING_NO_LIMIT: true
