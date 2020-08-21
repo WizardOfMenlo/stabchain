@@ -20,7 +20,6 @@ where
 {
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
     action: A,
-    n: usize,
 }
 
 impl<P, A> RandomBaseChangeBuilder<P, A>
@@ -32,7 +31,6 @@ where
         RandomBaseChangeBuilder {
             chain: Vec::new(),
             action,
-            n: 0,
         }
     }
 
@@ -42,7 +40,6 @@ where
     {
         let target_order = chain.order();
         let sgs = Group::from_list(chain.strong_generating_set());
-        self.n = sgs.symmetric_super_order() - 1;
         // Create the trivial chain with all the new base points.
         self.chain = base
             .base()
