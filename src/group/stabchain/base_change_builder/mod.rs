@@ -69,25 +69,3 @@ where
         random::RandomBaseChangeBuilder::new(self.action)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::{group::Group, perm::actions::SimpleApplication};
-    use rand::seq::SliceRandom;
-    #[test]
-    fn test_symmetric() {
-        let g = Group::symmetric(10);
-        let original_chain = g.stabchain();
-        let base = original_chain.base();
-        let mut rng = rand::thread_rng();
-        for _ in 0..5 {
-            let mut new_base = Vec::from(base.base());
-            new_base.shuffle(&mut rng);
-            let new_chain = original_chain.from_known_base_with_strategy(
-                Base::new(new_base),
-                RandomBaseChangeStrategy::new(SimpleApplication::default()),
-            );
-        }
-    }
-}

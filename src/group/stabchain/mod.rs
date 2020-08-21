@@ -500,6 +500,150 @@ macro_rules! stabchain_tests {
 }
 
 #[cfg(test)]
+macro_rules! known_base_tests {
+    ($strategy:expr, $short:ident) => {
+        mod $short {
+            use crate::group::stabchain::base_change_builder::*;
+            use crate::group::stabchain::{base::Base, valid_stabchain};
+            use crate::group::Group;
+            use crate::perm::actions::*;
+            use num::BigUint;
+            use rand::seq::SliceRandom;
+
+            #[test]
+            fn trivial_chain() {
+                let g = Group::trivial();
+                let original_chain = g.stabchain();
+                let base = original_chain.base();
+                let mut rng = rand::thread_rng();
+                for _ in 0..5 {
+                    let mut new_base = Vec::from(base.base());
+                    new_base.shuffle(&mut rng);
+                    let new_chain = original_chain
+                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    valid_stabchain(&new_chain).unwrap();
+                }
+            }
+
+            #[test]
+            fn klein4_chain() {
+                let g = Group::klein_4();
+                let original_chain = g.stabchain();
+                let base = original_chain.base();
+                let mut rng = rand::thread_rng();
+                for _ in 0..5 {
+                    let mut new_base = Vec::from(base.base());
+                    new_base.shuffle(&mut rng);
+                    let new_chain = original_chain
+                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    valid_stabchain(&new_chain).unwrap();
+                }
+            }
+
+            #[test]
+            fn cyclic_chain() {
+                let g = Group::cyclic(100);
+                let original_chain = g.stabchain();
+                let base = original_chain.base();
+                let mut rng = rand::thread_rng();
+                for _ in 0..5 {
+                    let mut new_base = Vec::from(base.base());
+                    new_base.shuffle(&mut rng);
+                    let new_chain = original_chain
+                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    valid_stabchain(&new_chain).unwrap();
+                }
+            }
+
+            fn i(x: usize) -> BigUint {
+                BigUint::from(x)
+            }
+
+            #[test]
+            fn dihedral_chain() {
+                let g = Group::dihedral_2n(3);
+                let original_chain = g.stabchain();
+                let base = original_chain.base();
+                let mut rng = rand::thread_rng();
+                for _ in 0..5 {
+                    let mut new_base = Vec::from(base.base());
+                    new_base.shuffle(&mut rng);
+                    let new_chain = original_chain
+                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    valid_stabchain(&new_chain).unwrap();
+                }
+            }
+
+            #[test]
+            fn alternating_chain() {
+                let g = Group::alternating(5);
+                let original_chain = g.stabchain();
+                let base = original_chain.base();
+                let mut rng = rand::thread_rng();
+                for _ in 0..5 {
+                    let mut new_base = Vec::from(base.base());
+                    new_base.shuffle(&mut rng);
+                    let new_chain = original_chain
+                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    valid_stabchain(&new_chain).unwrap();
+                }
+            }
+
+            #[test]
+            fn symmetric_chain() {
+                let g = Group::symmetric(10);
+                let original_chain = g.stabchain();
+                let base = original_chain.base();
+                let mut rng = rand::thread_rng();
+                for _ in 0..5 {
+                    let mut new_base = Vec::from(base.base());
+                    new_base.shuffle(&mut rng);
+                    let new_chain = original_chain
+                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    valid_stabchain(&new_chain).unwrap();
+                }
+            }
+
+            #[test]
+            fn product_chain() {
+                let g = Group::product(&Group::symmetric(15), &Group::symmetric(15));
+                let original_chain = g.stabchain();
+                let base = original_chain.base();
+                let mut rng = rand::thread_rng();
+                for _ in 0..5 {
+                    let mut new_base = Vec::from(base.base());
+                    new_base.shuffle(&mut rng);
+                    let new_chain = original_chain
+                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    valid_stabchain(&new_chain).unwrap();
+                }
+            }
+
+            #[test]
+            fn single_non_trivial_layer() {
+                use crate::perm::export::CyclePermutation;
+                use crate::perm::DefaultPermutation;
+
+                let g = Group::<DefaultPermutation>::new(&[CyclePermutation::single_cycle(&[
+                    1, 2,
+                ])
+                .into()]);
+                let original_chain = g.stabchain();
+                let base = original_chain.base();
+                let mut rng = rand::thread_rng();
+                for _ in 0..5 {
+                    let mut new_base = Vec::from(base.base());
+                    new_base.shuffle(&mut rng);
+                    let new_chain = original_chain
+                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    valid_stabchain(&new_chain).unwrap();
+                }
+            }
+        }
+    };
+}
+
+#[cfg(test)]
 mod tests {
     use super::valid_stabchain;
     use super::*;
@@ -614,5 +758,10 @@ mod tests {
             )
         },
         random_shallow_quick_test
+    );
+
+    known_base_tests!(
+        RandomBaseChangeStrategy::new(SimpleApplication::default()),
+        base_change_random
     );
 }
