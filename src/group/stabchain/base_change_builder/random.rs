@@ -77,6 +77,7 @@ where
         .0;
     }
 
+    /// Calculate the residue of an permutation and the level that it sifts through to.
     fn residue_with_dropout(&self, p: P) -> (P, usize) {
         // Early exit
         if p.is_id() {
@@ -100,9 +101,6 @@ where
                 .unwrap();
             g = g.divide(&representative);
             i += 1;
-        }
-        if g.is_id() {
-            i = self.chain.len();
         }
         (g, i)
     }
