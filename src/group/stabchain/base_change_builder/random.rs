@@ -12,6 +12,9 @@ use crate::{
 };
 use num::BigUint;
 
+const MIN_SIZE: usize = 11;
+const INITIAL_RUNS: usize = 50;
+
 // Helper struct, used to build the stabilizer chain
 pub struct RandomBaseChangeBuilder<P, A = SimpleApplication<P>>
 where
@@ -49,8 +52,8 @@ where
             .cloned()
             .map(|base| StabchainRecord::trivial_record(base))
             .collect::<Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>>();
-        //TODO update for passing in an rng.
-        let mut rand_perm = RandPerm::new(11, &sgs, 50, rand::thread_rng());
+        //Random permutation generator.
+        let mut rand_perm = RandPerm::new(MIN_SIZE, &sgs, INITIAL_RUNS, rand::thread_rng());
         //Loop till the new chain has the correct order.
         while self.current_chain_order() < target_order {
             let g = rand_perm.random_permutation();
@@ -65,9 +68,9 @@ where
 
     fn update_schrier_tree(&mut self, level: usize, g: P) {
         debug_assert!(!g.is_id());
-        //TODO see which method is better for update.
         let record = &mut self.chain[level];
         record.gens.generators.push(g);
+        //Update the new transversal.
         record.transversal = shallow_transversal(
             &mut record.gens,
             record.base.clone(),

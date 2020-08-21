@@ -507,7 +507,6 @@ macro_rules! known_base_tests {
             use crate::group::stabchain::{base::Base, valid_stabchain};
             use crate::group::Group;
             use crate::perm::actions::*;
-            use num::BigUint;
             use rand::seq::SliceRandom;
 
             #[test]
