@@ -60,9 +60,11 @@ where
                 self.update_schrier_tree(i, g_dash);
             }
         }
+        debug_assert_eq!(self.current_chain_order(), target_order);
     }
 
     fn update_schrier_tree(&mut self, level: usize, g: P) {
+        debug_assert!(!g.is_id());
         //TODO see which method is better for update.
         let record = &mut self.chain[level];
         record.gens.generators.push(g);
@@ -100,7 +102,7 @@ where
             i += 1;
         }
         if g.is_id() {
-            i = self.n;
+            i = self.chain.len();
         }
         (g, i)
     }
