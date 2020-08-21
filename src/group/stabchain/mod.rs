@@ -555,10 +555,6 @@ macro_rules! known_base_tests {
                 }
             }
 
-            fn i(x: usize) -> BigUint {
-                BigUint::from(x)
-            }
-
             #[test]
             fn dihedral_chain() {
                 let g = Group::dihedral_2n(3);
