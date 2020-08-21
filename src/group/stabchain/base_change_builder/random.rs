@@ -112,8 +112,6 @@ where
     fn schrier_tree_stabilise(&mut self, g: P) -> (P, usize) {
         //Find the first moved point.
         if let Some(i) = (0..g.lmp().unwrap()).find(|x| self.action.apply(&g, *x) != *x) {
-            println!("{}", i);
-            println!("{:?}", g);
             let record = &self.chain[i];
             let pts = record
                 .transversal
@@ -128,7 +126,6 @@ where
                 .collect::<DetHashSet<usize>>();
             dbg!(&moved_pts);
             if pts == moved_pts {
-                println!("Gone Through");
                 let h = representative_raw(
                     &record.transversal,
                     record.base.clone(),
@@ -143,11 +140,9 @@ where
                 // );
                 self.schrier_tree_stabilise(g.divide(&h))
             } else {
-                println!("Returned");
                 (g, i)
             }
         } else {
-            println!("Got id");
             (P::id(), self.n)
         }
     }
