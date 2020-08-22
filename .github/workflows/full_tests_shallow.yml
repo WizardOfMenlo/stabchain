@@ -19,6 +19,6 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: -- test_random_shallow_stabilizer
+          args: --release -- test_random_shallow_stabilizer
         env:
           STABCHAIN_GROUP_TESTING_NO_LIMIT: true
