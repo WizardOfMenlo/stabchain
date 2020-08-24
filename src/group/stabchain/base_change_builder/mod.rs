@@ -5,6 +5,7 @@ use crate::group::orbit::abstraction::{FactoredTransversalResolver, TransversalR
 use crate::group::stabchain::base::Base;
 use crate::perm::{Action, Permutation};
 
+mod cyclic;
 mod random;
 
 /// Trait to represent a builder from a known base.
@@ -66,5 +67,32 @@ where
 
     fn make_builder(self) -> Self::BuilderT {
         random::RandomBaseChangeBuilder::new(self.action)
+    }
+}
+
+/// Builder strategy for building a stabiliser chain from cyclic shifts of a known stabiliser base.
+#[derive(Debug, Clone)]
+pub struct CyclicBaseChangeStrategy<A> {
+    action: A,
+}
+
+impl<A> CyclicBaseChangeStrategy<A> {
+    /// Create the strategy
+    pub fn new(action: A) -> Self {
+        CyclicBaseChangeStrategy { action }
+    }
+}
+
+impl<P, A> BaseChangeBuilderStrategy<P> for CyclicBaseChangeStrategy<A>
+where
+    P: Permutation,
+    A: Action<P>,
+{
+    type Action = A;
+    type Transversal = FactoredTransversalResolver<A>;
+    type BuilderT = cyclic::CyclicBaseChangeBuilder<P, A>;
+
+    fn make_builder(self) -> Self::BuilderT {
+        cyclic::CyclicBaseChangeBuilder::new(self.action)
     }
 }
