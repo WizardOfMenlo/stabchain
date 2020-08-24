@@ -1,4 +1,5 @@
 use crate::group::orbit::transversal::shallow_transversal::shallow_transversal;
+use crate::DetHashSet;
 use crate::{
     group::{
         orbit::abstraction::{FactoredTransversalResolver, TransversalResolver},
@@ -124,9 +125,14 @@ where
     where
         V: TransversalResolver<P, A>,
     {
-        //Bases should simply be alternative orderings
+        //Bases should simply be alternative orderings (or with new without duplicates unneccessary elements added)
         debug_assert!(
-            chain.base().base().len() == base.base().len()
+            base.base()
+                .iter()
+                .cloned()
+                .collect::<DetHashSet<A::OrbitT>>()
+                .len()
+                == base.base().len()
                 && chain.base().iter().all(|point| base.base().contains(point))
         );
         self.random_base_change(chain, base);
