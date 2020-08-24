@@ -83,7 +83,12 @@ where
 {
     let orbit = g.orbit_of_action(base.clone(), strat).orbit;
     let mut rand_perm_gen = RandPerm::new(11, g, 50, rng.clone());
-    let mut gen_seq = vec![rand_perm_gen.random_permutation()];
+    let mut initial_gen = rand_perm_gen.random_permutation();
+    //We don't want to start off wit the identity.
+    while initial_gen.is_id() {
+        initial_gen = rand_perm_gen.random_permutation();
+    }
+    let mut gen_seq = vec![initial_gen];
     let mut cube = cube::Cube::new(base.clone(), &gen_seq[..], strat);
     while !cube.cube.eq(&orbit) {
         let mut new_element = rand_perm_gen.random_permutation();
@@ -91,6 +96,7 @@ where
         if new_element.is_id() {
             new_element = g.generators().choose(rng).unwrap().clone();
         }
+        debug_assert!(!new_element.is_id());
         if !gen_seq.contains(&new_element) {
             gen_seq.push(new_element);
             cube = cube::Cube::new(base.clone(), &gen_seq[..], strat);
