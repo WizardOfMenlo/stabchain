@@ -46,7 +46,7 @@ where
             .iter()
             .cloned()
             .map(StabchainRecord::trivial_record)
-            .collect::<Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>>();
+            .collect::<Vec<_>>();
         //Random permutation generator.
         let mut rand_perm = RandPerm::new(MIN_SIZE, &sgs, INITIAL_RUNS, rand::thread_rng());
         //Loop till the new chain has the correct order.
