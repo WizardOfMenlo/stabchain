@@ -14,6 +14,8 @@ use std::time::Instant;
 
 use criterion::black_box;
 
+use tracing::Level;
+
 #[derive(Debug)]
 enum BenchMode {
     Deterministic,
@@ -78,6 +80,8 @@ fn bench<S: BuilderStrategy<DefaultPermutation> + Clone>(lib: Vec<DecoratedGroup
 }
 
 fn main() {
+    tracing_subscriber::fmt().with_max_level(Level::INFO).init();
+
     #[cfg(debug_assertions)]
     {
         println!("Running benches in non release mode is not a good idea");

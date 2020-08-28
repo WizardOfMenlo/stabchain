@@ -7,9 +7,11 @@ pub mod moved_point;
 pub use fixed_base::FixedBaseSelector;
 pub use moved_point::{FmpSelector, LmpSelector};
 
+use std::fmt::Debug;
+
 /// A very small trait, used to seamlessly switch between
 /// an automatic base repr, and one which uses a precomputed one
-pub trait BaseSelector<P, OrbitT = usize>: Clone {
+pub trait BaseSelector<P, OrbitT = usize>: Clone + Debug {
     /// Contract, should never be called with id
     fn moved_point(&mut self, p: &P, pos: usize) -> OrbitT;
 }

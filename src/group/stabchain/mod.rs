@@ -17,8 +17,11 @@ use crate::DetHashMap;
 
 use num::BigUint;
 
+use tracing::debug;
+
 /// A stabilizer chain. Each level of the chain represents a subgroup of the
 /// preceding group, which usually fixes a single point.
+#[derive(Debug, Clone)]
 pub struct Stabchain<P, V, A = SimpleApplication<P>>
 where
     A: Action<P>,
@@ -33,12 +36,16 @@ where
     V: TransversalResolver<P, A>,
 {
     /// Creates a stabilizer chain, using a selected strategy.
+    #[tracing::instrument(skip(g))]
     pub fn new_with_strategy<S, B: Builder<P, V, A>>(g: &Group<P>, build_strategy: S) -> Self
     where
         S: BuilderStrategy<P, Action = A, Transversal = V, BuilderT = B>,
     {
+        debug!(G = %g, strat = ?build_strategy, "Starting Stabilizer chain construction");
         let mut builder = build_strategy.make_builder();
+        debug!(?builder, "Builder Constructed");
         builder.set_generators(g);
+        debug!("Building completed");
         builder.build()
     }
 

@@ -20,10 +20,12 @@ use rand::seq::IteratorRandom;
 use rand::Rng;
 use std::cell::RefCell;
 use std::collections::VecDeque;
+use std::fmt::Debug;
 use std::iter::{repeat_with, FromIterator};
 
 // Helper struct, used to build the stabilizer chain
 
+#[derive(Debug)]
 pub struct StabchainBuilderRandom<P, S, A = SimpleApplication<P>, R = ThreadRng>
 where
     A: Action<P, OrbitT = usize>,
@@ -406,7 +408,7 @@ where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
     S: BaseSelector<P, A::OrbitT>,
-    R: Rng,
+    R: Rng + Debug,
 {
     fn set_generators(&mut self, gens: &Group<P>) {
         self.construct_strong_generating_set(gens);

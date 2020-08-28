@@ -5,8 +5,10 @@ use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
 use crate::DetHashMap;
 
+use std::fmt::Debug;
+
 /// A trait encapsulating the different ways in which a transversal can access a representative
-pub trait TransversalResolver<P, A = SimpleApplication<P>>: Default
+pub trait TransversalResolver<P, A = SimpleApplication<P>>: Default + Debug
 where
     A: Action<P>,
 {
@@ -35,7 +37,7 @@ pub struct SimpleTransversalResolver;
 
 impl<P, A> TransversalResolver<P, A> for SimpleTransversalResolver
 where
-    P: Clone,
+    P: Clone + Debug,
     A: Action<P>,
 {
     type AssociatedTransversal = super::transversal::SimpleTransversal<P, A>;

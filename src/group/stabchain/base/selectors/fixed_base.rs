@@ -1,7 +1,9 @@
 use super::BaseSelector;
 
+use std::fmt::Debug;
+
 /// A selector that chooses elements in order from a common base i.e. [1,2,3,4]
-#[derive(Default, Clone)]
+#[derive(Debug, Default, Clone)]
 pub struct FixedBaseSelector<T = usize> {
     base: Vec<T>,
 }
@@ -20,7 +22,7 @@ where
 
 impl<P, T> BaseSelector<P, T> for FixedBaseSelector<T>
 where
-    T: Clone,
+    T: Clone + Debug,
 {
     fn moved_point(&mut self, _: &P, pos: usize) -> T {
         self.base
