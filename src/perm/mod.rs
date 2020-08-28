@@ -9,7 +9,7 @@ pub mod export;
 pub mod impls;
 pub mod utils;
 
-use std::fmt::Debug;
+use std::fmt::{Debug, Display};
 use std::hash::Hash;
 
 // Very much arbitrary
@@ -20,7 +20,7 @@ const ORDER_LIMIT: usize = 12;
 pub type DefaultPermutation = impls::standard::StandardPermutation;
 
 /// A trait encapsulating what being a permutation is like (permutation on points ndr)
-pub trait Permutation: Clone + Eq + Hash + Debug {
+pub trait Permutation: Clone + Eq + Hash + Debug + Display {
     /// Given some images, build a permutation
     fn from_images(images: &[usize]) -> Self;
 
@@ -75,8 +75,8 @@ pub trait Permutation: Clone + Eq + Hash + Debug {
 }
 
 /// Trait to select which action does the permutation induce
-pub trait Action<P>: Default + Clone {
-    type OrbitT: Hash + Eq + Clone;
+pub trait Action<P>: Default + Clone + Debug {
+    type OrbitT: Hash + Eq + Clone + Debug;
 
     /// Apply the action. Required to satisfy (1) action.apply(P::id, i) == i.
     /// (2) action.apply(a b, i) == action.apply(b, action.apply(a, i))
@@ -101,6 +101,12 @@ macro_rules! impl_display {
                 write!(f, "{}", CyclePermutation::from(self.clone()))
             }
         }
+    };
+}
+
+macro_rules! impl_all_conversions {
+    ([$first:ty], $($other:ty, )*) => {
+        $(impl_conversions!($first, $other);)*
     };
 }
 
@@ -146,7 +152,7 @@ impl_all!(
     WordPermutation,
 );
 
-impl_all!(
+impl_all_conversions!(
     [WordPermutation],
     SyncPermutation,
     MapPermutation,

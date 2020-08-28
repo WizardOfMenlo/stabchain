@@ -141,6 +141,23 @@ where
     }
 }
 
+impl<P> Display for WordPermutation<P>
+where
+    P: Permutation,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut buf = String::new();
+
+        for perm in self.word.iter().take(self.word.len() - 1) {
+            buf.push_str(&perm.to_string());
+            buf.push_str(", ");
+        }
+
+        buf.push_str(&self.word[self.word.len() - 1].to_string());
+        write!(f, "{}", buf)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

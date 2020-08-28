@@ -11,6 +11,7 @@ use std::collections::VecDeque;
 use std::iter::FromIterator;
 
 // Helper struct, used to build the stabilizer chain
+#[derive(Debug)]
 pub struct StabchainBuilderIFT<P, S, A = SimpleApplication<P>>
 where
     A: Action<P>,

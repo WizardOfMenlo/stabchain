@@ -18,8 +18,10 @@ use rand::{seq::IteratorRandom, Rng};
 use std::cell::RefCell;
 use std::iter::{repeat_with, Iterator};
 
-// Helper struct, used to build the stabilizer chain
+use std::fmt::Debug;
 
+// Helper struct, used to build the stabilizer chain
+#[derive(Debug)]
 pub struct StabchainBuilderRandomSTrees<P, S, A = SimpleApplication<P>, R = ThreadRng>
 where
     A: Action<P, OrbitT = usize>,
@@ -395,7 +397,7 @@ where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
     S: BaseSelector<P, A::OrbitT>,
-    R: Rng + Clone,
+    R: Rng + Clone + Debug,
 {
     fn set_generators(&mut self, gens: &Group<P>) {
         self.construct_strong_generating_set(gens);

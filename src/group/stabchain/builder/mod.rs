@@ -11,6 +11,8 @@ use crate::perm::{Action, Permutation};
 use rand::rngs::ThreadRng;
 use rand::Rng;
 
+use std::fmt::Debug;
+
 mod ift;
 mod naive;
 pub mod random;
@@ -18,7 +20,7 @@ pub mod random;
 /// A builder is a datastructure to be used for constructing
 /// a stabilizer chain. While the ultimate record is the same for any kind of
 /// chain, there are some very real differences in performance that can occur
-pub trait Builder<P, V, A>
+pub trait Builder<P, V, A>: Debug
 where
     A: Action<P>,
 {
@@ -31,7 +33,7 @@ where
 
 /// A strategy is a lightweight struct that allows to
 /// (hopefully at compile time plz compiler) select which builder to use
-pub trait BuilderStrategy<P> {
+pub trait BuilderStrategy<P>: Debug {
     /// The action that this strategy uses
     type Action: Action<P>;
 
@@ -148,7 +150,7 @@ where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
     S: BaseSelector<P, A::OrbitT>,
-    R: Rng,
+    R: Rng + Debug,
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
@@ -193,7 +195,7 @@ where
     P: Permutation,
     A: Action<P, OrbitT = usize>,
     S: BaseSelector<P, A::OrbitT>,
-    R: Rng + Clone,
+    R: Rng + Clone + Debug,
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;

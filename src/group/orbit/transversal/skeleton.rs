@@ -6,6 +6,8 @@ use crate::perm::Action;
 
 use crate::DetHashMap;
 
+use std::fmt::Debug;
+
 /// Struct that avoids code duplication
 #[derive(Debug)]
 pub struct TransversalSkeleton<P, R, A>
@@ -42,6 +44,7 @@ where
 
 impl<P, R, A> Transversal<P, A> for TransversalSkeleton<P, R, A>
 where
+    P : Debug,
     R: TransversalResolver<P, A>,
     A: Action<P>,
 {

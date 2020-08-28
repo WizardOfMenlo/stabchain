@@ -8,6 +8,7 @@ use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
 use crate::DetHashSet;
 use std::collections::VecDeque;
+use std::fmt::Debug;
 
 /// w^G = { w^g | g \in G }
 #[derive(Debug)]
@@ -34,7 +35,7 @@ impl Orbit {
 
 impl<OrbitT> Orbit<OrbitT>
 where
-    OrbitT: std::hash::Hash + Eq + Clone,
+    OrbitT: std::hash::Hash + Eq + Clone + Debug,
 {
     /// Build an orbit from a group, given a starting element and an action to apply
     pub fn new_with_action<P, A>(g: &Group<P>, w: OrbitT, strat: &A) -> Self

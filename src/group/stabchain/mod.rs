@@ -17,6 +17,8 @@ use crate::DetHashMap;
 
 use num::BigUint;
 
+use tracing::info;
+
 /// A stabilizer chain. Each level of the chain represents a subgroup of the
 /// preceding group, which usually fixes a single point.
 #[derive(Debug, Clone)]
@@ -38,6 +40,7 @@ where
     where
         S: BuilderStrategy<P, Action = A, Transversal = V, BuilderT = B>,
     {
+        info!(G = ?g, strat = ?build_strategy, "Starting stabilizer chain construction");
         let mut builder = build_strategy.make_builder();
         builder.set_generators(g);
         builder.build()
