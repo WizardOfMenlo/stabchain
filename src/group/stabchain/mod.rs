@@ -19,6 +19,7 @@ use num::BigUint;
 
 /// A stabilizer chain. Each level of the chain represents a subgroup of the
 /// preceding group, which usually fixes a single point.
+#[derive(Debug, Clone)]
 pub struct Stabchain<P, V, A = SimpleApplication<P>>
 where
     A: Action<P>,

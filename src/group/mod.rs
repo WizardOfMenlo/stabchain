@@ -129,6 +129,7 @@ where
     P: Permutation,
 {
     /// Instantiate the group from some generators
+    #[tracing::instrument]
     pub fn new(generators: &[P]) -> Self {
         Self::from_iter(generators.iter().cloned())
     }
@@ -143,11 +144,13 @@ where
     /// Computes the orbit of the generator.
     /// Note that in most cases factored_transversal is a better choice
     /// As it allows to compute representatives with only marginally more work
+    #[tracing::instrument]
     pub fn orbit(&self, base: usize) -> orbit::Orbit {
         orbit::Orbit::new(self, base)
     }
 
     /// Create a random generator for elements of the group
+    #[tracing::instrument]
     pub fn rng(&self) -> random_perm::RandPerm<P> {
         random_perm::RandPerm::from_generators(11, self, 50)
     }
@@ -166,6 +169,7 @@ where
     }
 
     /// Computes the transversal from the group generators (use factored transversal instead for memory efficience)
+    #[tracing::instrument]
     pub fn transversal(
         &self,
         base: usize,
@@ -186,6 +190,7 @@ where
     }
 
     /// Computes the factored transversal from the group generators
+    #[tracing::instrument]
     pub fn factored_transversal(
         &self,
         base: usize,
@@ -206,6 +211,7 @@ where
     }
 
     /// Computes a stabilizer chain for this group
+    #[tracing::instrument]
     pub fn stabchain(&self) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
         use self::stabchain::base::selectors::DefaultSelector;
         stabchain::Stabchain::new_with_strategy(
@@ -215,6 +221,7 @@ where
     }
 
     /// Computes a stabilizer chain for this group with a base
+    #[tracing::instrument]
     pub fn stabchain_base(
         &self,
         base: &[usize],
@@ -245,6 +252,7 @@ where
     }
 
     /// Check G.subgroup_of(H) <=> G <= H
+    #[tracing::instrument]
     pub fn subgroup_of(&self, h: &Group<P>) -> bool {
         let stabchain = h.stabchain();
         self.generators().iter().all(|g| stabchain.in_group(g))
@@ -252,6 +260,7 @@ where
 
     /// Bruteforce the elements to get all elements in the group using an orbit strategy
     /// Unless time is a very cheap commodity, do not do on large groups
+    #[tracing::instrument]
     pub fn bruteforce_elements(&self) -> Vec<P> {
         self.orbit_of_action(
             P::id(),
@@ -263,6 +272,7 @@ where
     }
 
     /// Regenerate the groups using a new set of generators
+    #[tracing::instrument]
     pub fn random_generators(&self) -> Group<P> {
         let order = self.stabchain().order();
 
@@ -279,6 +289,7 @@ where
     /// Regenerate the groups using a new set of generators
     /// Note this might not actually terminate if n cannot be generated with that number of generators (i.e. symmetric with 1 generator)
     /// Setting n >= self.generators().len() should guarantee that this terminates
+    #[tracing::instrument]
     pub fn random_n_generators(&self, n: usize) -> Group<P> {
         let order = self.stabchain().order();
 
@@ -304,6 +315,7 @@ where
     }
 
     /// Conjugate the generators by this permutation
+    #[tracing::instrument]
     pub fn conjugate_gens(&self, p: &P) -> Self {
         use crate::perm::actions::ConjugationAction;
         let c = ConjugationAction::default();
@@ -311,6 +323,7 @@ where
     }
 
     /// Computes the direct product of two groups
+    #[tracing::instrument]
     pub fn product(g1: &Group<P>, g2: &Group<P>) -> Group<P> {
         if g1.generators.is_empty() {
             return g2.clone();
