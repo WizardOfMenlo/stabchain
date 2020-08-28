@@ -44,7 +44,7 @@ where
 
 impl<P, R, A> Transversal<P, A> for TransversalSkeleton<P, R, A>
 where
-    P : Debug,
+    P: Debug,
     R: TransversalResolver<P, A>,
     A: Action<P>,
 {

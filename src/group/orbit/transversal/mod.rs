@@ -18,7 +18,7 @@ use std::fmt::Debug;
 
 /// A trait that the different implementations of transversals should implement
 #[allow(clippy::len_without_is_empty)]
-pub trait Transversal<P, A = SimpleApplication<P>> : Debug
+pub trait Transversal<P, A = SimpleApplication<P>>: Debug
 where
     A: Action<P>,
 {
