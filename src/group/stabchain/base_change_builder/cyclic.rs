@@ -3,7 +3,6 @@ use crate::DetHashSet;
 use crate::{
     group::{
         orbit::abstraction::{FactoredTransversalResolver, TransversalResolver},
-        random_perm::RandPerm,
         stabchain::{base::Base, Stabchain, StabchainRecord},
         Group,
     },
@@ -11,10 +10,9 @@ use crate::{
 };
 use num::BigUint;
 
-const MIN_SIZE: usize = 11;
-const INITIAL_RUNS: usize = 50;
-
 /// Helper struct, used to build the stabilizer chain
+//TODO
+#[allow(dead_code)]
 pub struct CyclicBaseChangeBuilder<P, A = SimpleApplication<P>>
 where
     A: Action<P>,
@@ -23,6 +21,7 @@ where
     action: A,
 }
 
+#[allow(dead_code)]
 impl<P, A> CyclicBaseChangeBuilder<P, A>
 where
     P: Permutation,
@@ -35,46 +34,36 @@ where
         }
     }
 
-    fn random_base_change<V>(&mut self, chain: &Stabchain<P, V, A>, base: Base<P, A>)
+    fn cyclic_base_change<V>(&mut self, chain: &Stabchain<P, V, A>, base: Base<P, A>)
     where
         V: TransversalResolver<P, A>,
     {
-        let target_order = chain.order();
-        let sgs = Group::from_list(chain.strong_generating_set());
-        // Create the trivial chain with all the new base points.
-        self.chain = base
-            .base()
+        //TODO make the rng global.
+        //First copy the chain.
+        self.chain = chain
             .iter()
-            .cloned()
-            .map(StabchainRecord::trivial_record)
-            .collect::<Vec<_>>();
-        //Random permutation generator.
-        let mut rand_perm = RandPerm::new(MIN_SIZE, &sgs, INITIAL_RUNS, rand::thread_rng());
-        //Loop till the new chain has the correct order.
-        while self.current_chain_order() < target_order {
-            let g = rand_perm.random_permutation();
-            let (g_dash, i) = self.residue_with_dropout(g);
-            //If the permutation doesn't sift through then add it as a new generator at level i.
-            if i < base.base().len() {
-                self.update_schrier_tree(i, g_dash);
-            }
-        }
-        debug_assert_eq!(self.current_chain_order(), target_order);
+            .map(|record| {
+                let record_base = record.base.clone();
+                let mut g = record.group().clone();
+                let transversal = shallow_transversal(
+                    &mut g,
+                    record_base.clone(),
+                    &self.action,
+                    &mut rand::thread_rng(),
+                );
+                StabchainRecord::new(record_base, g, transversal.0)
+            })
+            .collect();
     }
 
-    /// Add a given generator at a specific level, and update the transversal.
-    fn update_schrier_tree(&mut self, level: usize, g: P) {
-        debug_assert!(!g.is_id());
-        let record = &mut self.chain[level];
-        record.gens.generators.push(g);
-        //Update the new transversal.
-        record.transversal = shallow_transversal(
-            &mut record.gens,
-            record.base.clone(),
-            &self.action,
-            &mut rand::thread_rng(),
-        )
-        .0;
+    fn right_shift_base<V>(&mut self, chain: &Stabchain<P, V, A>, position: usize, shift: usize)
+    where
+        V: TransversalResolver<P, A>,
+    {
+        //Where to shift the point to.
+        let new_pos = (position - shift) % chain.len();
+        let record = self.chain.remove(position);
+        
     }
 
     /// Calculate the residue of an permutation and the level that it sifts through to.
@@ -135,7 +124,7 @@ where
                 == base.base().len()
                 && chain.base().iter().all(|point| base.base().contains(point))
         );
-        self.random_base_change(chain, base);
+        self.cyclic_base_change(chain, base);
     }
 
     fn build(self) -> Stabchain<P, FactoredTransversalResolver<A>, A> {
