@@ -12,6 +12,7 @@ use crate::perm::*;
 use base::Base;
 use base_change_builder::{BaseChangeBuilder, BaseChangeBuilderStrategy};
 use builder::{Builder, BuilderStrategy};
+use rand::seq::IteratorRandom;
 
 use crate::DetHashMap;
 
@@ -144,6 +145,38 @@ where
         let mut builder = build_strategy.make_builder();
         builder.set_base(self, base);
         builder.build()
+    }
+
+    /// Get a random element of the group at a specific layer of the chain.
+    pub fn random_element_from_layer<R>(&self, layer: usize, rng: &mut R) -> P
+    where
+        R: rand::Rng,
+    {
+        self.get_chain_at_layer(layer)
+            .map(|record| {
+                record
+                    .resolver()
+                    .representative(
+                        &record.transversal,
+                        record.base.clone(),
+                        record
+                            .transversal
+                            .keys()
+                            .choose(rng)
+                            .unwrap_or(&record.base)
+                            .clone(),
+                    )
+                    .unwrap()
+            })
+            .fold(P::id(), |accum, product| accum.multiply(&product))
+    }
+
+    /// Get a random element of the group this chain represents.
+    pub fn random_element<R>(&self, rng: &mut R) -> P
+    where
+        R: rand::Rng,
+    {
+        self.random_element_from_layer(0, rng)
     }
 }
 
