@@ -148,6 +148,7 @@ where
     }
 
     /// Get a random element of the group at a specific layer of the chain.
+    /// This will generate elements uniformly, assuming the given RNG also does.
     pub fn random_element_from_layer<R>(&self, layer: usize, rng: &mut R) -> P
     where
         R: rand::Rng,
@@ -172,6 +173,14 @@ where
     }
 
     /// Get a random element of the group this chain represents.
+    /// This will generate elements uniformly, assuming the given RNG also does.
+    /// ```
+    /// use stabchain::group::Group;
+    /// let g = Group::symmetric(4);
+    /// let chain = g.stabchain();
+    /// let p = chain.random_element(&mut rand::thread_rng());
+    /// assert!(chain.in_group(&p));
+    ///```
     pub fn random_element<R>(&self, rng: &mut R) -> P
     where
         R: rand::Rng,
