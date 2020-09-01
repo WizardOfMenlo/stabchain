@@ -3,16 +3,11 @@ use crate::DetHashSet;
 use crate::{
     group::{
         orbit::abstraction::{FactoredTransversalResolver, TransversalResolver},
-        random_perm::RandPerm,
         stabchain::{base::Base, Stabchain, StabchainRecord},
-        Group,
     },
     perm::{actions::SimpleApplication, Action, Permutation},
 };
 use num::BigUint;
-
-const MIN_SIZE: usize = 11;
-const INITIAL_RUNS: usize = 50;
 
 /// Helper struct, used to build the stabilizer chain
 pub struct RandomBaseChangeBuilder<P, A = SimpleApplication<P>>
@@ -40,7 +35,6 @@ where
         V: TransversalResolver<P, A>,
     {
         let target_order = chain.order();
-        let sgs = Group::from_list(chain.strong_generating_set());
         // Create the trivial chain with all the new base points.
         self.chain = base
             .base()
@@ -48,11 +42,10 @@ where
             .cloned()
             .map(StabchainRecord::trivial_record)
             .collect::<Vec<_>>();
-        //Random permutation generator.
-        let mut rand_perm = RandPerm::new(MIN_SIZE, &sgs, INITIAL_RUNS, rand::thread_rng());
+        let mut rng = rand::thread_rng();
         //Loop till the new chain has the correct order.
         while self.current_chain_order() < target_order {
-            let g = rand_perm.random_permutation();
+            let g = chain.random_element(&mut rng);
             let (g_dash, i) = self.residue_with_dropout(g);
             //If the permutation doesn't sift through then add it as a new generator at level i.
             if i < base.base().len() {
