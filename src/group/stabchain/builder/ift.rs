@@ -10,6 +10,8 @@ use crate::DetHashMap;
 use std::collections::VecDeque;
 use std::iter::FromIterator;
 
+use tracing::{debug, trace};
+
 // Helper struct, used to build the stabilizer chain
 #[derive(Debug)]
 pub struct StabchainBuilderIFT<P, S, A = SimpleApplication<P>>
@@ -60,6 +62,7 @@ where
 
     #[allow(clippy::map_entry)]
     fn extend_inner(&mut self, p: P) {
+        trace!(perm = %p, level = self.current_pos, "Extending with perm");
         // Note that id always in group
         if element_testing::is_in_group(self.current_chain(), &p) {
             return;
@@ -67,13 +70,15 @@ where
 
         // Bottom of the chain
         if self.bottom_of_the_chain() {
+            debug!(level = self.current_pos, "Extending the chain at bottom");
             let moved_point = self.selector.moved_point(&p, self.current_pos);
+            debug!(?moved_point, "Selected Moved Point");
             let mut record = StabchainRecord::new(
                 moved_point.clone(),
                 Group::new(&[p.clone()]),
                 [(moved_point.clone(), P::id())].iter().cloned().collect(),
             );
-
+            trace!("Computing orbit of {:?}", moved_point);
             let mut next_orbit_point = self.action.apply(&p, moved_point.clone());
             let mut representative = p.clone();
             while next_orbit_point != moved_point {
@@ -81,10 +86,13 @@ where
                 next_orbit_point = self.action.apply(&p, next_orbit_point);
                 representative = representative.multiply(&p);
             }
+            debug!(record = ?record, level = self.current_pos, "Chain extended");
             self.chain.push(record);
             self.extend_lower_level(representative);
             return;
         }
+
+        debug!(level = self.current_pos, "Updating level");
 
         // Then we already had something in this layer
         // Gets the record to be updated
