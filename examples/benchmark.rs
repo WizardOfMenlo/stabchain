@@ -17,6 +17,57 @@ use criterion::black_box;
 use tracing::Level;
 
 #[derive(Debug)]
+enum Libraries {
+    Ruth,
+    Small,
+    Transitive,
+    All,
+}
+
+impl FromStr for Libraries {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s {
+            "ruth" => Libraries::Ruth,
+            "small" => Libraries::Small,
+            "transitive" => Libraries::Transitive,
+            "all" => Libraries::All,
+            _ => return Err("Could not parse".to_string()),
+        })
+    }
+}
+
+impl Default for Libraries {
+    fn default() -> Self {
+        Libraries::All
+    }
+}
+
+impl ToString for Libraries {
+    fn to_string(&self) -> String {
+        match self {
+            Libraries::Ruth => "ruth",
+            Libraries::Small => "small",
+            Libraries::Transitive => "transitive",
+            Libraries::All => "all",
+        }
+        .to_string()
+    }
+}
+
+impl Libraries {
+    fn paths(&self) -> Vec<&str> {
+        match self {
+            Libraries::Ruth => vec!["data/ruth.json"],
+            Libraries::Small => vec!["data/small.json"],
+            Libraries::Transitive => vec!["data/transitive.json"],
+            Libraries::All => vec!["data/ruth.json", "data/small.json", "data/transitive.json"],
+        }
+    }
+}
+
+#[derive(Debug)]
 enum BenchMode {
     Deterministic,
     DeterministicIFT,
@@ -55,6 +106,9 @@ fn group_library(path: &str) -> impl IntoIterator<Item = DecoratedGroup<DefaultP
 struct Arguments {
     #[structopt(short, long)]
     mode: BenchMode,
+
+    #[structopt(default_value, short, long)]
+    libraries: Libraries,
 }
 
 fn bench<S: BuilderStrategy<DefaultPermutation> + Clone>(lib: Vec<DecoratedGroup>, strategy: S) {
@@ -91,7 +145,7 @@ fn main() {
 
     println!("Loading libraries");
 
-    let group_library = load_libraries(&["data/small.json", "data/transitive.json"]);
+    let group_library = load_libraries(&args.libraries.paths());
 
     println!("Libraries loaded");
 
