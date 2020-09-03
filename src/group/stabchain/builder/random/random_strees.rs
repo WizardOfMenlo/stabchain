@@ -20,6 +20,8 @@ use std::iter::{repeat_with, Iterator};
 
 use std::fmt::Debug;
 
+use tracing::{debug, trace};
+
 // Helper struct, used to build the stabilizer chain
 #[derive(Debug)]
 pub struct StabchainBuilderRandomSTrees<P, S, A = SimpleApplication<P>, R = ThreadRng>
@@ -80,6 +82,7 @@ where
     }
 
     fn construct_strong_generating_set(&mut self, group: &Group<P>) {
+        trace!(group = %group, "Constructing Strong Generating Set");
         //Edge case for trivial group.
         if group.generators().is_empty() {
             return;
@@ -94,6 +97,7 @@ where
             .map(|p| self.selector.moved_point(p, 0))
             .min()
             .unwrap();
+        debug!(group = %group, moved_point = moved_point, "Adding initial record");
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let mut initial_gens = group.clone();
@@ -118,6 +122,10 @@ where
         coset_representatives: usize,
         gens: &[P],
     ) -> Vec<Vec<P>> {
+        debug!(
+            level = self.current_pos,
+            "Random generation of Schrier Generators"
+        );
         // Sum of all the depths in the tree.
         let t: usize = self.depths.iter().sum();
         let record = &self.chain[self.current_pos];
@@ -167,6 +175,7 @@ where
 
     /// Check if adding a new element modifies the current layer of the chain.
     fn check_transversal_augmentation(&mut self, p: P) {
+        debug!(level = self.current_pos, perm = %p, "Checking transversal augmentation with perm");
         let mut record = &mut self.chain[self.current_pos];
         debug_assert!(!record.gens.generators.contains(&p));
         record.gens.generators.push(p);
@@ -191,6 +200,10 @@ where
     }
 
     fn sgc(&mut self) {
+        trace!(
+            level = self.current_pos,
+            "Strong Generating Set Construction"
+        );
         let record = self.chain[self.current_pos].clone();
         //Number of base points than are in the current orbit.
         let b_star = self
@@ -253,6 +266,7 @@ where
                     let new_base_point = self.selector.moved_point(&h_star, self.current_pos);
                     //self.check_transversal_augmentation(h_star);
                     debug_assert!(!self.base.contains(&new_base_point));
+                    debug!(perm = %h_star, moved_point = new_base_point, "Extending chain");
                     self.base.push(new_base_point);
                     //Fields for the new record.
                     let mut gens = Group::new(&[h_star]);
@@ -276,6 +290,7 @@ where
                 let h_star = collapse_perm_word(&h_residue);
                 //Find the position at which this didn't sift through.
                 let j = self.current_pos + drop_out_level;
+                debug!(perm = %h_star, level = j, "Permutation not sifting through");
                 //Add as a generator and update the transversal.
                 self.check_transversal_augmentation_at_level(j, h_star);
                 //Consider the chain now up to date below level j + 1. The +1 is for 1 indexing.
@@ -285,6 +300,7 @@ where
             first_test = false;
         }
         if all_discarded {
+            debug!(level = self.current_pos, "All generators discarded");
             //Really is setting this to i - 1, but as the position is zero indexed it would be doing (i - 1 + 1).
             self.up_to_date = self.current_pos;
         }
@@ -299,6 +315,7 @@ where
 
     /// Test that the current strong generating set is indeed a strong generating set, returning true if it (probably) is.
     fn sgt(&mut self) {
+        trace!("Strong Generating Test");
         let original_position = self.current_pos;
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
@@ -326,6 +343,7 @@ where
             //If we have found a non-trivial element, then invoke the sgc at the specified level.
             if let Some(sgc_invoke_level) = self.sgt_test(&p[..]) {
                 self.current_pos = sgc_invoke_level;
+                debug!(level = sgc_invoke_level, "SGT failed");
                 self.sgc();
                 break;
             };
@@ -345,6 +363,7 @@ where
                 let moved_point = self
                     .selector
                     .moved_point(&collapsed_residue, self.current_pos);
+                debug!(perm = %collapsed_residue, moved_point = moved_point, "Extending chain");
                 let mut gens = Group::new(&[collapsed_residue]);
                 let (transversal, depth) = shallow_transversal(
                     &mut gens,

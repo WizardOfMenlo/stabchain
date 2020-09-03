@@ -23,6 +23,8 @@ use std::collections::VecDeque;
 use std::fmt::Debug;
 use std::iter::{repeat_with, FromIterator};
 
+use tracing::{debug, trace};
+
 // Helper struct, used to build the stabilizer chain
 
 #[derive(Debug)]
@@ -79,6 +81,7 @@ where
     }
 
     fn construct_strong_generating_set(&mut self, group: &Group<P>) {
+        trace!(group = %group, "Constructing Strong Generating Set");
         //Edge case for trivial group.
         if group.generators().is_empty() {
             return;
@@ -93,6 +96,7 @@ where
             .map(|p| self.selector.moved_point(p, 0))
             .min()
             .unwrap();
+        debug!(group = %group, moved_point = moved_point, "Adding initial record");
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let initial_record = StabchainRecord::new(
@@ -112,6 +116,10 @@ where
         coset_representatives: usize,
         gens: &[P],
     ) -> Vec<Vec<P>> {
+        debug!(
+            level = self.current_pos,
+            "Random generation of Schrier Generators"
+        );
         //Sum of all "depths". In reality the transversal doesn't have a depth, so we use this as a upper bound.
         let t = self
             .chain
@@ -164,6 +172,7 @@ where
 
     /// Check if adding a new element modifies the current layer of the chain.
     fn check_transversal_augmentation(&mut self, p: P) {
+        debug!(level = self.current_pos, perm = %p, "Checking transversal augmentation with perm");
         let mut record = self.chain[self.current_pos].clone();
         //debug_assert!(record.gens.generators().contains(&p));
         // If this element is already a generator, then we can exit
@@ -204,6 +213,7 @@ where
         }
         // Update the generators adding p if it isn't already present.
         if !record.gens.generators().contains(&p) {
+            debug!("Adding perm to generating set");
             record.gens =
                 Group::from_iter(std::iter::once(&p).chain(record.gens.generators()).cloned());
         }
@@ -220,6 +230,10 @@ where
     }
 
     fn sgc(&mut self) {
+        trace!(
+            level = self.current_pos,
+            "Strong Generating Set Construction"
+        );
         let record = self.chain[self.current_pos].clone();
         //Number of base points than are in the current orbit.
         let b_star = self
@@ -280,6 +294,7 @@ where
                     let new_base_point = self.selector.moved_point(&h_star, self.current_pos);
                     //self.check_transversal_augmentation(h_star);
                     debug_assert!(!self.base.contains(&new_base_point));
+                    debug!(perm = %h_star, moved_point = new_base_point, "Extending chain");
                     self.base.push(new_base_point);
                     //Fields for the new record.
                     let gens = Group::new(&[h_star]);
@@ -295,6 +310,7 @@ where
                 let h_star = collapse_perm_word(&h_residue);
                 //Find the position at which this didn't sift through.
                 let j = self.current_pos + drop_out_level;
+                debug!(perm = %h_star, level = j, "Permutation not sifting through");
                 //Add as a generator and update the transversal.
                 self.check_transversal_augmentation_at_level(j, h_star);
                 //Consider the chain now up to date below level j + 1. The +1 is for 1 indexing.
@@ -302,6 +318,7 @@ where
             }
         }
         if all_discarded {
+            debug!(level = self.current_pos, "All generators discarded");
             //Really is setting this to i - 1, but as the position is zero indexed it would be doing (i - 1 + 1).
             self.up_to_date = self.current_pos;
         }
@@ -316,6 +333,7 @@ where
 
     /// Test that the current strong generating set is indeed a strong generating set, returning true if it (probably) is.
     fn sgt(&mut self) {
+        trace!("Strong Generating Test");
         let original_position = self.current_pos;
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
@@ -342,6 +360,7 @@ where
         for p in products {
             //If we have found a non-trivial element, then invoke the sgc at the specified level.
             if let Some(sgc_invoke_level) = self.sgt_test(&p[..]) {
+                debug!(level = sgc_invoke_level, "SGT failed");
                 self.current_pos = sgc_invoke_level;
                 self.sgc();
                 break;
@@ -361,6 +380,7 @@ where
                 let moved_point = self
                     .selector
                     .moved_point(&collapsed_residue, self.current_pos);
+                debug!(perm = %collapsed_residue, moved_point = moved_point, "Extending chain");
                 let gens = Group::new(&[collapsed_residue]);
                 let transversal =
                     factored_transversal_complete_opt(&gens, moved_point, &self.action);
