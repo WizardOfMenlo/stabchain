@@ -20,6 +20,7 @@ use tracing::Level;
 enum Libraries {
     Ruth,
     Small,
+    Default,
     Transitive,
     All,
 }
@@ -31,6 +32,7 @@ impl FromStr for Libraries {
         Ok(match s {
             "ruth" => Libraries::Ruth,
             "small" => Libraries::Small,
+            "default" => Libraries::Default,
             "transitive" => Libraries::Transitive,
             "all" => Libraries::All,
             _ => return Err("Could not parse".to_string()),
@@ -40,7 +42,7 @@ impl FromStr for Libraries {
 
 impl Default for Libraries {
     fn default() -> Self {
-        Libraries::All
+        Libraries::Default
     }
 }
 
@@ -49,6 +51,7 @@ impl ToString for Libraries {
         match self {
             Libraries::Ruth => "ruth",
             Libraries::Small => "small",
+            Libraries::Default => "default",
             Libraries::Transitive => "transitive",
             Libraries::All => "all",
         }
@@ -61,6 +64,7 @@ impl Libraries {
         match self {
             Libraries::Ruth => vec!["data/ruth.json"],
             Libraries::Small => vec!["data/small.json"],
+            Libraries::Default => vec!["data/small.json", "data/transitive.json"],
             Libraries::Transitive => vec!["data/transitive.json"],
             Libraries::All => vec!["data/ruth.json", "data/small.json", "data/transitive.json"],
         }
