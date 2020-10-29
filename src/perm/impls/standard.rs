@@ -12,8 +12,8 @@ use std::rc::Rc;
 /// with the Permutation API
 #[derive(Clone, Debug, Eq)]
 pub struct StandardPermutation {
-    vals: Rc<Vec<usize>>,
-    invvals: RefCell<Option<Rc<Vec<usize>>>>,
+    vals: Rc<[usize]>,
+    invvals: RefCell<Option<Rc<[usize]>>>,
 }
 
 impl StandardPermutation {
@@ -21,7 +21,7 @@ impl StandardPermutation {
         &self.vals[..]
     }
 
-    pub(crate) fn make_inverse(vals: Rc<Vec<usize>>, invvals: Rc<Vec<usize>>) -> Self {
+    pub(crate) fn make_inverse(vals: Rc<[usize]>, invvals: Rc<[usize]>) -> Self {
         Self {
             vals: invvals,
             invvals: RefCell::new(Some(vals)),
@@ -39,7 +39,7 @@ impl StandardPermutation {
         }
 
         Self {
-            vals: Rc::new(vals),
+            vals: vals.into(),
             invvals: RefCell::new(None),
         }
     }
@@ -52,8 +52,8 @@ impl Permutation for StandardPermutation {
 
     fn id() -> Self {
         Self {
-            vals: Rc::new(Vec::new()),
-            invvals: RefCell::new(Some(Rc::new(Vec::new()))),
+            vals: Rc::new([]),
+            invvals: RefCell::new(Some(Rc::new([]))),
         }
     }
 
@@ -79,7 +79,7 @@ impl Permutation for StandardPermutation {
 
         let v = crate::perm::algos::inv_unchecked(&self.vals[..]);
 
-        let ptr = Rc::new(v);
+        let ptr: Rc<[usize]> = v.into();
 
         *self.invvals.borrow_mut() = Some(ptr.clone());
 

@@ -9,8 +9,8 @@ use super::standard::StandardPermutation;
 /// Represents a permutation. Very similar to Standard, but ensure sync and can be sent between threads
 #[derive(Clone, Debug)]
 pub struct SyncPermutation {
-    vals: Arc<Vec<usize>>,
-    invvals: Arc<Vec<usize>>,
+    vals: Arc<[usize]>,
+    invvals: Arc<[usize]>,
 }
 
 impl SyncPermutation {
@@ -31,8 +31,8 @@ impl SyncPermutation {
         let invvals = crate::perm::algos::inv_unchecked(&vals[..]);
 
         Self {
-            vals: Arc::new(vals),
-            invvals: Arc::new(invvals),
+            vals: vals.into(),
+            invvals: invvals.into(),
         }
     }
 }
@@ -44,8 +44,8 @@ impl Permutation for SyncPermutation {
 
     fn id() -> Self {
         Self {
-            vals: Arc::new(Vec::new()),
-            invvals: Arc::new(Vec::new()),
+            vals: Arc::new([]),
+            invvals: Arc::new([]),
         }
     }
 
@@ -131,16 +131,17 @@ impl From<StandardPermutation> for SyncPermutation {
         let invvals = p.inv().images();
 
         SyncPermutation {
-            vals: Arc::new(vals),
-            invvals: Arc::new(invvals),
+            vals: vals.into(),
+            invvals: invvals.into(),
         }
     }
 }
 
 impl From<SyncPermutation> for StandardPermutation {
     fn from(p: SyncPermutation) -> Self {
-        use std::rc::Rc;
-        StandardPermutation::make_inverse(Rc::new(p.vals.to_vec()), Rc::new(p.vals.to_vec()))
+        let vals = p.vals.to_vec().into();
+        let invvals = p.invvals.to_vec().into();
+        StandardPermutation::make_inverse(vals, invvals)
     }
 }
 
