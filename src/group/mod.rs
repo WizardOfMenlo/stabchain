@@ -141,14 +141,6 @@ where
         Group::from_list(set.into_iter())
     }
 
-    /// Computes the orbit of the generator.
-    /// Note that in most cases factored_transversal is a better choice
-    /// As it allows to compute representatives with only marginally more work
-    #[tracing::instrument]
-    pub fn orbit(&self, base: usize) -> orbit::Orbit {
-        orbit::Orbit::new(self, base)
-    }
-
     /// Create a random generator for elements of the group
     #[tracing::instrument]
     pub fn rng(&self) -> random_perm::RandPerm<P> {
@@ -158,6 +150,14 @@ where
     /// Create a random generator for elements of the group with a source of randomness
     pub fn rng_with_source<R: rand::Rng>(&self, r: R) -> random_perm::RandPerm<P, R> {
         random_perm::RandPerm::new(11, self, 50, r)
+    }
+
+    /// Computes the orbit of the generator.
+    /// Note that in most cases factored_transversal is a better choice
+    /// As it allows to compute representatives with only marginally more work
+    #[tracing::instrument]
+    pub fn orbit(&self, base: usize) -> orbit::Orbit {
+        orbit::Orbit::new(self, base)
     }
 
     /// Computes the orbit of a particular action
