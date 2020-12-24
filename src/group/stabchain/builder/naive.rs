@@ -99,7 +99,7 @@ where
         // Gets the record to be updated
         let mut record = self.chain[self.current_pos].clone();
 
-        let mut to_check = VecDeque::from_iter(record.transversal.keys().cloned());
+        let mut to_check = record.transversal.keys().cloned().collect::<VecDeque<_>>();
         let mut new_transversal = DetHashMap::default();
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
@@ -124,8 +124,10 @@ where
         }
 
         // We now want to check all the newly added elements
-        let mut to_check =
-            VecDeque::from_iter(new_transversal.iter().map(|(o, p)| (o.clone(), p.clone())));
+        let mut to_check = new_transversal
+            .iter()
+            .map(|(o, p)| (o.clone(), p.clone()))
+            .collect::<VecDeque<_>>();
 
         // Update the record
         record.transversal.extend(new_transversal);
