@@ -260,7 +260,7 @@ where
     /// Get the resolver of the record
     pub fn transversal(&self) -> V::AssociatedTransversal {
         self.resolver
-            .into_transversal(self.transversal.clone(), self.base.clone())
+            .to_transversal(self.transversal.clone(), self.base.clone())
     }
 }
 
