@@ -8,7 +8,6 @@ use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
 use crate::DetHashMap;
 use std::collections::VecDeque;
-use std::iter::FromIterator;
 
 use tracing::{debug, trace};
 

@@ -21,7 +21,7 @@ use rand::Rng;
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::fmt::Debug;
-use std::iter::{repeat_with, FromIterator};
+use std::iter::repeat_with;
 
 use tracing::{debug, trace};
 
