@@ -120,4 +120,28 @@ mod tests {
             assert_eq!(selector.moved_point(&perm, i), perm.lmp().unwrap());
         }
     }
+
+    #[test]
+    fn partial_fixed_base_lmp() {
+        use super::super::LmpSelector;
+        use crate::group::Group;
+
+        use crate::perm::*;
+
+        let base = [0, 1, 2, 3, 4, 5];
+
+        let mut selector = PartialFixedBaseSelector::new(&base, LmpSelector::default());
+
+        let g = Group::symmetric(10);
+        let mut rand = g.rng();
+        for (i, perm) in (0..6).zip(std::iter::repeat_with(|| rand.random_permutation())) {
+            assert_eq!(selector.moved_point(&perm, i), i);
+        }
+
+        for (i, perm) in
+            (6..20).zip(std::iter::repeat_with(|| rand.random_permutation()).filter(|p| !p.is_id()))
+        {
+            assert_eq!(selector.moved_point(&perm, i), perm.lmp().unwrap());
+        }
+    }
 }
