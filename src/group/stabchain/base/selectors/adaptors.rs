@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use super::BaseSelector;
 
 /// A struct for partial base selectors
@@ -31,6 +33,37 @@ where
         } else {
             self.second.moved_point(p, pos - self.limit)
         }
+    }
+}
+// Struct for a Partial Selector that first uses a fixed base selector.
+#[derive(Debug, Clone)]
+pub struct PartialFixedBaseSelector<S, T = usize> {
+    selector: PartialSelector<super::FixedBaseSelector<T>, S>,
+}
+
+impl<S, T> PartialFixedBaseSelector<S, T>
+where
+    T: Clone,
+{
+    pub fn new(base: &[T], after_partial: S) -> Self {
+        // Create a partial selector that uses the fixed base first and then the second selector.
+        PartialFixedBaseSelector {
+            selector: PartialSelector::new(
+                super::FixedBaseSelector::new(base),
+                base.len(),
+                after_partial,
+            ),
+        }
+    }
+}
+
+impl<P, OrbitT, S> BaseSelector<P, OrbitT> for PartialFixedBaseSelector<S, OrbitT>
+where
+    OrbitT: Clone + Debug,
+    S: BaseSelector<P, OrbitT>,
+{
+    fn moved_point(&mut self, p: &P, pos: usize) -> OrbitT {
+        self.selector.moved_point(p, pos)
     }
 }
 
