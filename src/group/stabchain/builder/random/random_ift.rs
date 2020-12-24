@@ -214,8 +214,10 @@ where
         // Update the generators adding p if it isn't already present.
         if !record.gens.generators().contains(&p) {
             debug!("Adding perm to generating set");
-            record.gens =
-                Group::from_iter(std::iter::once(&p).chain(record.gens.generators()).cloned());
+            record.gens = std::iter::once(&p)
+                .chain(record.gens.generators())
+                .cloned()
+                .collect();
         }
         // Store the updated record in the chain
         self.chain[self.current_pos] = record;

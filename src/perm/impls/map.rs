@@ -16,7 +16,12 @@ impl MapPermutation {
     }
 
     fn from_vec_unchecked(images: &[usize]) -> Self {
-        Self::from_iter(images.iter().copied().enumerate().filter(|(i, o)| i != o))
+        images
+            .iter()
+            .copied()
+            .enumerate()
+            .filter(|(i, o)| i != o)
+            .collect()
     }
 }
 
@@ -55,11 +60,14 @@ impl Permutation for MapPermutation {
             .filter(|(i, _)| !self.images.contains_key(*i))
             .map(|(&i, &o)| (i, o));
 
-        Self::from_iter(first_changes.chain(second_changes).filter(|(i, o)| i != o))
+        first_changes
+            .chain(second_changes)
+            .filter(|(i, o)| i != o)
+            .collect()
     }
 
     fn inv(&self) -> Self {
-        Self::from_iter(self.images.iter().map(|(i, o)| (*o, *i)))
+        self.images.iter().map(|(i, o)| (*o, *i)).collect()
     }
 
     fn lmp(&self) -> Option<usize> {
@@ -67,7 +75,10 @@ impl Permutation for MapPermutation {
     }
 
     fn shift(&self, pos: usize) -> Self {
-        Self::from_iter(self.images.iter().map(|(i, o)| (i + pos, o + pos)))
+        self.images
+            .iter()
+            .map(|(i, o)| (i + pos, o + pos))
+            .collect()
     }
 }
 
