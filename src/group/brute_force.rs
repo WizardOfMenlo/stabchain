@@ -5,7 +5,6 @@ use crate::perm::Permutation;
 use crate::DetHashSet;
 
 use std::collections::VecDeque;
-use std::iter::FromIterator;
 
 /// Very naive way to get all elements in a group
 /// Please don't do this in practice
