@@ -15,7 +15,7 @@ where
 {
     /// Make from a slice
     pub fn from_slice(perms: &[P]) -> Self {
-        Self::from_iter(perms.iter().cloned())
+        perms.iter().cloned().collect()
     }
 
     /// Get an underlying permutation
@@ -90,7 +90,7 @@ where
     P: Permutation,
 {
     fn id() -> Self {
-        Self::from_iter(iter::empty())
+        iter::empty().collect()
     }
 
     fn is_id(&self) -> bool {
@@ -98,7 +98,7 @@ where
     }
 
     fn from_images(images: &[usize]) -> Self {
-        Self::from_iter(iter::once(P::from_images(images)))
+        iter::once(P::from_images(images)).collect()
     }
 
     fn apply(&self, x: usize) -> usize {
@@ -106,11 +106,11 @@ where
     }
 
     fn multiply(&self, other: &Self) -> Self {
-        WordPermutation::from_iter(self.word.iter().chain(other.word.iter()).cloned())
+        self.word.iter().chain(other.word.iter()).cloned().collect()
     }
 
     fn inv(&self) -> Self {
-        Self::from_iter(std::iter::once(self.evaluate().inv()))
+        std::iter::once(self.evaluate().inv()).collect()
     }
 
     fn lmp(&self) -> Option<usize> {
@@ -137,7 +137,7 @@ where
     }
 
     fn shift(&self, pos: usize) -> Self {
-        Self::from_iter(self.word.iter().map(|p| p.shift(pos)))
+        self.word.iter().map(|p| p.shift(pos)).collect()
     }
 }
 

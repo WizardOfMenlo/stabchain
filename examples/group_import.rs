@@ -1,6 +1,5 @@
 use std::fs::{metadata, File};
 use std::io::{BufReader, BufWriter};
-use std::iter::FromIterator;
 use std::path::PathBuf;
 
 use num::BigUint;
@@ -20,11 +19,10 @@ struct GAPGroup {
 
 impl GAPGroup {
     fn to_group(self) -> Group {
-        Group::from_iter(
-            self.generators
-                .into_iter()
-                .map(|images| ClassicalPermutation::from_slice(&images[..]).into()),
-        )
+        self.generators
+            .into_iter()
+            .map(|images| ClassicalPermutation::from_slice(&images[..]).into())
+            .collect()
     }
 }
 

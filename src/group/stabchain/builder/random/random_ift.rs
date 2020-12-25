@@ -21,7 +21,7 @@ use rand::Rng;
 use std::cell::RefCell;
 use std::collections::VecDeque;
 use std::fmt::Debug;
-use std::iter::{repeat_with, FromIterator};
+use std::iter::repeat_with;
 
 use tracing::{debug, trace};
 
@@ -176,7 +176,7 @@ where
         let mut record = self.chain[self.current_pos].clone();
         //debug_assert!(record.gens.generators().contains(&p));
         // If this element is already a generator, then we can exit
-        let mut to_check = VecDeque::from_iter(record.transversal.keys().cloned());
+        let mut to_check: VecDeque<_> = record.transversal.keys().cloned().collect();
         let mut new_transversal = DetHashMap::default();
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
@@ -191,7 +191,7 @@ where
         }
 
         // We now want to check all the newly added elements
-        let mut to_check = VecDeque::from_iter(new_transversal.keys().cloned());
+        let mut to_check: VecDeque<_> = new_transversal.keys().cloned().collect();
 
         // Update the record
         record.transversal.extend(new_transversal);
@@ -214,8 +214,10 @@ where
         // Update the generators adding p if it isn't already present.
         if !record.gens.generators().contains(&p) {
             debug!("Adding perm to generating set");
-            record.gens =
-                Group::from_iter(std::iter::once(&p).chain(record.gens.generators()).cloned());
+            record.gens = std::iter::once(&p)
+                .chain(record.gens.generators())
+                .cloned()
+                .collect();
         }
         // Store the updated record in the chain
         self.chain[self.current_pos] = record;

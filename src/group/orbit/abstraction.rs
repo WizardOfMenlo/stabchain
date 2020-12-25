@@ -24,7 +24,7 @@ where
     ) -> Option<P>;
 
     /// Convert into a full blown transversal
-    fn into_transversal(
+    fn to_transversal(
         &self,
         map: DetHashMap<A::OrbitT, P>,
         base: A::OrbitT,
@@ -51,7 +51,7 @@ where
         map.get(&point).cloned()
     }
 
-    fn into_transversal(
+    fn to_transversal(
         &self,
         map: DetHashMap<A::OrbitT, P>,
         base: A::OrbitT,
@@ -81,7 +81,7 @@ where
     }
 
     // Note that no validation is actually done here
-    fn into_transversal(
+    fn to_transversal(
         &self,
         map: DetHashMap<A::OrbitT, P>,
         base: A::OrbitT,

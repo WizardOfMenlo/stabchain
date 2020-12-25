@@ -6,7 +6,6 @@ use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
 use crate::DetHashMap;
 use std::collections::VecDeque;
-use std::iter::FromIterator;
 
 use tracing::{debug, trace};
 
@@ -99,7 +98,7 @@ where
         // Gets the record to be updated
         let mut record = self.chain[self.current_pos].clone();
 
-        let mut to_check = VecDeque::from_iter(record.transversal.keys().cloned());
+        let mut to_check: VecDeque<_> = record.transversal.keys().cloned().collect();
         let mut new_transversal = DetHashMap::default();
         while !to_check.is_empty() {
             let orbit_element = to_check.pop_back().unwrap();
@@ -124,8 +123,10 @@ where
         }
 
         // We now want to check all the newly added elements
-        let mut to_check =
-            VecDeque::from_iter(new_transversal.iter().map(|(o, p)| (o.clone(), p.clone())));
+        let mut to_check: VecDeque<_> = new_transversal
+            .iter()
+            .map(|(o, p)| (o.clone(), p.clone()))
+            .collect();
 
         // Update the record
         record.transversal.extend(new_transversal);
@@ -163,8 +164,10 @@ where
         }
 
         // Update the generators adding p
-        record.gens =
-            Group::from_iter(std::iter::once(&p).chain(record.gens.generators()).cloned());
+        record.gens = std::iter::once(&p)
+            .chain(record.gens.generators())
+            .cloned()
+            .collect();
 
         // Store the updated record in the chain
         self.chain[self.current_pos] = record;
