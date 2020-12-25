@@ -16,11 +16,7 @@ pub fn group_elements<P: Permutation>(g: &Group<P>) -> Vec<P> {
     let gens = g.generators();
     let mut res = DetHashSet::with_capacity_and_hasher(gens.len(), Default::default());
     // Get everything that is not the identity
-    let mut to_check = gens
-        .iter()
-        .cloned()
-        .filter(|p| !p.is_id())
-        .collect::<VecDeque<P>>();
+    let mut to_check: VecDeque<_> = gens.iter().cloned().filter(|p| !p.is_id()).collect();
     while !to_check.is_empty() {
         // Add it to the group (as well as its inverse)
         let element = to_check.pop_back().unwrap();
