@@ -1,6 +1,5 @@
 use std::fs::{metadata, File};
 use std::io::{BufReader, BufWriter};
-use std::iter::FromIterator;
 use std::path::PathBuf;
 
 use num::BigUint;
