@@ -1,3 +1,4 @@
+use super::super::order;
 use crate::group::orbit::transversal::shallow_transversal::shallow_transversal;
 use crate::DetHashSet;
 use crate::{
@@ -9,7 +10,6 @@ use crate::{
     },
     perm::{actions::SimpleApplication, Action, Permutation},
 };
-use num::BigUint;
 
 const MIN_SIZE: usize = 11;
 const INITIAL_RUNS: usize = 50;
@@ -51,7 +51,7 @@ where
         //Random permutation generator.
         let mut rand_perm = RandPerm::new(MIN_SIZE, &sgs, INITIAL_RUNS, rand::thread_rng());
         //Loop till the new chain has the correct order.
-        while self.current_chain_order() < target_order {
+        while order(self.chain.iter()) < target_order {
             let g = rand_perm.random_permutation();
             let (g_dash, i) = self.residue_with_dropout(g);
             //If the permutation doesn't sift through then add it as a new generator at level i.
@@ -59,7 +59,7 @@ where
                 self.update_schrier_tree(i, g_dash);
             }
         }
-        debug_assert_eq!(self.current_chain_order(), target_order);
+        debug_assert_eq!(order(self.chain.iter()), target_order);
     }
 
     /// Add a given generator at a specific level, and update the transversal.
@@ -103,15 +103,6 @@ where
             i += 1;
         }
         (g, i)
-    }
-
-    /// Calculate the current order of the group this stabiliser chain stabilises.
-    fn current_chain_order(&self) -> BigUint {
-        //This is just the product of the transversal lengths.
-        self.chain
-            .iter()
-            .map(|record| BigUint::from(record.transversal.len()))
-            .product()
     }
 }
 

@@ -82,10 +82,7 @@ where
 
     /// Calculate the order of the subgroupgroup this stabilizer chain represents.
     pub fn order_subgroup(&self, layer: usize) -> BigUint {
-        //The order is the product of the orbit lengths.
-        self.get_chain_at_layer(layer)
-            .map(|record| BigUint::from(record.transversal.len()))
-            .product()
+        order(self.get_chain_at_layer(layer))
     }
 
     /// Get the base corresponding to this stabilizer chain
@@ -145,6 +142,21 @@ where
         builder.set_base(self, base);
         builder.build()
     }
+}
+
+/// Calculate the order of the Chain given by an iterator.
+/// This is defined here so that it may be reused in placed that may not yet have a complete stabilizer chain.
+pub(crate) fn order<'a, P, V, A, I>(iter: I) -> BigUint
+where
+    P: Permutation + 'a,
+    A: Action<P> + 'a,
+    V: TransversalResolver<P, A> + 'a,
+    I: IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
+{
+    //The order is the product of the orbit lengths.
+    iter.into_iter()
+        .map(|record| BigUint::from(record.transversal.len()))
+        .product()
 }
 
 impl<P, A> Stabchain<P, FactoredTransversalResolver<A>, A>
