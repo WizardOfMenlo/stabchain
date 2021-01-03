@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use super::BaseSelector;
 
 /// A struct for partial base selectors
@@ -31,6 +33,37 @@ where
         } else {
             self.second.moved_point(p, pos - self.limit)
         }
+    }
+}
+// Struct for a Partial Selector that first uses a fixed base selector.
+#[derive(Debug, Clone)]
+pub struct PartialFixedBaseSelector<S, T = usize> {
+    selector: PartialSelector<super::FixedBaseSelector<T>, S>,
+}
+
+impl<S, T> PartialFixedBaseSelector<S, T>
+where
+    T: Clone,
+{
+    pub fn new(base: &[T], after_partial: S) -> Self {
+        // Create a partial selector that uses the fixed base first and then the second selector.
+        PartialFixedBaseSelector {
+            selector: PartialSelector::new(
+                super::FixedBaseSelector::new(base),
+                base.len(),
+                after_partial,
+            ),
+        }
+    }
+}
+
+impl<P, OrbitT, S> BaseSelector<P, OrbitT> for PartialFixedBaseSelector<S, OrbitT>
+where
+    OrbitT: Clone + Debug,
+    S: BaseSelector<P, OrbitT>,
+{
+    fn moved_point(&mut self, p: &P, pos: usize) -> OrbitT {
+        self.selector.moved_point(p, pos)
     }
 }
 
@@ -74,6 +107,30 @@ mod tests {
 
         let mut selector =
             PartialSelector::new(FixedBaseSelector::new(&base), 6, LmpSelector::default());
+
+        let g = Group::symmetric(10);
+        let mut rand = g.rng();
+        for (i, perm) in (0..6).zip(std::iter::repeat_with(|| rand.random_permutation())) {
+            assert_eq!(selector.moved_point(&perm, i), i);
+        }
+
+        for (i, perm) in
+            (6..20).zip(std::iter::repeat_with(|| rand.random_permutation()).filter(|p| !p.is_id()))
+        {
+            assert_eq!(selector.moved_point(&perm, i), perm.lmp().unwrap());
+        }
+    }
+
+    #[test]
+    fn partial_fixed_base_lmp() {
+        use super::super::LmpSelector;
+        use crate::group::Group;
+
+        use crate::perm::*;
+
+        let base = [0, 1, 2, 3, 4, 5];
+
+        let mut selector = PartialFixedBaseSelector::new(&base, LmpSelector::default());
 
         let g = Group::symmetric(10);
         let mut rand = g.rng();
