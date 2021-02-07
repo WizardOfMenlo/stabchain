@@ -341,11 +341,14 @@ where
         self.current_pos = 0;
         // If we know the order we can just check if the order is correct.
         if let Some(known_order) = self.constants.order.as_ref() {
-            if *known_order == order(self.chain.iter()) {
+            if *known_order != order(self.chain.iter()) {
+                // Call the sgc starting from the top level
+                self.up_to_date = self.base.len() + 1;
+                self.sgc();
                 return;
             }
+            return;
         }
-
         //The union of the generator sets in the chain to this point.
         let gens = self
             .chain
