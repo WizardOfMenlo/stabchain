@@ -23,7 +23,7 @@ pub struct Constants {
     pub orbit_bound: usize,
     pub base_bound: usize,
     pub quick_test: bool,
-    order: Option<BigUint>,
+    pub order: Option<BigUint>,
 }
 
 impl RandomAlgoParameters {
