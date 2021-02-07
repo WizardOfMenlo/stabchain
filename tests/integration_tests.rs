@@ -142,6 +142,26 @@ macro_rules! test_stabilizer_on_strategy {
     };
 }
 
+#[cfg(test)]
+macro_rules! test_stabilizer_on_strategy_with_order {
+    ($strategy:expr, $short:ident, $error: expr) => {
+        #[test]
+        fn $short() {
+            general_test(
+                stringify!($short),
+                |g| {
+                    let stabilizer = g
+                        .group()
+                        .stabchain_with_strategy($strategy(g.order().clone()));
+                    correct_stabchain_order(&stabilizer, g.order().clone())?;
+                    valid_stabchain(&stabilizer)
+                },
+                $error,
+            );
+        }
+    };
+}
+
 test_stabilizer_on_strategy!(
     NaiveBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default(),),
     test_naive_stabilizer,
@@ -184,4 +204,28 @@ test_stabilizer_on_strategy!(
     ),
     test_random_shallow_stabilizer_quick_test,
     (number_of_tests() as f32 * 0.05).floor() as usize
+);
+
+test_stabilizer_on_strategy_with_order!(
+    |order| RandomBuilderStrategyNaive::new_with_params(
+        SimpleApplication::default(),
+        FmpSelector::default(),
+        RandomAlgoParameters::default()
+            .quick_test(true)
+            .order(order)
+    ),
+    test_random_known_order,
+    0
+);
+
+test_stabilizer_on_strategy_with_order!(
+    |order| RandomBuilderStrategyShallow::new_with_params(
+        SimpleApplication::default(),
+        FmpSelector::default(),
+        RandomAlgoParameters::default()
+            .quick_test(true)
+            .order(order)
+    ),
+    test_random_shallow_known_order,
+    0
 );
