@@ -340,14 +340,12 @@ where
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
         // If we know the order we can just check if the order is correct.
-        match self.constants.order.as_ref() {
-            Some(known_order) => {
-                if *known_order == order(self.chain.iter()) {
-                    return;
-                }
+        if let Some(known_order) = self.constants.order.as_ref() {
+            if *known_order == order(self.chain.iter()) {
+                return;
             }
-            None => (),
         }
+
         //The union of the generator sets in the chain to this point.
         let gens = self
             .chain
