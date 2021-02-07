@@ -5,7 +5,7 @@ use crate::group::orbit::transversal::factored_transversal::{
     factored_transversal_complete_opt, representative_raw_as_word,
 };
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
-use crate::group::stabchain::{base::selectors::BaseSelector, Stabchain, StabchainRecord};
+use crate::group::stabchain::{base::selectors::BaseSelector, order, Stabchain, StabchainRecord};
 use crate::group::utils::{
     apply_permutation_word, collapse_perm_word, random_subproduct_word_full,
     random_subproduct_word_subset,
@@ -339,6 +339,15 @@ where
         let original_position = self.current_pos;
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
+        // If we know the order we can just check if the order is correct.
+        match self.constants.order.as_ref() {
+            Some(known_order) => {
+                if *known_order == order(self.chain.iter()) {
+                    return;
+                }
+            }
+            None => (),
+        }
         //The union of the generator sets in the chain to this point.
         let gens = self
             .chain
@@ -369,6 +378,7 @@ where
             };
         }
         self.current_pos = original_position;
+        // If known order and at the top of the chain, do not terminate until we have the correct order
     }
 
     fn sgt_test(&mut self, p: &[P]) -> Option<usize> {
