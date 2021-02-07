@@ -339,14 +339,16 @@ where
         let original_position = self.current_pos;
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
+        let mut current_order = None;
         // If we know the order we can just check if the order is correct.
         if let Some(known_order) = self.constants.order.as_ref() {
-            if *known_order != order(self.chain.iter()) {
+            let current_order_val = order(self.chain.iter());
+            if *known_order == current_order_val {
                 // Call the sgc starting from the top level
-                self.sgc();
                 return;
             }
-            return;
+            // Save for later check
+            current_order = Some(current_order_val);
         }
         //The union of the generator sets in the chain to this point.
         let gens = self
@@ -377,8 +379,14 @@ where
                 break;
             };
         }
+        // Make sure we don't exit without having the correct order.
+        if let Some(known_order) = self.constants.order.as_ref() {
+            if *known_order != current_order.unwrap() {
+                // Call the sgc starting from the top level
+                self.sgc();
+            }
+        }
         self.current_pos = original_position;
-        // If known order and at the top of the chain, do not terminate until we have the correct order
     }
 
     fn sgt_test(&mut self, p: &[P]) -> Option<usize> {
