@@ -343,7 +343,6 @@ where
         if let Some(known_order) = self.constants.order.as_ref() {
             if *known_order != order(self.chain.iter()) {
                 // Call the sgc starting from the top level
-                self.up_to_date = self.base.len() + 1;
                 self.sgc();
                 return;
             }
