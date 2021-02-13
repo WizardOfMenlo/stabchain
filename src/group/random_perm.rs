@@ -57,11 +57,11 @@ where
     /// rand_perm.random_permutation();
     /// ```
     pub fn random_permutation(&mut self) -> P {
-        let s = self.rng.gen_range(0, self.size);
+        let s = self.rng.gen_range(0..self.size);
         let mut t = s;
         // Generate another index that isn't equal to s.
         while t == s {
-            t = self.rng.gen_range(0, self.size);
+            t = self.rng.gen_range(0..self.size);
         }
         // Either take product or quotient.
         let e = if self.rng.gen::<bool>() { 1 } else { -1 };

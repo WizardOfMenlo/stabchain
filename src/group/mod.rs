@@ -7,6 +7,8 @@ pub mod random_perm;
 pub mod stabchain;
 pub mod utils;
 
+use self::stabchain::base::selectors::adaptors::PartialFixedBaseSelector;
+use self::stabchain::base::selectors::DefaultSelector;
 use self::stabchain::base::selectors::FixedBaseSelector;
 use self::stabchain::builder::DefaultStrategy;
 use crate::group::orbit::abstraction::TransversalResolver;
@@ -213,7 +215,6 @@ where
     /// Computes a stabilizer chain for this group
     #[tracing::instrument]
     pub fn stabchain(&self) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
-        use self::stabchain::base::selectors::DefaultSelector;
         stabchain::Stabchain::new_with_strategy(
             self,
             DefaultStrategy::new(SimpleApplication::default(), DefaultSelector::default()),
@@ -229,6 +230,19 @@ where
         stabchain::Stabchain::new_with_strategy(
             self,
             DefaultStrategy::new(SimpleApplication::default(), FixedBaseSelector::new(base)),
+        )
+    }
+    /// Computes a stabilizer chain for this group with a partial base, using the default strategy for further points.
+    pub fn stabchain_partial_base(
+        &self,
+        partial_base: &[usize],
+    ) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
+        stabchain::Stabchain::new_with_strategy(
+            self,
+            DefaultStrategy::new(
+                SimpleApplication::default(),
+                PartialFixedBaseSelector::new(partial_base, DefaultSelector::default()),
+            ),
         )
     }
 

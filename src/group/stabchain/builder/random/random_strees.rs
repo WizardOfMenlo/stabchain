@@ -129,7 +129,7 @@ where
         // Sum of all the depths in the tree.
         let t: usize = self.depths.iter().sum();
         let record = &self.chain[self.current_pos];
-        let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0, 1 + gens.len() / 2);
+        let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0..1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
             repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), &gens[..]));
