@@ -169,7 +169,7 @@ test_stabilizer_on_strategy!(
 );
 
 test_stabilizer_on_strategy!(
-    IFTBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default(),),
+    IftBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default(),),
     test_ift_stabilizer,
     0
 );

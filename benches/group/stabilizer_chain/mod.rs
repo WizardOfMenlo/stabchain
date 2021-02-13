@@ -52,7 +52,7 @@ fn stabchain_cyclic(c: &mut Criterion) {
             "ift",
             i,
             (|i: &usize| Group::cyclic(*i)),
-            IFTBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
+            IftBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
         );
         bench_stabchain_impl!(
             group,
@@ -140,7 +140,7 @@ fn stabchain_symmetric(c: &mut Criterion) {
             "ift",
             i,
             (|i: &usize| Group::symmetric(*i)),
-            IFTBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
+            IftBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
         );
         bench_stabchain_impl!(
             group,
@@ -229,7 +229,7 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
             "ift",
             i,
             (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
-            IFTBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
+            IftBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
         );
         bench_stabchain_impl!(
             group,
@@ -319,7 +319,7 @@ fn stabchain_copies_of_cyclic(c: &mut Criterion) {
             "ift",
             i,
             (|i: &usize| copies_of_cyclic(&[*i, *i, *i, *i, *i])),
-            IFTBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
+            IftBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
         );
         bench_stabchain_impl!(
             group,

@@ -716,7 +716,7 @@ mod tests {
         naive
     );
     stabchain_tests!(
-        |_g| IFTBuilderStrategy::new(
+        |_g| IftBuilderStrategy::new(
             SimpleApplication::default(),
             crate::group::stabchain::base::selectors::LmpSelector::default()
         ),
