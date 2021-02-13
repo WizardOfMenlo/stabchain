@@ -129,10 +129,10 @@ where
         let record = &self.chain[self.current_pos];
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
-            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), &gens[..]));
+            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), gens));
         let subproduct_w2_iter = repeat_with(|| {
             let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0..1 + gens.len() / 2);
-            random_subproduct_word_subset(&mut *self.rng.borrow_mut(), &gens[..], k)
+            random_subproduct_word_subset(&mut *self.rng.borrow_mut(), gens, k)
         });
         //Iterleave the two iterators.
         let subproduct_iter: Vec<Vec<P>> = subproduct_w1_iter
