@@ -1,0 +1,11 @@
+group,function,value,throughput_num,throughput_type,sample_measured_value,unit,iteration_count
+group__stabchain__ss__copies_cyclic,default,32,,,92863650.0,ns,123
+group__stabchain__ss__copies_cyclic,default,32,,,183465932.0,ns,246
+group__stabchain__ss__copies_cyclic,default,32,,,275728138.0,ns,369
+group__stabchain__ss__copies_cyclic,default,32,,,366946466.0,ns,492
+group__stabchain__ss__copies_cyclic,default,32,,,459394585.0,ns,615
+group__stabchain__ss__copies_cyclic,default,32,,,550349093.0,ns,738
+group__stabchain__ss__copies_cyclic,default,32,,,643052431.0,ns,861
+group__stabchain__ss__copies_cyclic,default,32,,,734452272.0,ns,984
+group__stabchain__ss__copies_cyclic,default,32,,,826854287.0,ns,1107
+group__stabchain__ss__copies_cyclic,default,32,,,917243353.0,ns,1230
