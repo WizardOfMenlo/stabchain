@@ -4,7 +4,7 @@ use crate::group::orbit::transversal::shallow_transversal::{
     representative_raw_as_word, shallow_transversal,
 };
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
-use crate::group::stabchain::{base::selectors::BaseSelector, Stabchain, StabchainRecord};
+use crate::group::stabchain::{base::selectors::BaseSelector, order, Stabchain, StabchainRecord};
 use crate::group::utils::{
     apply_permutation_word, collapse_perm_word, random_subproduct_word_full,
     random_subproduct_word_subset,
@@ -132,10 +132,9 @@ where
         let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0..1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
-            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), &gens[..]));
-        let subproduct_w2_iter = repeat_with(|| {
-            random_subproduct_word_subset(&mut *self.rng.borrow_mut(), &gens[..], k)
-        });
+            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), gens));
+        let subproduct_w2_iter =
+            repeat_with(|| random_subproduct_word_subset(&mut *self.rng.borrow_mut(), gens, k));
         //Iterleave the two iterators.
         let subproduct_iter: Vec<Vec<P>> = subproduct_w1_iter
             .interleave(subproduct_w2_iter)
@@ -319,6 +318,17 @@ where
         let original_position = self.current_pos;
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
+        let mut current_order = None;
+        // If we know the order we can just check if the order is correct.
+        if let Some(known_order) = self.constants.order.as_ref() {
+            let current_order_val = order(self.chain.iter());
+            if *known_order == current_order_val {
+                // Call the sgc starting from the top level
+                return;
+            }
+            // Save for later check
+            current_order = Some(current_order_val);
+        }
         //The union of the generator sets in the chain to this point.
         let gens = self
             .chain
@@ -347,6 +357,13 @@ where
                 self.sgc();
                 break;
             };
+        }
+        // Make sure we don't exit without having the correct order.
+        if let Some(known_order) = self.constants.order.as_ref() {
+            if *known_order != current_order.unwrap() {
+                // Call the sgc starting from the top level
+                self.sgc();
+            }
         }
         self.current_pos = original_position;
     }

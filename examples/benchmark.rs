@@ -102,7 +102,7 @@ fn main() {
         ),
         BenchMode::DeterministicIFT => bench(
             group_library,
-            IFTBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default()),
+            IftBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default()),
         ),
         BenchMode::Random => bench(
             group_library,

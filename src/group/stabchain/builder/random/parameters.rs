@@ -1,3 +1,4 @@
+use num::BigUint;
 use rand::rngs::ThreadRng;
 
 #[derive(Debug, Clone)]
@@ -9,6 +10,7 @@ pub struct RandomAlgoParameters<R = ThreadRng> {
     orbit_bound: usize,
     base_bound: usize,
     quick_test: bool,
+    order: Option<BigUint>,
     rng: R,
 }
 
@@ -21,6 +23,7 @@ pub struct Constants {
     pub orbit_bound: usize,
     pub base_bound: usize,
     pub quick_test: bool,
+    pub order: Option<BigUint>,
 }
 
 impl RandomAlgoParameters {
@@ -65,6 +68,11 @@ impl<R> RandomAlgoParameters<R> {
         self
     }
 
+    pub fn order(mut self, order: BigUint) -> Self {
+        self.order = Some(order);
+        self
+    }
+
     pub fn rng<K>(self, rng: K) -> RandomAlgoParameters<K> {
         RandomAlgoParameters {
             rng,
@@ -75,6 +83,7 @@ impl<R> RandomAlgoParameters<R> {
             orbit_bound: self.orbit_bound,
             base_bound: self.base_bound,
             quick_test: self.quick_test,
+            order: self.order,
         }
     }
 
@@ -88,6 +97,7 @@ impl<R> RandomAlgoParameters<R> {
                 orbit_bound: self.orbit_bound,
                 base_bound: self.base_bound,
                 quick_test: self.quick_test,
+                order: self.order,
             },
             self.rng,
         )
@@ -104,6 +114,7 @@ impl Default for RandomAlgoParameters {
             orbit_bound: 50,
             base_bound: 5,
             quick_test: false,
+            order: None,
             rng: rand::thread_rng(),
         }
     }

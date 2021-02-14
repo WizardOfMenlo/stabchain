@@ -82,10 +82,7 @@ where
 
     /// Calculate the order of the subgroupgroup this stabilizer chain represents.
     pub fn order_subgroup(&self, layer: usize) -> BigUint {
-        //The order is the product of the orbit lengths.
-        self.get_chain_at_layer(layer)
-            .map(|record| BigUint::from(record.transversal.len()))
-            .product()
+        order(self.get_chain_at_layer(layer))
     }
 
     /// Get the base corresponding to this stabilizer chain
@@ -145,6 +142,21 @@ where
         builder.set_base(self, base);
         builder.build()
     }
+}
+
+/// Calculate the order of the Chain given by an iterator.
+/// This is defined here so that it may be reused in placed that may not yet have a complete stabilizer chain.
+pub(crate) fn order<'a, P, V, A, I>(iter: I) -> BigUint
+where
+    P: Permutation + 'a,
+    A: Action<P> + 'a,
+    V: TransversalResolver<P, A> + 'a,
+    I: IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
+{
+    //The order is the product of the orbit lengths.
+    iter.into_iter()
+        .map(|record| BigUint::from(record.transversal.len()))
+        .product()
 }
 
 impl<P, A> Stabchain<P, FactoredTransversalResolver<A>, A>
@@ -376,7 +388,7 @@ macro_rules! stabchain_tests {
             #[test]
             fn trivial_chain() {
                 let g = Group::trivial();
-                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                let chain = Stabchain::new_with_strategy(&g, $strategy(i(1)));
                 valid_stabchain(&chain).unwrap();
                 assert!(chain.is_empty());
             }
@@ -384,14 +396,14 @@ macro_rules! stabchain_tests {
             #[test]
             fn klein4_chain() {
                 let g = Group::klein_4();
-                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                let chain = Stabchain::new_with_strategy(&g, $strategy(i(4)));
                 valid_stabchain(&chain).unwrap();
             }
 
             #[test]
             fn cyclic_chain() {
                 let g = Group::cyclic(100);
-                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                let chain = Stabchain::new_with_strategy(&g, $strategy(i(100)));
                 valid_stabchain(&chain).unwrap();
             }
 
@@ -402,7 +414,7 @@ macro_rules! stabchain_tests {
             #[test]
             fn dihedral_chain() {
                 let g = Group::dihedral_2n(3);
-                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                let chain = Stabchain::new_with_strategy(&g, $strategy(i(6)));
                 valid_stabchain(&chain).unwrap();
                 assert_eq!(i(6), chain.order());
             }
@@ -410,7 +422,7 @@ macro_rules! stabchain_tests {
             #[test]
             fn alternating_chain() {
                 let g = Group::alternating(5);
-                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                let chain = Stabchain::new_with_strategy(&g, $strategy(i(60)));
                 valid_stabchain(&chain).unwrap();
                 assert_eq!(i(60), chain.order());
             }
@@ -418,7 +430,7 @@ macro_rules! stabchain_tests {
             #[test]
             fn symmetric_chain() {
                 let g = Group::symmetric(10);
-                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                let chain = Stabchain::new_with_strategy(&g, $strategy(i(3628800)));
                 valid_stabchain(&chain).unwrap();
                 assert_eq!(i(3628800), chain.order())
             }
@@ -426,7 +438,10 @@ macro_rules! stabchain_tests {
             #[test]
             fn product_chain() {
                 let g = Group::product(&Group::symmetric(15), &Group::symmetric(15));
-                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                let chain = Stabchain::new_with_strategy(
+                    &g,
+                    $strategy("1710012252724199424000000".parse::<BigUint>().unwrap()),
+                );
                 valid_stabchain(&chain).unwrap();
             }
 
@@ -439,7 +454,7 @@ macro_rules! stabchain_tests {
                     1, 2,
                 ])
                 .into()]);
-                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                let chain = Stabchain::new_with_strategy(&g, $strategy(i(2)));
                 valid_stabchain(&chain).unwrap();
             }
 
@@ -471,7 +486,7 @@ macro_rules! stabchain_tests {
                     ])
                     .into_perm(),
                 ]);
-                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                let chain = Stabchain::new_with_strategy(&g, $strategy(i(128)));
                 valid_stabchain(&chain).unwrap();
                 assert_eq!(i(128), chain.order())
             }
@@ -498,7 +513,7 @@ macro_rules! stabchain_tests {
                     ])
                     .into_perm(),
                 ]);
-                let chain = Stabchain::new_with_strategy(&g, $strategy);
+                let chain = Stabchain::new_with_strategy(&g, $strategy(i(10368)));
                 valid_stabchain(&chain).unwrap();
                 assert_eq!(i(10368), chain.order());
             }
@@ -694,21 +709,21 @@ mod tests {
     reconstruction_test!(Group::dihedral_2n(10), reconstruction_dihedral);
 
     stabchain_tests!(
-        NaiveBuilderStrategy::new(
+        |_g| NaiveBuilderStrategy::new(
             SimpleApplication::default(),
             crate::group::stabchain::base::selectors::LmpSelector::default()
         ),
         naive
     );
     stabchain_tests!(
-        IFTBuilderStrategy::new(
+        |_g| IftBuilderStrategy::new(
             SimpleApplication::default(),
             crate::group::stabchain::base::selectors::LmpSelector::default()
         ),
         ift
     );
     stabchain_tests!(
-        {
+        |_g| {
             use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
             use rand::SeedableRng;
             RandomBuilderStrategyNaive::new_with_params(
@@ -721,7 +736,21 @@ mod tests {
         random
     );
     stabchain_tests!(
-        {
+        |g| {
+            use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
+            use rand::SeedableRng;
+            RandomBuilderStrategyNaive::new_with_params(
+                SimpleApplication::default(),
+                crate::group::stabchain::base::selectors::FmpSelector::default(),
+                RandomAlgoParameters::default()
+                    .rng(rand_xorshift::XorShiftRng::from_seed([58; 16]))
+                    .order(g),
+            )
+        },
+        random_known_order
+    );
+    stabchain_tests!(
+        |_g| {
             use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
             use rand::SeedableRng;
             RandomBuilderStrategyNaive::new_with_params(
@@ -735,7 +764,7 @@ mod tests {
         random_quick_test
     );
     stabchain_tests!(
-        {
+        |_g| {
             use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
             use rand::SeedableRng;
             RandomBuilderStrategyShallow::new_with_params(
@@ -748,7 +777,7 @@ mod tests {
         random_shallow
     );
     stabchain_tests!(
-        {
+        |_g| {
             use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
             use rand::SeedableRng;
             RandomBuilderStrategyShallow::new_with_params(

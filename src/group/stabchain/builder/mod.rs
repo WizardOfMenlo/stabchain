@@ -84,19 +84,19 @@ where
 /// Schreir Sims with factored transversal. Much more memory friendly,
 /// yet much slower
 #[derive(Debug, Clone)]
-pub struct IFTBuilderStrategy<A, S> {
+pub struct IftBuilderStrategy<A, S> {
     selector: S,
     action: A,
 }
 
-impl<A, S> IFTBuilderStrategy<A, S> {
+impl<A, S> IftBuilderStrategy<A, S> {
     /// Create the strategy
     pub fn new(action: A, selector: S) -> Self {
-        IFTBuilderStrategy { action, selector }
+        IftBuilderStrategy { action, selector }
     }
 }
 
-impl<P, S, A> BuilderStrategy<P> for IFTBuilderStrategy<A, S>
+impl<P, S, A> BuilderStrategy<P> for IftBuilderStrategy<A, S>
 where
     P: Permutation,
     A: Action<P>,
@@ -104,10 +104,10 @@ where
 {
     type Action = A;
     type Transversal = FactoredTransversalResolver<A>;
-    type BuilderT = ift::StabchainBuilderIFT<P, S, A>;
+    type BuilderT = ift::StabchainBuilderIft<P, S, A>;
 
     fn make_builder(self) -> Self::BuilderT {
-        ift::StabchainBuilderIFT::new(self.selector, self.action)
+        ift::StabchainBuilderIft::new(self.selector, self.action)
     }
 }
 

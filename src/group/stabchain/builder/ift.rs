@@ -13,7 +13,7 @@ use tracing::{debug, trace};
 
 // Helper struct, used to build the stabilizer chain
 #[derive(Debug)]
-pub struct StabchainBuilderIFT<P, S, A = SimpleApplication<P>>
+pub struct StabchainBuilderIft<P, S, A = SimpleApplication<P>>
 where
     A: Action<P>,
 {
@@ -23,12 +23,12 @@ where
     action: A,
 }
 
-impl<P, S, A> StabchainBuilderIFT<P, S, A>
+impl<P, S, A> StabchainBuilderIft<P, S, A>
 where
     A: Action<P>,
 {
     pub(super) fn new(selector: S, action: A) -> Self {
-        StabchainBuilderIFT {
+        StabchainBuilderIft {
             current_pos: 0,
             chain: Vec::new(),
             selector,
@@ -47,7 +47,7 @@ where
     }
 }
 
-impl<P, S, A> StabchainBuilderIFT<P, S, A>
+impl<P, S, A> StabchainBuilderIft<P, S, A>
 where
     P: Permutation,
     S: BaseSelector<P, A::OrbitT>,
@@ -198,7 +198,7 @@ where
     }
 }
 
-impl<P, S, A> super::Builder<P, FactoredTransversalResolver<A>, A> for StabchainBuilderIFT<P, S, A>
+impl<P, S, A> super::Builder<P, FactoredTransversalResolver<A>, A> for StabchainBuilderIft<P, S, A>
 where
     P: Permutation,
     A: Action<P>,
