@@ -15,8 +15,8 @@ impl<F, S> PartialSelector<F, S> {
     /// the second from there on
     pub fn new(first: F, limit: usize, second: S) -> Self {
         PartialSelector {
-            first,
             limit,
+            first,
             second,
         }
     }
