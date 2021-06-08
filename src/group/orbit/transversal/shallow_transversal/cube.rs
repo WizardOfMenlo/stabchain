@@ -31,7 +31,7 @@ where
                     let p = seq[i - seq.len() - 1].clone();
                     let val = strat.apply(&p, j.clone());
                     orbit.entry(val.clone()).or_insert_with(|| {
-                        depth.insert(val.clone(), depth.get(&j).unwrap() + 1);
+                        depth.insert(val.clone(), depth.get(j).unwrap() + 1);
                         p.inv()
                     });
                     temp.insert(val);
@@ -41,7 +41,7 @@ where
                     let p = seq[seq.len() - i].inv();
                     let val = strat.apply(&p, j.clone());
                     orbit.entry(val.clone()).or_insert_with(|| {
-                        depth.insert(val.clone(), depth.get(&j).unwrap() + 1);
+                        depth.insert(val.clone(), depth.get(j).unwrap() + 1);
                         p.inv()
                     });
                     temp.insert(val);

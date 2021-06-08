@@ -38,7 +38,7 @@ where
     type OrbitT = P;
 
     fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT {
-        p.inv().multiply(&input).multiply(&p)
+        p.inv().multiply(&input).multiply(p)
     }
 }
 

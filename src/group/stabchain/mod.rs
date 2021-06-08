@@ -179,7 +179,7 @@ where
                 //If this permutation is fixed by all previous points but not by this one, then add it at this level.
                 if base[..i]
                     .iter()
-                    .all(|base| strat.apply(&p, base.clone()) == base.clone())
+                    .all(|base| strat.apply(p, base.clone()) == base.clone())
                 {
                     chain[i].gens.generators.push(p.clone());
                 } else {
@@ -191,7 +191,7 @@ where
         //Now fill in the transversal
         chain.iter_mut().for_each(|record| {
             record.transversal =
-                factored_transversal_complete_opt(&record.group(), record.base.clone(), &strat)
+                factored_transversal_complete_opt(record.group(), record.base.clone(), &strat)
         });
         Stabchain { chain }
     }

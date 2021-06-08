@@ -45,7 +45,7 @@ where
     P: 'a + Permutation,
 {
     p.into_iter()
-        .fold(Permutation::id(), |accum, perm| accum.multiply(&perm))
+        .fold(Permutation::id(), |accum, perm| accum.multiply(perm))
 }
 
 /// Generate a random subproduct of a random k sized subset of the given generators.

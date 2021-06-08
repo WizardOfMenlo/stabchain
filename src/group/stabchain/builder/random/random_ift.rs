@@ -102,7 +102,7 @@ where
         let initial_record = StabchainRecord::new(
             moved_point,
             group.clone(),
-            factored_transversal_complete_opt(&group, moved_point, &self.action),
+            factored_transversal_complete_opt(group, moved_point, &self.action),
         );
         self.base.push(moved_point);
         self.chain.push(initial_record);
@@ -202,7 +202,7 @@ where
             let orbit_element = to_check.pop_back().unwrap();
             // For each generator (and p)
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
-                let new_image = self.action.apply(&generator, orbit_element);
+                let new_image = self.action.apply(generator, orbit_element);
                 // If we haven't already seen the image
                 record.transversal.entry(new_image).or_insert_with(|| {
                     // Update and ask to check the new image

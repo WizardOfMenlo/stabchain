@@ -132,7 +132,7 @@ where
         while orbit_point != base {
             let g_inv = transversal.get(&orbit_point).unwrap();
             rep.push(g_inv.inv());
-            orbit_point = strat.apply(&g_inv, orbit_point);
+            orbit_point = strat.apply(g_inv, orbit_point);
         }
         rep.reverse();
         debug_assert!(apply_permutation_word(&rep, base, strat) == point);
