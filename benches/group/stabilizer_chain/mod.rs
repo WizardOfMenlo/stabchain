@@ -56,31 +56,6 @@ fn stabchain_cyclic(c: &mut Criterion) {
         );
         bench_stabchain_impl!(
             group,
-            "random",
-            i,
-            (|i: &usize| Group::cyclic(*i)),
-            RandomBuilderStrategyNaive::new_with_params(
-                SimpleApplication::default(),
-                DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
-            )
-        );
-        bench_stabchain_impl_with_order!(
-            group,
-            "random_known_order",
-            i,
-            (|i: &usize| Group::cyclic(*i)),
-            |i: BigUint| RandomBuilderStrategyNaive::new_with_params(
-                SimpleApplication::default(),
-                DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16]))
-                    .order(i),
-            )
-        );
-        bench_stabchain_impl!(
-            group,
             "random_shallow",
             i,
             (|i: &usize| Group::cyclic(*i)),
@@ -141,31 +116,6 @@ fn stabchain_symmetric(c: &mut Criterion) {
             i,
             (|i: &usize| Group::symmetric(*i)),
             IftBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
-        );
-        bench_stabchain_impl!(
-            group,
-            "random",
-            i,
-            (|i: &usize| Group::symmetric(*i)),
-            RandomBuilderStrategyNaive::new_with_params(
-                SimpleApplication::default(),
-                DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
-            )
-        );
-        bench_stabchain_impl_with_order!(
-            group,
-            "random_known_order",
-            i,
-            (|i: &usize| Group::symmetric(*i)),
-            |i: BigUint| RandomBuilderStrategyNaive::new_with_params(
-                SimpleApplication::default(),
-                DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16]))
-                    .order(i),
-            )
         );
         bench_stabchain_impl!(
             group,
@@ -233,31 +183,6 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
         );
         bench_stabchain_impl!(
             group,
-            "random",
-            i,
-            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
-            RandomBuilderStrategyNaive::new_with_params(
-                SimpleApplication::default(),
-                DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
-            )
-        );
-        bench_stabchain_impl_with_order!(
-            group,
-            "random_known_order",
-            i,
-            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
-            |i: BigUint| RandomBuilderStrategyNaive::new_with_params(
-                SimpleApplication::default(),
-                DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16]))
-                    .order(i),
-            )
-        );
-        bench_stabchain_impl!(
-            group,
             "random_shallow",
             i,
             (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
@@ -320,31 +245,6 @@ fn stabchain_copies_of_cyclic(c: &mut Criterion) {
             i,
             (|i: &usize| copies_of_cyclic(&[*i, *i, *i, *i, *i])),
             IftBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
-        );
-        bench_stabchain_impl!(
-            group,
-            "random",
-            i,
-            (|i: &usize| copies_of_cyclic(&[*i, *i, *i, *i, *i])),
-            RandomBuilderStrategyNaive::new_with_params(
-                SimpleApplication::default(),
-                DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
-            )
-        );
-        bench_stabchain_impl_with_order!(
-            group,
-            "random_known_order",
-            i,
-            (|i: &usize| copies_of_cyclic(&[*i, *i, *i, *i, *i])),
-            |i: BigUint| RandomBuilderStrategyNaive::new_with_params(
-                SimpleApplication::default(),
-                DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16]))
-                    .order(i),
-            )
         );
         bench_stabchain_impl!(
             group,

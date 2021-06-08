@@ -95,6 +95,7 @@ fn main() {
 
     println!("Libraries loaded");
 
+    #[allow(deprecated)]
     match args.mode {
         BenchMode::Deterministic => bench(
             group_library,
