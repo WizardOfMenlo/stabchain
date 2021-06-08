@@ -376,6 +376,7 @@ where
 #[cfg(test)]
 macro_rules! stabchain_tests {
     ($strategy:expr, $short:ident) => {
+        #[allow(deprecated)]
         mod $short {
             use crate::group::stabchain::builder::*;
             use crate::group::stabchain::{valid_stabchain, Stabchain};
@@ -524,6 +525,7 @@ macro_rules! stabchain_tests {
 #[cfg(test)]
 macro_rules! known_base_tests {
     ($strategy:expr, $short:ident, $repeats:expr) => {
+        #[allow(deprecated)]
         mod $short {
             use crate::group::stabchain::base_change_builder::*;
             use crate::group::stabchain::{base::Base, valid_stabchain};
@@ -672,6 +674,7 @@ mod tests {
     macro_rules! reconstruction_test {
         ($group:expr, $name:ident) => {
             #[test]
+            #[allow(deprecated)]
             fn $name() {
                 let g = $group;
                 let chain = g.stabchain();

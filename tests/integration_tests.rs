@@ -128,6 +128,7 @@ fn test_transversals() {
 macro_rules! test_stabilizer_on_strategy {
     ($strategy:expr, $short:ident, $error: expr) => {
         #[test]
+        #[allow(deprecated)]
         fn $short() {
             general_test(
                 stringify!($short),
@@ -146,6 +147,7 @@ macro_rules! test_stabilizer_on_strategy {
 macro_rules! test_stabilizer_on_strategy_with_order {
     ($strategy:expr, $short:ident, $error: expr) => {
         #[test]
+        #[allow(deprecated)]
         fn $short() {
             general_test(
                 stringify!($short),

@@ -119,12 +119,17 @@ use random::parameters::RandomAlgoParameters;
 /// This should be faster than the naive and IFT methods, but is not deterministic.
 /// This should not be used, as the shallow version is faster and more reliable.
 #[derive(Debug, Clone)]
+#[deprecated(
+    since = "0.1.1",
+    note = "please use `RandomBuilderStrategyShallow` instead"
+)]
 pub struct RandomBuilderStrategyNaive<A, S, R = ThreadRng> {
     selector: S,
     action: A,
     params: RandomAlgoParameters<R>,
 }
 
+#[allow(deprecated)]
 impl<A, S> RandomBuilderStrategyNaive<A, S> {
     pub fn new(action: A, selector: S) -> Self {
         RandomBuilderStrategyNaive {
@@ -135,6 +140,7 @@ impl<A, S> RandomBuilderStrategyNaive<A, S> {
     }
 }
 
+#[allow(deprecated)]
 impl<A, S, R> RandomBuilderStrategyNaive<A, S, R> {
     pub fn new_with_params(action: A, selector: S, params: RandomAlgoParameters<R>) -> Self {
         RandomBuilderStrategyNaive {
@@ -145,6 +151,7 @@ impl<A, S, R> RandomBuilderStrategyNaive<A, S, R> {
     }
 }
 
+#[allow(deprecated)]
 impl<P, S, A, R> BuilderStrategy<P> for RandomBuilderStrategyNaive<A, S, R>
 where
     P: Permutation,
