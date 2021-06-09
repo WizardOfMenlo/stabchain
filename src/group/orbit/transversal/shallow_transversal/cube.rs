@@ -25,35 +25,31 @@ where
         let mut cubes = vec![DetHashSet::default()];
         cubes[0].insert(base);
         for i in 1..=2 * seq.len() {
+            let mut temp = DetHashSet::default();
             if i > seq.len() {
-                let mut temp = DetHashSet::default();
                 for j in cubes[i - 1].iter() {
                     let p = seq[i - seq.len() - 1].clone();
                     let val = strat.apply(&p, j.clone());
                     orbit.entry(val.clone()).or_insert_with(|| {
-                        depth.insert(val.clone(), depth.get(&j).unwrap() + 1);
+                        depth.insert(val.clone(), depth.get(j).unwrap() + 1);
                         p.inv()
                     });
                     temp.insert(val);
                 }
-                //Take the union of cube[i] and temp.
-                temp.extend(cubes[i - 1].iter().cloned());
-                cubes.push(temp);
             } else {
-                let mut temp = DetHashSet::default();
                 for j in cubes[i - 1].iter() {
                     let p = seq[seq.len() - i].inv();
                     let val = strat.apply(&p, j.clone());
                     orbit.entry(val.clone()).or_insert_with(|| {
-                        depth.insert(val.clone(), depth.get(&j).unwrap() + 1);
+                        depth.insert(val.clone(), depth.get(j).unwrap() + 1);
                         p.inv()
                     });
                     temp.insert(val);
                 }
-                //Take the union of cube[i] and temp.
-                temp.extend(cubes[i - 1].iter().cloned());
-                cubes.push(temp);
             }
+            //Take the union of cube[i] and temp.
+            temp.extend(cubes[i - 1].iter().cloned());
+            cubes.push(temp);
         }
         Cube {
             orbit,
