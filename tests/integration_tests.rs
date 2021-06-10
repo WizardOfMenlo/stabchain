@@ -128,7 +128,6 @@ fn test_transversals() {
 macro_rules! test_stabilizer_on_strategy {
     ($strategy:expr, $short:ident, $error: expr) => {
         #[test]
-        #[allow(deprecated)]
         fn $short() {
             general_test(
                 stringify!($short),
@@ -147,7 +146,6 @@ macro_rules! test_stabilizer_on_strategy {
 macro_rules! test_stabilizer_on_strategy_with_order {
     ($strategy:expr, $short:ident, $error: expr) => {
         #[test]
-        #[allow(deprecated)]
         fn $short() {
             general_test(
                 stringify!($short),
@@ -177,22 +175,6 @@ test_stabilizer_on_strategy!(
 );
 
 test_stabilizer_on_strategy!(
-    RandomBuilderStrategyNaive::new(SimpleApplication::default(), FmpSelector::default(),),
-    test_random_stabilizer,
-    (number_of_tests() as f32 * 0.05).floor() as usize
-);
-test_stabilizer_on_strategy!(
-    RandomBuilderStrategyNaive::new_with_params(
-        SimpleApplication::default(),
-        FmpSelector::default(),
-        RandomAlgoParameters::default().quick_test(true)
-    ),
-    test_random_quick_test,
-    //Bound so high as this is very unreliable.
-    (number_of_tests() as f32 * 0.15).floor() as usize
-);
-
-test_stabilizer_on_strategy!(
     RandomBuilderStrategyShallow::new(SimpleApplication::default(), FmpSelector::default(),),
     test_random_shallow_stabilizer,
     (number_of_tests() as f32 * 0.05).floor() as usize
@@ -206,18 +188,6 @@ test_stabilizer_on_strategy!(
     ),
     test_random_shallow_stabilizer_quick_test,
     (number_of_tests() as f32 * 0.05).floor() as usize
-);
-
-test_stabilizer_on_strategy_with_order!(
-    |order| RandomBuilderStrategyNaive::new_with_params(
-        SimpleApplication::default(),
-        FmpSelector::default(),
-        RandomAlgoParameters::default()
-            .quick_test(true)
-            .order(order)
-    ),
-    test_random_known_order,
-    0
 );
 
 test_stabilizer_on_strategy_with_order!(
