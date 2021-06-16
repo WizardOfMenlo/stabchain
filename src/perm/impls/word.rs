@@ -52,6 +52,11 @@ where
     pub fn multiply_mut(&mut self, other: &P) {
         self.word.push(other.clone());
     }
+
+    /// Multiply in place by another word.
+    pub fn multiply_mut_word(&mut self, other: &Self) {
+        self.word.extend(other.word.iter().cloned());
+    }
 }
 
 impl<P> FromIterator<P> for WordPermutation<P>
