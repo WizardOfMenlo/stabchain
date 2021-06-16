@@ -24,30 +24,6 @@ where
     random_subproduct_subset(rng, gens, gens.len())
 }
 
-/// Apply a point to permutations stored as a word.
-pub fn apply_permutation_word<'a, P, A>(
-    perm_word: impl IntoIterator<Item = &'a P>,
-    x: A::OrbitT,
-    strat: &A,
-) -> A::OrbitT
-where
-    P: 'a + Permutation,
-    A: Action<P>,
-{
-    perm_word
-        .into_iter()
-        .fold(x, |accum, p| strat.apply(p, accum))
-}
-
-/// Convert from a permutation stored as a word, into a single permutation.
-pub fn collapse_perm_word<'a, P>(p: impl IntoIterator<Item = &'a P>) -> P
-where
-    P: 'a + Permutation,
-{
-    p.into_iter()
-        .fold(Permutation::id(), |accum, perm| accum.multiply(perm))
-}
-
 /// Generate a random subproduct of a random k sized subset of the given generators.
 pub fn random_subproduct_subset<R, P>(rng: &mut R, gens: &[P], k: usize) -> P
 where
