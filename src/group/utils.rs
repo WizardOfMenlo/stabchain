@@ -121,26 +121,4 @@ mod tests {
             random_subproduct_subset(&mut rng, g.generators(), 2);
         }
     }
-
-    ///Test that applying a permutation as a word gives the same image as collapsing that permutation.
-    #[test]
-    fn test_apply_permutation_word() {
-        //Test an empty word.
-        let empty_word = vec![];
-        let strat = SimpleApplication::default();
-        assert_eq!(3, apply_permutation_word(&empty_word, 3, &strat));
-        let perm_word: Vec<StandardPermutation> = vec![
-            CyclePermutation::single_cycle(&[1, 2, 4]).into(),
-            CyclePermutation::single_cycle(&[3, 5, 8]).into(),
-            CyclePermutation::single_cycle(&[7, 9]).into(),
-            CyclePermutation::single_cycle(&[1, 5, 6, 9]).into(),
-        ];
-        let collapsed_word = collapse_perm_word(&perm_word);
-        for i in 0..9 {
-            assert_eq!(
-                collapsed_word.apply(i),
-                apply_permutation_word(&perm_word, i, &strat)
-            );
-        }
-    }
 }
