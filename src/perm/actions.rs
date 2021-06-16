@@ -21,6 +21,15 @@ where
     }
 }
 
+impl<P> SimpleApplication<P>
+where
+    P: Permutation,
+{
+    pub(crate) fn apply_word(&self, p: &WordPermutation<P>, input: usize) -> usize {
+        p.into_iter().fold(input, |x, f| f.apply(x))
+    }
+}
+
 /// Action is on permutation, and it is done by conjugation (p^-1 a p)
 #[derive(Debug, Clone)]
 pub struct ConjugationAction<P>(std::marker::PhantomData<P>);

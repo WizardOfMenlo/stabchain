@@ -70,6 +70,18 @@ where
     }
 }
 
+impl<P> IntoIterator for WordPermutation<P>
+where
+    P: Permutation,
+{
+    type Item = P;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.word.into_iter()
+    }
+}
+
 impl<P> PartialEq for WordPermutation<P>
 where
     P: Permutation,
