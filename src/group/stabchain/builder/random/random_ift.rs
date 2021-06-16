@@ -6,10 +6,6 @@ use crate::group::orbit::transversal::factored_transversal::{
 };
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
 use crate::group::stabchain::{base::selectors::BaseSelector, order, Stabchain, StabchainRecord};
-use crate::group::utils::{
-    apply_permutation_word, collapse_perm_word, random_subproduct_word_full,
-    random_subproduct_word_subset,
-};
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
@@ -17,6 +13,7 @@ use crate::DetHashMap;
 use itertools::Itertools;
 use rand::rngs::ThreadRng;
 use rand::seq::IteratorRandom;
+use rand::seq::SliceRandom;
 use rand::Rng;
 use std::cell::RefCell;
 use std::collections::VecDeque;
@@ -457,4 +454,51 @@ where
     fn build(self) -> Stabchain<P, FactoredTransversalResolver<A>, A> {
         self.build()
     }
+}
+
+// Functions used for compatability reasons
+/// Generate a word representation of a random subproduct of the given generators.
+pub fn random_subproduct_word_subset<R, P>(rng: &mut R, gens: &[P], k: usize) -> Vec<P>
+where
+    P: Permutation,
+    R: Rng,
+{
+    // TODO: CHeck 1 + k/2
+    gens.choose_multiple(rng, k)
+        .filter(|_| rng.gen::<bool>())
+        .cloned()
+        .collect::<Vec<P>>()
+}
+
+/// Generate random subproduct of the given generators.
+pub fn random_subproduct_word_full<T, P>(rng: &mut T, gens: &[P]) -> Vec<P>
+where
+    P: Permutation,
+    T: Rng,
+{
+    random_subproduct_word_subset(rng, gens, gens.len())
+}
+
+/// Apply a point to permutations stored as a word.
+pub fn apply_permutation_word<'a, P, A>(
+    perm_word: impl IntoIterator<Item = &'a P>,
+    x: A::OrbitT,
+    strat: &A,
+) -> A::OrbitT
+where
+    P: 'a + Permutation,
+    A: Action<P>,
+{
+    perm_word
+        .into_iter()
+        .fold(x, |accum, p| strat.apply(p, accum))
+}
+
+/// Convert from a permutation stored as a word, into a single permutation.
+pub fn collapse_perm_word<'a, P>(p: impl IntoIterator<Item = &'a P>) -> P
+where
+    P: 'a + Permutation,
+{
+    p.into_iter()
+        .fold(Permutation::id(), |accum, perm| accum.multiply(perm))
 }
