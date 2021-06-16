@@ -39,6 +39,19 @@ where
     pub fn lmp_upper(&self) -> Option<usize> {
         self.word.iter().flat_map(|p| p.lmp()).max()
     }
+
+    /// Lazily evaluate the inverse of the permutation, using the identify (ab)^-1 = b^-1a^-1
+    pub fn inv_lazy(&self) -> Self {
+        // We know each word is not the identity, so it's inverse isn't either.
+        WordPermutation {
+            word: self.word.iter().map(|p| p.inv()).rev().collect(),
+        }
+    }
+
+    /// Multiply in place.
+    pub fn multiply_mut(&mut self, other: &P) {
+        self.word.push(other.clone());
+    }
 }
 
 impl<P> FromIterator<P> for WordPermutation<P>
