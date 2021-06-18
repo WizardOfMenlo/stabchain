@@ -62,7 +62,7 @@ where
     if !transversal.contains_key(&point) {
         None
     } else {
-        let mut orbit_point = point.clone();
+        let mut orbit_point = point;
         let mut rep = vec![];
         // Move along the orbit till we reach a representative that the base moves to the point.
         while orbit_point != base {
