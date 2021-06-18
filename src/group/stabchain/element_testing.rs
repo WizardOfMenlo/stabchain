@@ -2,7 +2,6 @@
 
 use super::StabchainRecord;
 use crate::group::orbit::abstraction::TransversalResolver;
-use crate::perm::actions::SimpleApplication;
 use crate::perm::impls::word::WordPermutation;
 use crate::perm::{Action, Permutation};
 
@@ -125,18 +124,19 @@ where
 
 /// Sift the permutation word through the chain, returning the residue it generates and the drop out level.
 pub fn residue_as_words_from_words<'a, V, A, P>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, SimpleApplication<P>>>,
-    p: WordPermutation<P>,
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
+    p: &WordPermutation<P>,
 ) -> (usize, WordPermutation<P>)
 where
-    V: 'a + TransversalResolver<P, SimpleApplication<P>>,
+    V: 'a + TransversalResolver<P, A>,
     P: 'a + Permutation,
+    A: 'a + Action<P>,
 {
     //This permutation word will store the resulting residue.
     let mut g: WordPermutation<P> = p.clone();
     //This counts how many layers of the chain the permutation sifts through.
     let mut k = 0;
-    let applicator = SimpleApplication::default();
+    let applicator = A::default();
     for record in it {
         let base = record.base.clone();
         let application = applicator.apply_word(&g, base.clone());

@@ -13,9 +13,20 @@ impl<P> WordPermutation<P>
 where
     P: Permutation,
 {
+    /// Custom initialiser that can take a vector capacity.
+    pub(crate) fn id_with_capacity(capacity: usize) -> Self {
+        WordPermutation {
+            word: Vec::with_capacity(capacity),
+        }
+    }
+
     /// Make from a slice
     pub fn from_slice(perms: &[P]) -> Self {
         perms.iter().cloned().collect()
+    }
+
+    pub fn from_perm(p: &P) -> Self {
+        iter::once(p.clone()).collect()
     }
 
     /// Get an underlying permutation
@@ -33,6 +44,11 @@ where
     /// Check for equality on the given base.
     pub fn eq_on_base(&self, other: &Self, base: &[usize]) -> bool {
         self.eq_on_iter(other, base.iter().copied())
+    }
+
+    /// Check that this acts as the identity on a general iterator. Note that true on 0..=self.lmp() <+ self.lmp_upper() will imply it is actually the identity.
+    pub fn id_on_iter(&self, iter: impl IntoIterator<Item = usize>) -> bool {
+        iter.into_iter().all(|x| self.apply(x) == x)
     }
 
     /// Get an upper bound on the lmp. Note lmp_upper == None => self == id
@@ -192,6 +208,22 @@ where
 mod tests {
     use super::*;
     use crate::perm::{DefaultPermutation, Permutation};
+
+    #[test]
+    fn inv_lazy() {
+        let images = vec![
+            vec![0, 2, 1],
+            vec![0, 1, 2, 4, 3],
+            vec![0, 1, 2, 3, 4, 5, 7, 6],
+        ];
+        let perms = images
+            .iter()
+            .map(|arr| DefaultPermutation::from_images(arr));
+        let perm = WordPermutation::from_iter(perms);
+        assert_eq!(perm.inv_lazy().evaluate(), perm.inv().evaluate());
+        let id = WordPermutation::<DefaultPermutation>::id();
+        assert_eq!(id.inv_lazy().evaluate(), id.inv().evaluate());
+    }
 
     #[test]
     fn lmp_identity() {

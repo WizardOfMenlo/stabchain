@@ -1,7 +1,8 @@
 //! Group utilities which I was not sure where to place
 
 use super::Group;
-use crate::perm::{Action, Permutation};
+use crate::perm::impls::word::WordPermutation;
+use crate::perm::Permutation;
 use rand::seq::SliceRandom;
 use rand::Rng;
 
@@ -41,7 +42,7 @@ where
 }
 
 /// Generate a word representation of a random subproduct of the given generators.
-pub fn random_subproduct_word_subset<R, P>(rng: &mut R, gens: &[P], k: usize) -> Vec<P>
+pub fn random_subproduct_word_subset<R, P>(rng: &mut R, gens: &[P], k: usize) -> WordPermutation<P>
 where
     P: Permutation,
     R: Rng,
@@ -50,11 +51,11 @@ where
     gens.choose_multiple(rng, k)
         .filter(|_| rng.gen::<bool>())
         .cloned()
-        .collect::<Vec<P>>()
+        .collect()
 }
 
 /// Generate random subproduct of the given generators.
-pub fn random_subproduct_word_full<T, P>(rng: &mut T, gens: &[P]) -> Vec<P>
+pub fn random_subproduct_word_full<T, P>(rng: &mut T, gens: &[P]) -> WordPermutation<P>
 where
     P: Permutation,
     T: Rng,
@@ -65,7 +66,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::perm::actions::SimpleApplication;
     use crate::perm::export::CyclePermutation;
     use crate::perm::impls::standard::StandardPermutation;
     use rand::thread_rng;

@@ -1,10 +1,10 @@
 use super::parameters::RandomAlgoParameters;
 
-use crate::group::orbit::abstraction::FactoredTransversalResolver;
+use crate::group::orbit::abstraction::{FactoredTransversalResolver, TransversalResolver};
+#[allow(deprecated)]
 use crate::group::orbit::transversal::factored_transversal::{
     factored_transversal_complete_opt, representative_raw_as_word,
 };
-use crate::group::stabchain::element_testing::residue_as_words_from_words;
 use crate::group::stabchain::{base::selectors::BaseSelector, order, Stabchain, StabchainRecord};
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
@@ -44,6 +44,7 @@ where
     up_to_date: usize,
 }
 
+#[allow(deprecated)]
 impl<P, S, A, R> StabchainBuilderRandom<P, S, A, R>
 where
     P: Permutation,
@@ -501,6 +502,40 @@ where
 {
     p.into_iter()
         .fold(Permutation::id(), |accum, perm| accum.multiply(perm))
+}
+
+/// Sift the permutation word through the chain, returning the residue it generates and the drop out level.
+fn residue_as_words_from_words<'a, 'b, V, A, P>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
+    p: impl IntoIterator<Item = &'b P>,
+) -> (usize, Vec<P>)
+where
+    V: 'a + TransversalResolver<P, A>,
+    P: 'a + 'b + Permutation,
+    A: 'a + Action<P>,
+{
+    //This permutation word will store the resulting residue.
+    let mut g: Vec<P> = p.into_iter().cloned().collect();
+    //This counts how many layers of the chain the permutation sifts through.
+    let mut k = 0;
+    let applicator = A::default();
+    for record in it {
+        let base = record.base.clone();
+        let application = apply_permutation_word(&g, base.clone(), &applicator);
+
+        //There is a missing point, so this permutation has not sifted through.
+        if !record.transversal.contains_key(&application) {
+            break;
+        }
+        //Already check the point is present, so there should be a representative.
+        let representative = record
+            .resolver()
+            .representative(&record.transversal, base.clone(), application)
+            .unwrap();
+        g.push(representative.inv());
+        k += 1;
+    }
+    (k, g)
 }
 
 mod tests {

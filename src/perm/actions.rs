@@ -19,14 +19,12 @@ where
     fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT {
         p.apply(input)
     }
-}
 
-impl<P> SimpleApplication<P>
-where
-    P: Permutation,
-{
-    pub(crate) fn apply_word(&self, p: &WordPermutation<P>, input: usize) -> usize {
-        p.into_iter().fold(input, |x, f| f.apply(x))
+    fn apply_word(&self, p: &WordPermutation<P>, input: Self::OrbitT) -> Self::OrbitT
+    where
+        P: Permutation,
+    {
+        p.apply(input)
     }
 }
 
@@ -87,9 +85,11 @@ mod tests {
                 fn test_identity() {
                     let act = <$id>::default();
                     let id = DefaultPermutation::id();
+                    let id_word = WordPermutation::id();
                     let testing_set = $testing;
                     for i in testing_set {
                         assert_eq!(act.apply(&id, i.clone()), i);
+                        assert_eq!(act.apply_word(&id_word, i.clone()), i);
                     }
                 }
 
