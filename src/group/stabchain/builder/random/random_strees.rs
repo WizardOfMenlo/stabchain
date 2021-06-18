@@ -162,7 +162,7 @@ where
             .flat_map(|g| {
                 subproduct_iter.iter().map(move |w| {
                     let mut gw = g.clone();
-                    gw.multiply_mut_word(&w);
+                    gw.multiply_mut_word(w);
                     gw
                 })
             })
@@ -218,7 +218,7 @@ where
         //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
         random_gens.iter_mut().for_each(|gw| {
             //Get the residue of this word
-            let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), &gw);
+            let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), gw);
             //Append the inverse of the residue to the word, to get a schrier generator.
             gw_bar
                 .into_iter()
