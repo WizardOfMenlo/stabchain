@@ -28,7 +28,5 @@ jobs:
         run: cargo run --release --example benchmark -- -m deterministic
       - name: Run IFT
         run: cargo run --release --example benchmark -- -m ift
-      - name: Run Random
-        run: cargo run --release --example benchmark -- -m random
       - name: Run Shallow
         run: cargo run --release --example benchmark -- -m shallow
