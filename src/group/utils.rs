@@ -57,7 +57,6 @@ where
             images[i * copies + j] = p.apply(i) * copies + j;
         }
     }
-    dbg!(&p);
     P::from_images(&images[..])
 }
 
