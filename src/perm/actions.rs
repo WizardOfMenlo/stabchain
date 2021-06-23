@@ -19,6 +19,13 @@ where
     fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT {
         p.apply(input)
     }
+
+    fn apply_word(&self, p: &WordPermutation<P>, input: Self::OrbitT) -> Self::OrbitT
+    where
+        P: Permutation,
+    {
+        p.apply(input)
+    }
 }
 
 /// Action is on permutation, and it is done by conjugation (p^-1 a p)
@@ -78,9 +85,11 @@ mod tests {
                 fn test_identity() {
                     let act = <$id>::default();
                     let id = DefaultPermutation::id();
+                    let id_word = WordPermutation::id();
                     let testing_set = $testing;
                     for i in testing_set {
                         assert_eq!(act.apply(&id, i.clone()), i);
+                        assert_eq!(act.apply_word(&id_word, i.clone()), i);
                     }
                 }
 

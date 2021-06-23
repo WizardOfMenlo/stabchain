@@ -81,6 +81,14 @@ pub trait Action<P>: Default + Clone + Debug {
     /// Apply the action. Required to satisfy (1) action.apply(P::id, i) == i.
     /// (2) action.apply(a b, i) == action.apply(b, action.apply(a, i))
     fn apply(&self, p: &P, input: Self::OrbitT) -> Self::OrbitT;
+
+    /// Same as apply, but can work for permutation words.
+    fn apply_word(&self, p: &WordPermutation<P>, input: Self::OrbitT) -> Self::OrbitT
+    where
+        P: Permutation,
+    {
+        self.apply(&p.evaluate(), input)
+    }
 }
 
 macro_rules! impl_conversions {

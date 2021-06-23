@@ -13,9 +13,20 @@ impl<P> WordPermutation<P>
 where
     P: Permutation,
 {
+    /// Custom initialiser that can take a vector capacity.
+    pub(crate) fn id_with_capacity(capacity: usize) -> Self {
+        WordPermutation {
+            word: Vec::with_capacity(capacity),
+        }
+    }
+
     /// Make from a slice
     pub fn from_slice(perms: &[P]) -> Self {
         perms.iter().cloned().collect()
+    }
+
+    pub fn from_perm(p: &P) -> Self {
+        iter::once(p.clone()).collect()
     }
 
     /// Get an underlying permutation
@@ -35,9 +46,32 @@ where
         self.eq_on_iter(other, base.iter().copied())
     }
 
+    /// Check that this acts as the identity on a general iterator. Note that true on 0..=self.lmp() <+ self.lmp_upper() will imply it is actually the identity.
+    pub fn id_on_iter(&self, iter: impl IntoIterator<Item = usize>) -> bool {
+        iter.into_iter().all(|x| self.apply(x) == x)
+    }
+
     /// Get an upper bound on the lmp. Note lmp_upper == None => self == id
     pub fn lmp_upper(&self) -> Option<usize> {
         self.word.iter().flat_map(|p| p.lmp()).max()
+    }
+
+    /// Lazily evaluate the inverse of the permutation, using the identify (ab)^-1 = b^-1a^-1
+    pub fn inv_lazy(&self) -> Self {
+        // We know each word is not the identity, so it's inverse isn't either.
+        WordPermutation {
+            word: self.word.iter().map(|p| p.inv()).rev().collect(),
+        }
+    }
+
+    /// Multiply in place.
+    pub fn multiply_mut(&mut self, other: &P) {
+        self.word.push(other.clone());
+    }
+
+    /// Multiply in place by another word.
+    pub fn multiply_mut_word(&mut self, other: &Self) {
+        self.word.extend(other.word.iter().cloned());
     }
 }
 
@@ -49,6 +83,18 @@ where
         WordPermutation {
             word: iter.into_iter().filter(|p| !p.is_id()).collect(),
         }
+    }
+}
+
+impl<P> IntoIterator for WordPermutation<P>
+where
+    P: Permutation,
+{
+    type Item = P;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.word.into_iter()
     }
 }
 
@@ -162,6 +208,22 @@ where
 mod tests {
     use super::*;
     use crate::perm::{DefaultPermutation, Permutation};
+
+    #[test]
+    fn inv_lazy() {
+        let images = vec![
+            vec![0, 2, 1],
+            vec![0, 1, 2, 4, 3],
+            vec![0, 1, 2, 3, 4, 5, 7, 6],
+        ];
+        let perms = images
+            .iter()
+            .map(|arr| DefaultPermutation::from_images(arr));
+        let perm = WordPermutation::from_iter(perms);
+        assert_eq!(perm.inv_lazy().evaluate(), perm.inv().evaluate());
+        let id = WordPermutation::<DefaultPermutation>::id();
+        assert_eq!(id.inv_lazy().evaluate(), id.inv().evaluate());
+    }
 
     #[test]
     fn lmp_identity() {

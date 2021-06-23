@@ -1,7 +1,8 @@
 //! Collection of functions that will compute shallow(er) transversals.
 
 use crate::group::random_perm::RandPerm;
-use crate::group::{utils::apply_permutation_word, Action, Group};
+use crate::group::{Action, Group};
+use crate::perm::impls::word::WordPermutation;
 use crate::perm::Permutation;
 use crate::DetHashMap;
 use rand::seq::SliceRandom;
@@ -116,7 +117,7 @@ pub(crate) fn representative_raw_as_word<P, A>(
     point: A::OrbitT,
     strat: &A,
     depth: usize,
-) -> Option<Vec<P>>
+) -> Option<WordPermutation<P>>
 where
     P: Permutation,
     A: Action<P>,
@@ -127,17 +128,15 @@ where
     } else {
         let mut orbit_point = point.clone();
         // The +1 is because the base point has depth 0.
-        let mut rep = Vec::with_capacity(depth + 1);
+        let mut rep = WordPermutation::id_with_capacity(depth + 1);
         // Move along the orbit till we reach a representative that the base moves to the point.
         while orbit_point != base {
             let g_inv = transversal.get(&orbit_point).unwrap();
-            rep.push(g_inv.inv());
+            rep.multiply_mut(g_inv);
             orbit_point = strat.apply(g_inv, orbit_point);
         }
-        rep.reverse();
-        debug_assert!(apply_permutation_word(&rep, base, strat) == point);
-        debug_assert!(rep.len() <= depth + 1);
-        Some(rep)
+        debug_assert!(strat.apply(&rep.inv().evaluate(), base) == point);
+        Some(rep.inv_lazy())
     }
 }
 

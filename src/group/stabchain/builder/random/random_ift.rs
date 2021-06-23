@@ -1,15 +1,11 @@
 use super::parameters::RandomAlgoParameters;
 
-use crate::group::orbit::abstraction::FactoredTransversalResolver;
+use crate::group::orbit::abstraction::{FactoredTransversalResolver, TransversalResolver};
+#[allow(deprecated)]
 use crate::group::orbit::transversal::factored_transversal::{
     factored_transversal_complete_opt, representative_raw_as_word,
 };
-use crate::group::stabchain::element_testing::residue_as_words_from_words;
 use crate::group::stabchain::{base::selectors::BaseSelector, order, Stabchain, StabchainRecord};
-use crate::group::utils::{
-    apply_permutation_word, collapse_perm_word, random_subproduct_word_full,
-    random_subproduct_word_subset,
-};
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, Permutation};
@@ -17,6 +13,7 @@ use crate::DetHashMap;
 use itertools::Itertools;
 use rand::rngs::ThreadRng;
 use rand::seq::IteratorRandom;
+use rand::seq::SliceRandom;
 use rand::Rng;
 use std::cell::RefCell;
 use std::collections::VecDeque;
@@ -47,6 +44,7 @@ where
     up_to_date: usize,
 }
 
+#[allow(deprecated)]
 impl<P, S, A, R> StabchainBuilderRandom<P, S, A, R>
 where
     P: Permutation,
@@ -456,5 +454,117 @@ where
 
     fn build(self) -> Stabchain<P, FactoredTransversalResolver<A>, A> {
         self.build()
+    }
+}
+
+// Functions used for compatability reasons
+/// Generate a word representation of a random subproduct of the given generators.
+fn random_subproduct_word_subset<R, P>(rng: &mut R, gens: &[P], k: usize) -> Vec<P>
+where
+    P: Permutation,
+    R: Rng,
+{
+    // TODO: CHeck 1 + k/2
+    gens.choose_multiple(rng, k)
+        .filter(|_| rng.gen::<bool>())
+        .cloned()
+        .collect::<Vec<P>>()
+}
+
+/// Generate random subproduct of the given generators.
+fn random_subproduct_word_full<T, P>(rng: &mut T, gens: &[P]) -> Vec<P>
+where
+    P: Permutation,
+    T: Rng,
+{
+    random_subproduct_word_subset(rng, gens, gens.len())
+}
+
+/// Apply a point to permutations stored as a word.
+fn apply_permutation_word<'a, P, A>(
+    perm_word: impl IntoIterator<Item = &'a P>,
+    x: A::OrbitT,
+    strat: &A,
+) -> A::OrbitT
+where
+    P: 'a + Permutation,
+    A: Action<P>,
+{
+    perm_word
+        .into_iter()
+        .fold(x, |accum, p| strat.apply(p, accum))
+}
+
+/// Convert from a permutation stored as a word, into a single permutation.
+fn collapse_perm_word<'a, P>(p: impl IntoIterator<Item = &'a P>) -> P
+where
+    P: 'a + Permutation,
+{
+    p.into_iter()
+        .fold(Permutation::id(), |accum, perm| accum.multiply(perm))
+}
+
+/// Sift the permutation word through the chain, returning the residue it generates and the drop out level.
+fn residue_as_words_from_words<'a, 'b, V, A, P>(
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
+    p: impl IntoIterator<Item = &'b P>,
+) -> (usize, Vec<P>)
+where
+    V: 'a + TransversalResolver<P, A>,
+    P: 'a + 'b + Permutation,
+    A: 'a + Action<P>,
+{
+    //This permutation word will store the resulting residue.
+    let mut g: Vec<P> = p.into_iter().cloned().collect();
+    //This counts how many layers of the chain the permutation sifts through.
+    let mut k = 0;
+    let applicator = A::default();
+    for record in it {
+        let base = record.base.clone();
+        let application = apply_permutation_word(&g, base.clone(), &applicator);
+
+        //There is a missing point, so this permutation has not sifted through.
+        if !record.transversal.contains_key(&application) {
+            break;
+        }
+        //Already check the point is present, so there should be a representative.
+        let representative = record
+            .resolver()
+            .representative(&record.transversal, base.clone(), application)
+            .unwrap();
+        g.push(representative.inv());
+        k += 1;
+    }
+    (k, g)
+}
+
+mod tests {
+
+    ///Test that applying a permutation as a word gives the same image as collapsing that permutation.
+    #[test]
+    fn test_apply_permutation_word() {
+        use super::apply_permutation_word;
+        use super::collapse_perm_word;
+        use crate::perm::actions::SimpleApplication;
+        use crate::perm::export::CyclePermutation;
+        use crate::perm::impls::standard::StandardPermutation;
+        use crate::perm::Permutation;
+        //Test an empty word.
+        let empty_word = vec![];
+        let strat = SimpleApplication::default();
+        assert_eq!(3, apply_permutation_word(&empty_word, 3, &strat));
+        let perm_word: Vec<StandardPermutation> = vec![
+            CyclePermutation::single_cycle(&[1, 2, 4]).into(),
+            CyclePermutation::single_cycle(&[3, 5, 8]).into(),
+            CyclePermutation::single_cycle(&[7, 9]).into(),
+            CyclePermutation::single_cycle(&[1, 5, 6, 9]).into(),
+        ];
+        let collapsed_word = collapse_perm_word(&perm_word);
+        for i in 0..9 {
+            assert_eq!(
+                collapsed_word.apply(i),
+                apply_permutation_word(&perm_word, i, &strat)
+            );
+        }
     }
 }

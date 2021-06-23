@@ -2,7 +2,6 @@
 
 use super::skeleton::TransversalSkeleton;
 use crate::group::orbit::transversal::Transversal;
-use crate::group::utils::apply_permutation_word;
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{Action, DefaultPermutation, Permutation};
@@ -47,6 +46,7 @@ where
     }
 }
 
+#[deprecated(since = "0.1.1")]
 pub(crate) fn representative_raw_as_word<P, S, A>(
     transversal: &HashMap<A::OrbitT, P, S>,
     base: A::OrbitT,
@@ -62,7 +62,7 @@ where
     if !transversal.contains_key(&point) {
         None
     } else {
-        let mut orbit_point = point.clone();
+        let mut orbit_point = point;
         let mut rep = vec![];
         // Move along the orbit till we reach a representative that the base moves to the point.
         while orbit_point != base {
@@ -71,7 +71,6 @@ where
             orbit_point = strat.apply(g_inv, orbit_point);
         }
         rep.reverse();
-        debug_assert!(apply_permutation_word(&rep, base, strat) == point);
         Some(rep)
     }
 }

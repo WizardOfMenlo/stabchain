@@ -5,13 +5,10 @@ use crate::group::orbit::transversal::shallow_transversal::{
 };
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
 use crate::group::stabchain::{base::selectors::BaseSelector, order, Stabchain, StabchainRecord};
-use crate::group::utils::{
-    apply_permutation_word, collapse_perm_word, random_subproduct_word_full,
-    random_subproduct_word_subset,
-};
+use crate::group::utils::{random_subproduct_word_full, random_subproduct_word_subset};
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
-use crate::perm::{Action, Permutation};
+use crate::perm::{impls::word::WordPermutation, Action, Permutation};
 use itertools::Itertools;
 use rand::rngs::ThreadRng;
 use rand::{seq::IteratorRandom, Rng};
@@ -121,7 +118,7 @@ where
         subproducts: usize,
         coset_representatives: usize,
         gens: &[P],
-    ) -> Vec<Vec<P>> {
+    ) -> Vec<WordPermutation<P>> {
         debug!(
             level = self.current_pos,
             "Random generation of Schrier Generators"
@@ -136,7 +133,7 @@ where
         let subproduct_w2_iter =
             repeat_with(|| random_subproduct_word_subset(&mut *self.rng.borrow_mut(), gens, k));
         //Iterleave the two iterators.
-        let subproduct_iter: Vec<Vec<P>> = subproduct_w1_iter
+        let subproduct_iter: Vec<WordPermutation<P>> = subproduct_w1_iter
             .interleave(subproduct_w2_iter)
             .take(2 * subproducts)
             .collect();
@@ -165,7 +162,7 @@ where
             .flat_map(|g| {
                 subproduct_iter.iter().map(move |w| {
                     let mut gw = g.clone();
-                    gw.extend(w.clone());
+                    gw.multiply_mut_word(w);
                     gw
                 })
             })
@@ -221,9 +218,13 @@ where
         //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
         random_gens.iter_mut().for_each(|gw| {
             //Get the residue of this word
-            let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), &gw.clone());
+            let (_, gw_bar) = residue_as_words_from_words(self.current_chain(), gw);
             //Append the inverse of the residue to the word, to get a schrier generator.
-            gw.extend(gw_bar.iter().map(|p| p.inv()).rev());
+            gw_bar
+                .into_iter()
+                .map(|p| p.inv())
+                .rev()
+                .for_each(|p| gw.multiply_mut(&p));
         });
         //To see if all generators are discarded.
         let mut all_discarded = true;
@@ -257,10 +258,10 @@ where
                             .collect()
                     };
                 //If any point is not fixed by the residue, then we add the residue as a generator.
-                if !self.is_trivial_residue(&h_residue, evaluated_points) {
+                if !h_residue.id_on_iter(evaluated_points) {
                     //Not all permutations have been discarded
                     all_discarded = false;
-                    let h_star = collapse_perm_word(&h_residue);
+                    let h_star = h_residue.evaluate();
                     //Add a new base point, along with a new record for that base point.
                     let new_base_point = self.selector.moved_point(&h_star, self.current_pos);
                     //self.check_transversal_augmentation(h_star);
@@ -286,7 +287,7 @@ where
                 }
             } else {
                 //We have found a residue that has not sifted through, so we add a new base point with this point as a generator.
-                let h_star = collapse_perm_word(&h_residue);
+                let h_star = h_residue.evaluate();
                 //Find the position at which this didn't sift through.
                 let j = self.current_pos + drop_out_level;
                 debug!(perm = %h_star, level = j, "Permutation not sifting through");
@@ -337,11 +338,11 @@ where
             .cloned()
             .collect::<Vec<P>>();
         //Create an iterator that first has the original generators, and then the random schrier generators.
-        let products: Vec<Vec<P>> = self
+        let products: Vec<WordPermutation<P>> = self
             .original_generators
             .generators()
             .iter()
-            .map(|p| vec![p.clone()])
+            .map(|p| WordPermutation::from_perm(p))
             .chain(self.random_schrier_generators_as_word(
                 self.constants.c3,
                 self.constants.c4,
@@ -351,7 +352,7 @@ where
         //Sift the original generators, and all products of the form g*w_{1,2}.
         for p in products {
             //If we have found a non-trivial element, then invoke the sgc at the specified level.
-            if let Some(sgc_invoke_level) = self.sgt_test(&p[..]) {
+            if let Some(sgc_invoke_level) = self.sgt_test(&p) {
                 self.current_pos = sgc_invoke_level;
                 debug!(level = sgc_invoke_level, "SGT failed");
                 self.sgc();
@@ -368,12 +369,12 @@ where
         self.current_pos = original_position;
     }
 
-    fn sgt_test(&mut self, p: &[P]) -> Option<usize> {
+    fn sgt_test(&mut self, p: &WordPermutation<P>) -> Option<usize> {
         let (drop_out_level, residue) = residue_as_words_from_words(self.current_chain(), p);
         //Check if this is a non-trivial residue. If it is then the output of the SGC is correct for this element.
-        if !self.is_trivial_residue_all_points(&residue) {
+        if !residue.id_on_iter(0..self.n) {
             let invoke_level = self.current_pos + drop_out_level;
-            let collapsed_residue = collapse_perm_word(&residue);
+            let collapsed_residue = residue.evaluate();
             //If this point sifted through but isn't trivial, then we need a new record and base point.
             if self.sifted(drop_out_level) {
                 //TODO add function to add a new level
@@ -402,23 +403,6 @@ where
         } else {
             None
         }
-    }
-
-    /// Wrapper function to check all points of the permutation domain.
-    fn is_trivial_residue_all_points(&self, p_as_words: &[P]) -> bool {
-        self.is_trivial_residue(p_as_words, 0..self.n)
-    }
-
-    /// Check if a residue acts trivially on a set of points.
-    /// This is just done by checking that the given permutation fixes all given points.
-    fn is_trivial_residue(
-        &self,
-        p_as_words: &[P],
-        points: impl IntoIterator<Item = A::OrbitT>,
-    ) -> bool {
-        points
-            .into_iter()
-            .all(|x| apply_permutation_word(p_as_words, x, &self.action) == x)
     }
 
     //Utility function to check if a given drop out level is the bottom of the chain.
