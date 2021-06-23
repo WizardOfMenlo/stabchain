@@ -52,9 +52,9 @@ where
     // We know this exists, as p is not the identity.
     let max_point = p.lmp().unwrap() + 1;
     let mut images = vec![0; max_point * copies];
-    for i in 1..=max_point {
+    for i in 0..max_point {
         for j in 0..copies {
-            images[i * copies - copies + j] = p.apply(i) * copies - copies + j;
+            images[i * copies + j] = p.apply(i) * copies + j;
         }
     }
     dbg!(&p);
