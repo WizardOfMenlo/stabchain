@@ -438,7 +438,7 @@ macro_rules! stabchain_tests {
 
             #[test]
             fn product_chain() {
-                let g = Group::product(&Group::symmetric(15), &Group::symmetric(15));
+                let g = Group::direct_product(&Group::symmetric(15), &Group::symmetric(15));
                 let chain = Stabchain::new_with_strategy(
                     &g,
                     $strategy("1710012252724199424000000".parse::<BigUint>().unwrap()),
@@ -625,7 +625,7 @@ macro_rules! known_base_tests {
 
             #[test]
             fn product_chain() {
-                let g = Group::product(&Group::symmetric(15), &Group::symmetric(15));
+                let g = Group::direct_product(&Group::symmetric(15), &Group::symmetric(15));
                 let original_chain = g.stabchain();
                 let base = original_chain.base();
                 let mut rng = rand::thread_rng();

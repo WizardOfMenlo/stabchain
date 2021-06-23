@@ -338,7 +338,7 @@ where
 
     /// Computes the direct product of two groups
     #[tracing::instrument]
-    pub fn product(g1: &Group<P>, g2: &Group<P>) -> Group<P> {
+    pub fn direct_product(g1: &Group<P>, g2: &Group<P>) -> Group<P> {
         if g1.generators.is_empty() {
             return g2.clone();
         }
@@ -449,7 +449,7 @@ mod tests {
         let perm: DefaultPermutation = CyclePermutation::single_cycle(&[1, 2, 3]).into();
 
         let g = Group::new(&[perm.clone()]);
-        let prod = Group::product(&g, &g);
+        let prod = Group::direct_product(&g, &g);
 
         let gens: DetHashSet<_> = prod.generators().iter().cloned().collect();
         assert_eq!(prod.generators().len(), 2);
@@ -459,7 +459,7 @@ mod tests {
 
     #[test]
     fn test_product_two_small_symm() {
-        let prod = Group::product(&Group::symmetric(4), &Group::symmetric(3));
+        let prod = Group::direct_product(&Group::symmetric(4), &Group::symmetric(3));
         let expanded = prod.bruteforce_elements();
         assert_eq!(expanded.len(), 24 * 6);
     }
@@ -468,7 +468,7 @@ mod tests {
     fn random_regenerator() {
         use crate::DetHashSet;
 
-        let g = Group::product(&Group::dihedral_2n(12), &Group::symmetric(5));
+        let g = Group::direct_product(&Group::dihedral_2n(12), &Group::symmetric(5));
         let reg = g.random_generators();
 
         let g_el: DetHashSet<_> = g.bruteforce_elements().into_iter().collect();

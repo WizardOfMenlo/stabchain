@@ -163,7 +163,7 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
     let mut group = c.benchmark_group("group__stabchain__ss__product_symmetric");
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
-            let g = Group::product(&Group::symmetric(*i), &Group::symmetric(*i));
+            let g = Group::direct_product(&Group::symmetric(*i), &Group::symmetric(*i));
             b.iter(|| g.stabchain())
         });
         group.sample_size(20);
@@ -171,21 +171,21 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
             group,
             "naive",
             i,
-            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
+            (|i: &usize| Group::direct_product(&Group::symmetric(*i), &Group::symmetric(*i))),
             NaiveBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
         );
         bench_stabchain_impl!(
             group,
             "ift",
             i,
-            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
+            (|i: &usize| Group::direct_product(&Group::symmetric(*i), &Group::symmetric(*i))),
             IftBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
         );
         bench_stabchain_impl!(
             group,
             "random_shallow",
             i,
-            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
+            (|i: &usize| Group::direct_product(&Group::symmetric(*i), &Group::symmetric(*i))),
             RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
                 DefaultSelector::default(),
@@ -197,7 +197,7 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
             group,
             "random_shallow_quick_test",
             i,
-            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
+            (|i: &usize| Group::direct_product(&Group::symmetric(*i), &Group::symmetric(*i))),
             RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
                 DefaultSelector::default(),
@@ -210,7 +210,7 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
             group,
             "random_shallow_known_order",
             i,
-            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
+            (|i: &usize| Group::direct_product(&Group::symmetric(*i), &Group::symmetric(*i))),
             |i: BigUint| RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
                 DefaultSelector::default(),

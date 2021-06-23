@@ -49,15 +49,15 @@ fn selector_comparison_direct_product(c: &mut Criterion) {
         c.benchmark_group("group__stabchain__ss__selector_comparison__product_symmetric");
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
-            let g = Group::product(&Group::symmetric(*i), &Group::symmetric(*i));
+            let g = Group::direct_product(&Group::symmetric(*i), &Group::symmetric(*i));
             b.iter(|| g.stabchain())
         });
         group.bench_with_input(BenchmarkId::new("naive", i), i, |b, i| {
-            let g = Group::product(&Group::symmetric(*i), &Group::symmetric(*i));
+            let g = Group::direct_product(&Group::symmetric(*i), &Group::symmetric(*i));
             b.iter(|| g.stabchain_with_selector(LmpSelector))
         });
         group.bench_with_input(BenchmarkId::new("ift", i), i, |b, i| {
-            let g = Group::product(&Group::symmetric(*i), &Group::symmetric(*i));
+            let g = Group::direct_product(&Group::symmetric(*i), &Group::symmetric(*i));
             let selector = FixedBaseSelector::from_iter(0..g.symmetric_super_order());
             b.iter(|| g.stabchain_with_selector(selector.clone()))
         });

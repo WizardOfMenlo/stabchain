@@ -13,7 +13,7 @@ pub fn copies_of_cyclic(specification: &[usize]) -> Group {
     specification
         .iter()
         .map(|n| Group::cyclic(*n))
-        .fold(Group::trivial(), |g1, g2| Group::product(&g1, &g2))
+        .fold(Group::trivial(), |g1, g2| Group::direct_product(&g1, &g2))
 }
 
 /// Generate random subproduct of the given generators.
