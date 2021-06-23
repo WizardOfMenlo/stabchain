@@ -358,9 +358,38 @@ where
     }
 
     #[tracing::instrument]
+    pub fn inner_product(g1: &Group<P>, g2: &Group<P>) -> Group<P> {
+        let max_g1 = g1.symmetric_super_order();
+        let max_g2 = g2.symmetric_super_order();
+
+        let g1_dups = g1
+            .generators()
+            .iter()
+            .map(|g| utils::duplicate_perm_across(g, max_g2));
+
+        let g2_dups = (0..max_g1 - 1)
+            .into_iter()
+            .flat_map(|x| g2.generators().iter().map(move |g| g.shift(x * max_g2)));
+
+        g1_dups.chain(g2_dups).collect()
+    }
+
+    #[tracing::instrument]
     pub fn outer_product(g1: &Group<P>, g2: &Group<P>) -> Group<P> {
-        //TODO implement
-        g1.clone()
+        let max_g1 = g1.symmetric_super_order();
+        let max_g2 = g2.symmetric_super_order();
+
+        let g1_dups = g1
+            .generators()
+            .iter()
+            .map(|g| utils::duplicate_perm_across(g, max_g2));
+
+        let g2_dups = g2
+            .generators()
+            .iter()
+            .map(|g| utils::duplicate_perm_down(g, max_g1));
+
+        g1_dups.chain(g2_dups).collect()
     }
 }
 
