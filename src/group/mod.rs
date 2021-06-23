@@ -356,6 +356,12 @@ where
 
         it.collect()
     }
+
+    #[tracing::instrument]
+    pub fn outer_product(g1: &Group<P>, g2: &Group<P>) -> Group<P> {
+        //TODO implement
+        g1.clone()
+    }
 }
 
 impl<P> FromIterator<P> for Group<P>

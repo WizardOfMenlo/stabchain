@@ -16,6 +16,51 @@ pub fn copies_of_cyclic(specification: &[usize]) -> Group {
         .fold(Group::trivial(), |g1, g2| Group::direct_product(&g1, &g2))
 }
 
+/// Duplicate a permutation down, by adding on extra pointas that "act the same" as the original points
+///
+/// For example duplicating (1, 2, 3, 4) would give (1, 2, 3, 4)(5, 6, 7, 8)
+pub(crate) fn duplicate_perm_down<P>(p: &P, copies: usize) -> P
+where
+    P: Permutation,
+{
+    // Duplicating the identity will still yield the identity.
+    if p.is_id() {
+        return p.clone();
+    }
+    // We know this exists, as p is not the identity.
+    let max_point = p.lmp().unwrap() + 1;
+    let mut images = vec![0; max_point * copies];
+    for i in 0..max_point {
+        for j in 0..copies {
+            images[i + j * max_point] = p.apply(i) + j * max_point;
+        }
+    }
+    P::from_images(&images[..])
+}
+
+/// Duplicate a permutation across, by adding extra points in between the points that "act the same" as the original permutation
+///
+/// For example duplicating (1, 2, 3, 4) would give (1, 3, 5, 7)(2, 4, 6, 8)
+pub(crate) fn duplicate_perm_across<P>(p: &P, copies: usize) -> P
+where
+    P: Permutation,
+{
+    // Duplicating the identity will still yield the identity.
+    if p.is_id() {
+        return p.clone();
+    }
+    // We know this exists, as p is not the identity.
+    let max_point = p.lmp().unwrap() + 1;
+    let mut images = vec![0; max_point * copies];
+    for i in 1..=max_point {
+        for j in 0..copies {
+            images[i * copies - copies + j] = p.apply(i) * copies - copies + j;
+        }
+    }
+    dbg!(&p);
+    P::from_images(&images[..])
+}
+
 /// Generate random subproduct of the given generators.
 pub fn random_subproduct_full<T, P>(rng: &mut T, gens: &[P]) -> P
 where
