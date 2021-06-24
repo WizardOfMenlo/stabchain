@@ -367,9 +367,8 @@ where
             .iter()
             .map(|g| utils::duplicate_perm_across(g, max_g1, max_g2));
 
-        let g2_dups = (0..max_g1)
-            .into_iter()
-            .flat_map(|x| g2.generators().iter().map(move |g| g.shift(x * max_g2)));
+        let g2_dups =
+            (0..max_g1).flat_map(|x| g2.generators().iter().map(move |g| g.shift(x * max_g2)));
 
         g1_dups.chain(g2_dups).collect()
     }
