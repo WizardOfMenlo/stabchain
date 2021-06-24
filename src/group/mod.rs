@@ -365,9 +365,9 @@ where
         let g1_dups = g1
             .generators()
             .iter()
-            .map(|g| utils::duplicate_perm_across(g, max_g2));
+            .map(|g| utils::duplicate_perm_across(g, max_g1, max_g2));
 
-        let g2_dups = (0..max_g1 - 1)
+        let g2_dups = (0..max_g1)
             .into_iter()
             .flat_map(|x| g2.generators().iter().map(move |g| g.shift(x * max_g2)));
 
@@ -382,12 +382,12 @@ where
         let g1_dups = g1
             .generators()
             .iter()
-            .map(|g| utils::duplicate_perm_across(g, max_g2));
+            .map(|g| utils::duplicate_perm_across(g, max_g1, max_g2));
 
         let g2_dups = g2
             .generators()
             .iter()
-            .map(|g| utils::duplicate_perm_down(g, max_g1));
+            .map(|g| utils::duplicate_perm_down(g, max_g2, max_g1));
 
         g1_dups.chain(g2_dups).collect()
     }
@@ -476,7 +476,7 @@ mod tests {
     }
 
     #[test]
-    fn test_product() {
+    fn test_direct_product() {
         use crate::perm::export::CyclePermutation;
         use crate::perm::DefaultPermutation;
         use crate::DetHashSet;
@@ -490,6 +490,50 @@ mod tests {
         assert_eq!(prod.generators().len(), 2);
         assert!(gens.contains(&perm));
         assert!(gens.contains(&(CyclePermutation::single_cycle(&[4, 5, 6]).into())));
+    }
+
+    #[test]
+    fn test_outer_product() {
+        use crate::perm::export::CyclePermutation;
+        use crate::perm::DefaultPermutation;
+
+        let g: Group<DefaultPermutation> = Group::new(&[
+            CyclePermutation::single_cycle(&[1, 4, 5]).into(),
+            CyclePermutation::single_cycle(&[1, 3]).into(),
+        ]);
+        let h: Group<DefaultPermutation> = Group::new(&[
+            CyclePermutation::single_cycle(&[1, 2, 3]).into(),
+            CyclePermutation::single_cycle(&[1, 4]).into(),
+        ]);
+        let gh = Group::outer_product(&g, &h);
+        assert_eq!(gh.generators().len(), 4);
+        assert_eq!(
+            g.stabchain().order() * h.stabchain().order(),
+            gh.stabchain().order()
+        );
+    }
+
+    #[test]
+    fn test_inner_product() {
+        use crate::perm::export::CyclePermutation;
+        use crate::perm::DefaultPermutation;
+
+        let g: Group<DefaultPermutation> = Group::new(&[
+            CyclePermutation::single_cycle(&[1, 4, 5]).into(),
+            CyclePermutation::single_cycle(&[1, 3]).into(),
+        ]);
+        let h: Group<DefaultPermutation> = Group::new(&[
+            CyclePermutation::single_cycle(&[1, 2, 3]).into(),
+            CyclePermutation::single_cycle(&[1, 4]).into(),
+        ]);
+        let gh = Group::inner_product(&g, &h);
+        assert_eq!(
+            gh.generators().len(),
+            g.symmetric_super_order() * h.generators().len() + g.generators().len()
+        );
+        let expected_size =
+            g.stabchain().order() * h.stabchain().order().pow(g.symmetric_super_order() as u32);
+        assert_eq!(expected_size, gh.stabchain().order());
     }
 
     #[test]

@@ -19,7 +19,7 @@ pub fn copies_of_cyclic(specification: &[usize]) -> Group {
 /// Duplicate a permutation down, by adding on extra pointas that "act the same" as the original points
 ///
 /// For example duplicating (1, 2, 3, 4) would give (1, 2, 3, 4)(5, 6, 7, 8)
-pub(crate) fn duplicate_perm_down<P>(p: &P, copies: usize) -> P
+pub(crate) fn duplicate_perm_down<P>(p: &P, largest_fixed_point: usize, copies: usize) -> P
 where
     P: Permutation,
 {
@@ -28,11 +28,10 @@ where
         return p.clone();
     }
     // We know this exists, as p is not the identity.
-    let max_point = p.lmp().unwrap() + 1;
-    let mut images = vec![0; max_point * copies];
-    for i in 0..max_point {
+    let mut images = vec![0; largest_fixed_point * copies];
+    for i in 0..largest_fixed_point {
         for j in 0..copies {
-            images[i + j * max_point] = p.apply(i) + j * max_point;
+            images[i + j * largest_fixed_point] = p.apply(i) + j * largest_fixed_point;
         }
     }
     P::from_images(&images[..])
@@ -41,7 +40,7 @@ where
 /// Duplicate a permutation across, by adding extra points in between the points that "act the same" as the original permutation
 ///
 /// For example duplicating (1, 2, 3, 4) would give (1, 3, 5, 7)(2, 4, 6, 8)
-pub(crate) fn duplicate_perm_across<P>(p: &P, copies: usize) -> P
+pub(crate) fn duplicate_perm_across<P>(p: &P, largest_fixed_point: usize, copies: usize) -> P
 where
     P: Permutation,
 {
@@ -50,9 +49,8 @@ where
         return p.clone();
     }
     // We know this exists, as p is not the identity.
-    let max_point = p.lmp().unwrap() + 1;
-    let mut images = vec![0; max_point * copies];
-    for i in 0..max_point {
+    let mut images = vec![0; largest_fixed_point * copies];
+    for i in 0..largest_fixed_point {
         for j in 0..copies {
             images[i * copies + j] = p.apply(i) * copies + j;
         }
