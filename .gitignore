@@ -3,3 +3,7 @@
 Cargo.lock
 gap_data/
 .vscode/
+
+# Ignore data files
+transitive.json
+small.json
