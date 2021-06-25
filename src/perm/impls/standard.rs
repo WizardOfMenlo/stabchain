@@ -100,18 +100,18 @@ impl Permutation for StandardPermutation {
             debug_assert!(self_size > 0);
             debug_assert!(other_size > 0);
             // Special case for if the lhs or rhs is of smaller degree
-            let v: Vec<usize>;
             // If lhs is of smaller degree, we can just copy the values for the larger degree rhs permutation and we do not need to bounds check.
-            if self_size <= other_size {
+            let v: Vec<usize> = if self_size <= other_size {
                 // We can skip bounds checking in this case, and ignore lhs for larger points.
-                v = (0..=self_size)
+                (0..=self_size)
                     .map(|x| other.vals[self.vals[x]])
                     .chain((self_size + 1..=other_size).map(|x| other.vals[x]))
-                    .collect();
+                    .collect()
             } else {
                 // Otherwise we can skip bounds checking for self
-                v = (0..=size).map(|x| other.apply(self.vals[x])).collect();
-            }
+                (0..=size).map(|x| other.apply(self.vals[x])).collect()
+            };
+            // TODO check for premultiplying inverses if both exist
             debug_assert!(v.len() == size + 1);
             StandardPermutation::from_vec_unchecked(v)
         }
