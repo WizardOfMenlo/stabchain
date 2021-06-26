@@ -70,17 +70,27 @@ impl Permutation for SyncPermutation {
 
     fn multiply(&self, other: &SyncPermutation) -> Self {
         if self.is_id() {
-            if other.is_id() {
-                return self.clone();
-            }
-            let size = other.lmp().unwrap();
-            SyncPermutation::from_vec_unchecked((0..=size).map(|x| other.apply(x)).collect())
+            other.clone()
         } else if other.is_id() {
             self.clone()
         } else {
-            let size = max(self.lmp().unwrap_or(0), other.lmp().unwrap_or(0));
-            debug_assert!(size > 0);
-            let v = (0..=size).map(|x| other.apply(self.apply(x))).collect();
+            let self_size = self.lmp().unwrap_or(0);
+            let other_size = other.lmp().unwrap_or(0);
+            let size = max(self_size, other_size);
+            debug_assert!(self_size > 0);
+            debug_assert!(other_size > 0);
+            // Special case for if the lhs or rhs is of smaller degree
+            // If lhs is of smaller degree, we can just copy the values for the larger degree rhs permutation and we do not need to bounds check.
+            let v: Vec<usize> = if self_size <= other_size {
+                // We can skip bounds checking in this case, and ignore lhs for larger points.
+                (0..=self_size)
+                    .map(|x| other.vals[self.vals[x]])
+                    .chain((self_size + 1..=other_size).map(|x| other.vals[x]))
+                    .collect()
+            } else {
+                // Otherwise we can skip bounds checking for self
+                (0..=size).map(|x| other.apply(self.vals[x])).collect()
+            };
             SyncPermutation::from_vec_unchecked(v)
         }
     }
