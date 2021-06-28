@@ -1,3 +1,4 @@
+pub mod export_groups;
 pub mod selector;
 
 use criterion::{criterion_group, BenchmarkId, Criterion};
