@@ -2,7 +2,7 @@ use num::BigUint;
 use serde::{Deserialize, Serialize};
 
 use super::Group;
-use crate::perm::{DefaultPermutation, Permutation};
+use crate::perm::{export::ClassicalPermutation, DefaultPermutation, Permutation};
 
 /// A simple struct that keeps track of additional information of a group, such
 /// as the order. This is very useful for testing stabilizer chains
@@ -47,5 +47,28 @@ where
     fn from(g: Group<P>) -> Self {
         let order = g.stabchain().order();
         DecoratedGroup::new(g, order)
+    }
+}
+
+#[derive(Deserialize)]
+pub struct GAPGroup {
+    pub generators: Vec<Vec<usize>>,
+    pub size: serde_json::Number,
+}
+
+impl GAPGroup {
+    pub fn to_group(self) -> Group {
+        self.generators
+            .into_iter()
+            .map(|images| ClassicalPermutation::from_slice(&images[..]).into())
+            .collect()
+    }
+
+    pub fn to_decorated_group(self) -> DecoratedGroup {
+        let size = self.size.clone();
+        DecoratedGroup::new(
+            self.to_group(),
+            size.to_string().parse::<BigUint>().unwrap(),
+        )
     }
 }

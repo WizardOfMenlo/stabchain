@@ -7,24 +7,9 @@ use serde::Deserialize;
 use structopt::StructOpt;
 use walkdir::WalkDir;
 
-use stabchain::group::group_library::DecoratedGroup;
+use stabchain::group::group_library::{DecoratedGroup, GAPGroup};
 use stabchain::group::Group;
 use stabchain::perm::export::{ClassicalPermutation, ExportablePermutation};
-
-#[derive(Deserialize)]
-struct GAPGroup {
-    generators: Vec<Vec<usize>>,
-    size: serde_json::Number,
-}
-
-impl GAPGroup {
-    fn to_group(self) -> Group {
-        self.generators
-            .into_iter()
-            .map(|images| ClassicalPermutation::from_slice(&images[..]).into())
-            .collect()
-    }
-}
 
 #[derive(StructOpt)]
 struct Arguments {
