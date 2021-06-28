@@ -57,14 +57,14 @@ pub struct GAPGroup {
 }
 
 impl GAPGroup {
-    pub fn to_group(self) -> Group {
+    pub fn to_group(&self) -> Group {
         self.generators
-            .into_iter()
+            .iter()
             .map(|images| ClassicalPermutation::from_slice(&images[..]).into())
             .collect()
     }
 
-    pub fn to_decorated_group(self) -> DecoratedGroup {
+    pub fn to_decorated_group(&self) -> DecoratedGroup {
         let size = self.size.clone();
         DecoratedGroup::new(
             self.to_group(),

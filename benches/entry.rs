@@ -9,7 +9,9 @@ use group::orbit::{
     factored_transversal::factored_transversal_impl, orbit_impl, transversal::transversal_impl,
 };
 
-use group::stabilizer_chain::{selector::selector, stabchain};
+use group::stabilizer_chain::{
+    export_groups::stabchain_group_export, selector::selector, stabchain,
+};
 
 use perm::{comparison::cmp, permutation};
 
@@ -22,5 +24,6 @@ criterion_main!(
     transversal_impl,
     factored_transversal_impl,
     stabchain,
-    selector
+    selector,
+    stabchain_group_export
 );
