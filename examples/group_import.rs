@@ -3,13 +3,11 @@ use std::io::{BufReader, BufWriter};
 use std::path::PathBuf;
 
 use num::BigUint;
-use serde::Deserialize;
 use structopt::StructOpt;
 use walkdir::WalkDir;
 
 use stabchain::group::group_library::{DecoratedGroup, GAPGroup};
-use stabchain::group::Group;
-use stabchain::perm::export::{ClassicalPermutation, ExportablePermutation};
+use stabchain::perm::export::ExportablePermutation;
 
 #[derive(StructOpt)]
 struct Arguments {
