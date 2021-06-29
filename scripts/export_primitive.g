@@ -53,9 +53,13 @@ export_groups_of_degree := function(n, oneTrans,  dir)
     GapToJsonStream(out, groups);
 end;
 
-export_all_until_n := function(n, oneTrans, dir)
+export_all_in_range := function(range, oneTrans, dir)
     local i;
-    for i in [1..n] do
+    for i in range do
         export_groups_of_degree(i, oneTrans, dir);
     od;
+end;
+
+export_all_until_n := function(n, oneTrans, dir)
+    export_all_in_range([1..n], oneTrans, dir);
 end;
