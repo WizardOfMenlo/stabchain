@@ -2,7 +2,6 @@ use std::ops::RangeInclusive;
 
 use std::fs::File;
 use std::io::BufReader;
-use std::path;
 
 use stabchain::group::group_library::GAPGroup;
 
@@ -15,13 +14,13 @@ use stabchain::group::Group;
 use stabchain::perm::actions::SimpleApplication;
 use stabchain::perm::DefaultPermutation;
 
-use num::BigUint;
 use rand::seq::SliceRandom;
 use rand::SeedableRng;
 
 ///Macro for benchmarking a specific stabiliser chain strategy.
 macro_rules! bench_stabchain_impl {
     ($bencher: ident, $name:expr, $i:ident, $strat:expr, $setup:tt) => {
+        #[allow(unused_parens)]
         $bencher.bench_with_input(BenchmarkId::new($name, $i), &$i.clone(), |b, _i| {
             let strat = $strat;
             b.iter_batched(
@@ -29,17 +28,6 @@ macro_rules! bench_stabchain_impl {
                 |g| g.stabchain_with_strategy(strat.clone()),
                 BatchSize::SmallInput,
             )
-        });
-    };
-}
-
-///Macro for benchmarking a specific stabiliser chain strategy with a known order.
-macro_rules! bench_stabchain_impl_with_order {
-    ($bencher: ident, $name:expr, $i:ident, $group:tt, $strat:expr) => {
-        $bencher.bench_with_input(BenchmarkId::new($name, $i), $i, |b, i| {
-            let g = $group.clone();
-            let strat = $strat(g.stabchain().order());
-            b.iter(|| g.stabchain_with_strategy(strat.clone()))
         });
     };
 }
@@ -124,6 +112,6 @@ fn stabchain_primitive_template(c: &mut Criterion, name: &str, path_start: &str)
 
 criterion_group!(
     stabchain_group_export,
-    //stabchain_primitive_one_trans,
+    stabchain_primitive_one_trans,
     stabchain_primitive_trans
 );
