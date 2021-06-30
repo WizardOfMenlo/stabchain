@@ -59,6 +59,9 @@ fn main() {
     }
 
     let g = Group::symmetric(10);
+    // let g = Group::alternating(10);
+    // let g = Group::cyclic(10);
+    // let g = Group::klein_4();
 
     #[allow(deprecated)]
     match args.mode {
