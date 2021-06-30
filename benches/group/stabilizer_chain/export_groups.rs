@@ -7,7 +7,7 @@ use std::path;
 use stabchain::group::group_library::GAPGroup;
 
 use criterion::{criterion_group, BatchSize, BenchmarkId, Criterion};
-const RANGE_OF_VALUES: RangeInclusive<usize> = 1_usize..=50;
+const RANGE_OF_VALUES: RangeInclusive<usize> = 200_usize..=260;
 use stabchain::group::stabchain::base::selectors::DefaultSelector;
 use stabchain::group::stabchain::builder::random::parameters::RandomAlgoParameters;
 use stabchain::group::stabchain::builder::*;
@@ -60,7 +60,7 @@ fn stabchain_primitive_trans(c: &mut Criterion) {
 }
 
 fn stabchain_primitive_template(c: &mut Criterion, name: &str, path_start: &str) {
-    let mut rand = rand::thread_rng();
+    let mut rand;
     let mut group = c.benchmark_group(format!("group__stabchain__ss__primitive__{}", name));
     for i in RANGE_OF_VALUES {
         let path = format!("data/{}{}.json", i, path_start);
@@ -68,6 +68,8 @@ fn stabchain_primitive_template(c: &mut Criterion, name: &str, path_start: &str)
         if grps.len() == 0 {
             continue;
         }
+        // Reseed each time to ensure we have the same groups for each implementation.
+        rand = rand_xorshift::XorShiftRng::from_seed([(i % (u8::MAX as usize)) as u8; 16]);
         bench_stabchain_impl!(
             group,
             "naive",
@@ -78,7 +80,7 @@ fn stabchain_primitive_template(c: &mut Criterion, name: &str, path_start: &str)
             ),
             (|| grps.choose(&mut rand).unwrap().clone())
         );
-
+        rand = rand_xorshift::XorShiftRng::from_seed([32; 16]);
         bench_stabchain_impl!(
             group,
             "ift",
@@ -89,7 +91,7 @@ fn stabchain_primitive_template(c: &mut Criterion, name: &str, path_start: &str)
             ),
             (|| grps.choose(&mut rand).unwrap().clone())
         );
-
+        rand = rand_xorshift::XorShiftRng::from_seed([32; 16]);
         bench_stabchain_impl!(
             group,
             "random_shallow",
@@ -102,7 +104,7 @@ fn stabchain_primitive_template(c: &mut Criterion, name: &str, path_start: &str)
             ),
             (|| grps.choose(&mut rand).unwrap().clone())
         );
-
+        rand = rand_xorshift::XorShiftRng::from_seed([32; 16]);
         bench_stabchain_impl!(
             group,
             "random_shallow_quick_test",
@@ -122,6 +124,6 @@ fn stabchain_primitive_template(c: &mut Criterion, name: &str, path_start: &str)
 
 criterion_group!(
     stabchain_group_export,
-    stabchain_primitive_one_trans,
+    //stabchain_primitive_one_trans,
     stabchain_primitive_trans
 );
