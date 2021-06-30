@@ -10,6 +10,7 @@ use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{impls::word::WordPermutation, Action, Permutation};
 use itertools::Itertools;
+use rand::prelude::SliceRandom;
 use rand::rngs::ThreadRng;
 use rand::{seq::IteratorRandom, Rng};
 use std::cell::RefCell;
@@ -94,7 +95,6 @@ where
             .map(|p| self.selector.moved_point(p, 0))
             .min()
             .unwrap();
-        debug!(group = %group, moved_point = moved_point, "Adding initial record");
         //Create the top level record for this chain, and add it to the chain.
         //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let mut initial_gens = group.clone();
@@ -105,6 +105,7 @@ where
             &self.action,
             &mut *self.rng.borrow_mut(),
         );
+        debug!(group = %initial_gens, moved_point = moved_point, orbit=?transversal.keys(), "Adding initial record");
         let initial_record = StabchainRecord::new(moved_point, initial_gens, transversal);
         self.base.push(moved_point);
         self.depths.push(initial_depth);
@@ -137,26 +138,24 @@ where
             .interleave(subproduct_w2_iter)
             .take(2 * subproducts)
             .collect();
-        //TODO check if precalculating all transversal elements would be faster.
+        //Precompute all coset representatives.
+        let coset_reps: Vec<WordPermutation<P>> = record
+            .transversal
+            .keys()
+            .map(|point| {
+                representative_raw_as_word(
+                    &record.transversal,
+                    record.base,
+                    *point,
+                    &self.action,
+                    self.depths[self.current_pos],
+                )
+                .unwrap()
+            })
+            .collect();
         // Iterator of random coset representatives.
-        let g_iter = repeat_with(|| {
-            record
-                .transversal
-                .keys()
-                .choose(&mut *self.rng.borrow_mut())
-                .map(|point| {
-                    representative_raw_as_word(
-                        &record.transversal,
-                        record.base,
-                        *point,
-                        &self.action,
-                        self.depths[self.current_pos],
-                    )
-                    .unwrap()
-                })
-                .expect("should be present")
-        })
-        .take(coset_representatives * t);
+        let g_iter =
+            coset_reps.choose_multiple(&mut *self.rng.borrow_mut(), coset_representatives * t);
         //Create an iterator that contains combintations of each coset representative with each pair of subproducts.
         g_iter
             .flat_map(|g| {
@@ -230,6 +229,7 @@ where
         let mut all_discarded = true;
         //If the element we are testing is the first schrier generator tested.
         let mut first_test = true;
+        debug!(generators = random_gens.len(), "Sifting generators");
         for h in random_gens {
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if self.sifted(drop_out_level) {
@@ -257,7 +257,7 @@ where
                             .cloned()
                             .collect()
                     };
-                //If any point is not fixed by the residue, then we add the residue as a generator.
+                //We have found a residue that has not sifted through, so we add a new base point with this point as a generator.
                 if !h_residue.id_on_iter(evaluated_points) {
                     //Not all permutations have been discarded
                     all_discarded = false;
@@ -266,7 +266,7 @@ where
                     let new_base_point = self.selector.moved_point(&h_star, self.current_pos);
                     //self.check_transversal_augmentation(h_star);
                     debug_assert!(!self.base.contains(&new_base_point));
-                    debug!(perm = %h_star, moved_point = new_base_point, "Extending chain");
+                    debug!(perm = %h_star, moved_point = new_base_point, level=self.current_pos, "Extending chain");
                     self.base.push(new_base_point);
                     //Fields for the new record.
                     let mut gens = Group::new(&[h_star]);
@@ -276,6 +276,7 @@ where
                         &self.action,
                         &mut *self.rng.borrow_mut(),
                     );
+                    debug!(gens=%gens, orbit=?transversal.keys(), "New transversal");
                     let record = StabchainRecord::new(new_base_point, gens, transversal);
                     self.depths.push(depths);
                     self.chain.push(record);
@@ -286,7 +287,7 @@ where
                     break;
                 }
             } else {
-                //We have found a residue that has not sifted through, so we add a new base point with this point as a generator.
+                //If any point is not fixed by the residue, then we add the residue as a generator.
                 let h_star = h_residue.evaluate();
                 //Find the position at which this didn't sift through.
                 let j = self.current_pos + drop_out_level;
