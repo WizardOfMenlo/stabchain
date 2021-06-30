@@ -54,7 +54,7 @@ fn main() {
 
     if args.debug {
         tracing_subscriber::fmt()
-            .with_max_level(Level::DEBUG)
+            .with_max_level(Level::TRACE)
             .init();
     }
 
