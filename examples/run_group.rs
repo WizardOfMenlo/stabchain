@@ -1,3 +1,5 @@
+use rand::SeedableRng;
+use stabchain::group::stabchain::builder::random::parameters::RandomAlgoParameters;
 use stabchain::group::Group;
 use std::str::FromStr;
 use structopt::StructOpt;
@@ -75,7 +77,12 @@ fn main() {
         ),
         RunMode::RandomShallow => run(
             g,
-            RandomBuilderStrategyShallow::new(SimpleApplication::default(), LmpSelector::default()),
+            RandomBuilderStrategyShallow::new_with_params(
+                SimpleApplication::default(),
+                LmpSelector::default(),
+                RandomAlgoParameters::default()
+                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
+            ),
         ),
     }
 }
