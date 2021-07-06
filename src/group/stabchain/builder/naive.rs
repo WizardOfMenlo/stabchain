@@ -14,6 +14,7 @@ use tracing::{debug, trace};
 pub struct StabchainBuilderNaive<P, S, A = SimpleApplication<P>>
 where
     A: Action<P>,
+    P: Permutation,
 {
     current_pos: usize,
     chain: Vec<StabchainRecord<P, SimpleTransversalResolver, A>>,
@@ -24,6 +25,7 @@ where
 impl<P, S, A> StabchainBuilderNaive<P, S, A>
 where
     A: Action<P>,
+    P: Permutation,
 {
     pub(super) fn new(selector: S, action: A) -> Self {
         StabchainBuilderNaive {

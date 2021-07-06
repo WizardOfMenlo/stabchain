@@ -28,6 +28,7 @@ use tracing::{debug, trace};
 pub struct StabchainBuilderRandom<P, S, A = SimpleApplication<P>, R = ThreadRng>
 where
     A: Action<P, OrbitT = usize>,
+    P: Permutation,
 {
     current_pos: usize,
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,

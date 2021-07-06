@@ -3,7 +3,7 @@
 use super::Stabchain;
 use crate::group::orbit::abstraction::{FactoredTransversalResolver, TransversalResolver};
 use crate::group::stabchain::base::Base;
-use crate::perm::{Action, Permutation};
+use crate::perm::{self, Action, Permutation};
 
 mod random;
 
@@ -11,6 +11,7 @@ mod random;
 pub trait BaseChangeBuilder<P, V, A>
 where
     A: Action<P>,
+    P: Permutation,
 {
     /// The group and base to be used for construction.
     // There is an alternative transversal type, as it doesn't need to create chains that use the same transversal type.
@@ -24,7 +25,10 @@ where
 
 /// A strategy is a lightweight struct that allows to
 /// (hopefully at compile time plz compiler) select which builder to use
-pub trait BaseChangeBuilderStrategy<P> {
+pub trait BaseChangeBuilderStrategy<P>
+where
+    P: Permutation,
+{
     /// The action that this strategy uses
     type Action: Action<P>;
 

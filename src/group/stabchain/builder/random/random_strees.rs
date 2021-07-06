@@ -26,6 +26,7 @@ pub struct StabchainBuilderRandomSTrees<P, S, A = SimpleApplication<P>, R = Thre
 where
     A: Action<P, OrbitT = usize>,
     R: rand::Rng,
+    P: Permutation,
 {
     current_pos: usize,
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
@@ -63,7 +64,7 @@ where
             base: Vec::new(),
             rng: RefCell::new(random),
             up_to_date: 1,
-            depths: vec![],
+            depths: Vec::new(),
             original_generators: Group::new(&[]),
             constants,
         }

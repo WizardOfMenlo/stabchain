@@ -18,6 +18,7 @@ const INITIAL_RUNS: usize = 50;
 pub struct RandomBaseChangeBuilder<P, A = SimpleApplication<P>>
 where
     A: Action<P>,
+    P: Permutation,
 {
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
     action: A,
