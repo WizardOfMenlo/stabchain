@@ -148,9 +148,9 @@ where
         //Already check the point is present, so there should be a representative.
         let representative = record
             .resolver()
-            .representative(&record.transversal, base.clone(), application)
+            .representative_as_word(&record.transversal, base.clone(), application)
             .unwrap();
-        g.multiply_mut(&representative.inv());
+        g.multiply_mut_word(&representative.inv_lazy());
         k += 1;
     }
     (k, g)

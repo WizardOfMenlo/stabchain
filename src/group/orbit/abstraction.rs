@@ -2,6 +2,7 @@
 //! In particular useful for stabchain as it allows to build factored transversal quite transparently
 
 use crate::perm::actions::SimpleApplication;
+use crate::perm::impls::word::WordPermutation;
 use crate::perm::{Action, Permutation};
 use crate::DetHashMap;
 
@@ -22,6 +23,20 @@ where
         base: A::OrbitT,
         point: A::OrbitT,
     ) -> Option<P>;
+
+    /// Compute representative as word
+    fn representative_as_word(
+        &self,
+        map: &DetHashMap<A::OrbitT, P>,
+        base: A::OrbitT,
+        point: A::OrbitT,
+    ) -> Option<WordPermutation<P>>
+    where
+        P: Permutation,
+    {
+        self.representative(map, base, point)
+            .map(|p| WordPermutation::from_perm(&p))
+    }
 
     /// Convert into a full blown transversal
     fn to_transversal(
@@ -78,6 +93,24 @@ where
         point: A::OrbitT,
     ) -> Option<P> {
         super::transversal::factored_transversal::representative_raw(map, base, point, &self.0)
+    }
+
+    fn representative_as_word(
+        &self,
+        map: &DetHashMap<A::OrbitT, P>,
+        base: A::OrbitT,
+        point: A::OrbitT,
+    ) -> Option<WordPermutation<P>>
+    where
+        P: Permutation,
+    {
+        super::transversal::shallow_transversal::representative_raw_as_word(
+            map,
+            base,
+            point,
+            &self.0,
+            map.len(),
+        )
     }
 
     // Note that no validation is actually done here
