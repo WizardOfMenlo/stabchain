@@ -3,7 +3,7 @@
 use super::Stabchain;
 use crate::group::orbit::abstraction::{FactoredTransversalResolver, TransversalResolver};
 use crate::group::stabchain::base::Base;
-use crate::perm::{self, Action, Permutation};
+use crate::perm::{Action, Permutation};
 
 mod random;
 

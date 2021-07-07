@@ -135,10 +135,9 @@ where
         let subproduct_w2_iter =
             repeat_with(|| random_subproduct_word_subset(&mut *self.rng.borrow_mut(), gens, k));
         //Iterleave the two iterators.
-        let subproduct_iter: Vec<WordPermutation<P>> = subproduct_w1_iter
+        let subproduct_iter = subproduct_w1_iter
             .interleave(subproduct_w2_iter)
-            .take(2 * subproducts)
-            .collect();
+            .take(2 * subproducts);
         //Precompute all coset representatives.
         let coset_reps: Vec<WordPermutation<P>> = record
             .transversal
@@ -159,12 +158,11 @@ where
             coset_reps.choose_multiple(&mut *self.rng.borrow_mut(), coset_representatives * t);
         //Create an iterator that contains combintations of each coset representative with each pair of subproducts.
         g_iter
-            .flat_map(|g| {
-                subproduct_iter.iter().map(move |w| {
-                    let mut gw = g.clone();
-                    gw.multiply_mut_word(w);
-                    gw
-                })
+            .zip(subproduct_iter.cycle())
+            .map(|(g, w)| {
+                let mut gw = g.clone();
+                gw.multiply_mut_word(&w);
+                gw
             })
             .collect()
     }
