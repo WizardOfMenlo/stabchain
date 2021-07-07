@@ -71,9 +71,9 @@ where
     }
 
     fn current_chain(
-        &self,
-    ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
-        self.chain.iter().skip(self.current_pos)
+        &mut self,
+    ) -> impl Iterator<Item = &mut StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
+        self.chain.iter_mut().skip(self.current_pos)
     }
 
     pub(super) fn build(self) -> Stabchain<P, FactoredTransversalResolver<A>, A> {
@@ -185,6 +185,8 @@ where
         record.transversal = transversal;
         //Update the depths of the current position.
         self.depths[self.current_pos] = new_depth;
+        // Clear the cache
+        record.representative_cache.clear();
     }
 
     ///Check if the permutation augments the orbit at a level, resetting the position afterwards.
