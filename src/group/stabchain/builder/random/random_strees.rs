@@ -14,6 +14,7 @@ use rand::prelude::SliceRandom;
 use rand::rngs::ThreadRng;
 use rand::{seq::IteratorRandom, Rng};
 use std::cell::RefCell;
+use std::collections::VecDeque;
 use std::iter::{repeat_with, Iterator};
 
 use std::fmt::Debug;
@@ -168,11 +169,21 @@ where
     }
 
     /// Check if adding a new element modifies the current layer of the chain.
-    fn check_transversal_augmentation(&mut self, p: P) {
-        debug!(level = self.current_pos, perm = %p, "Checking transversal augmentation with perm");
-        let mut record = &mut self.chain[self.current_pos];
+    fn check_transversal_augmentation(&mut self, p: &P, level: usize, check_transversal: bool) {
+        debug!(level = level, perm = %p, "Checking transversal augmentation with perm");
+        let mut record = &mut self.chain[level];
+        // We optionally check if this element alters the transversal
+        if check_transversal
+            && record
+                .transversal
+                .keys()
+                .all(|x| record.transversal.contains_key(&p.apply(*x)))
+        {
+            // If there are any new orbit elements found, then we add this generator to this level.
+            return;
+        }
         debug_assert!(!record.gens.generators.contains(&p));
-        record.gens.generators.push(p);
+        record.gens.generators.push(p.clone());
         //Calculate a new shallow transversal.
         let (transversal, new_depth) = shallow_transversal(
             &mut record.gens,
@@ -182,17 +193,18 @@ where
         );
         record.transversal = transversal;
         //Update the depths of the current position.
-        self.depths[self.current_pos] = new_depth;
+        self.depths[level] = new_depth;
         // Clear the cache
         record.representative_cache.clear();
     }
 
     ///Check if the permutation augments the orbit at a level, resetting the position afterwards.
-    fn check_transversal_augmentation_at_level(&mut self, level: usize, p: P) {
-        let previous_pos = self.current_pos;
-        self.current_pos = level;
-        self.check_transversal_augmentation(p);
-        self.current_pos = previous_pos;
+    fn check_transversal_augmentation_from_level(&mut self, level: usize, p: P) {
+        // First check if this element alters any orbits higher up. We don't need to top level, as this is always complete from the initial gens.
+        for i in 1..level {
+            self.check_transversal_augmentation(&p, i, true)
+        }
+        self.check_transversal_augmentation(&p, level, false);
     }
 
     fn sgc(&mut self) {
@@ -294,7 +306,7 @@ where
                 let j = self.current_pos + drop_out_level;
                 debug!(perm = %h_star, level = j, "Permutation not sifting through");
                 //Add as a generator and update the transversal.
-                self.check_transversal_augmentation_at_level(j, h_star);
+                self.check_transversal_augmentation_from_level(j, h_star);
                 //Consider the chain now up to date below level j + 1. The +1 is for 1 indexing.
                 self.up_to_date = j + 1;
             }
@@ -398,7 +410,7 @@ where
                 self.up_to_date = self.base.len() + 1;
             } else {
                 //Otherwise add it to the generators at that level, and invoke the SGC at that level.
-                self.check_transversal_augmentation_at_level(invoke_level, collapsed_residue);
+                self.check_transversal_augmentation_from_level(invoke_level, collapsed_residue);
                 self.up_to_date = self.current_pos + drop_out_level + 1
             }
             Some(self.current_pos + drop_out_level)
