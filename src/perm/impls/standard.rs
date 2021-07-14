@@ -113,7 +113,7 @@ impl Permutation for StandardPermutation {
                 result
             } else {
                 // Otherwise we can skip bounds checking for self
-                (0..(self_size + 1))
+                (0..self_size + 1)
                     .map(|x| other.apply(self.vals[x]))
                     .collect()
             };

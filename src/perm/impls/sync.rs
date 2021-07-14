@@ -1,6 +1,5 @@
 use crate::perm::Permutation;
 
-use std::cmp::max;
 use std::iter::FromIterator;
 use std::sync::Arc;
 
@@ -76,20 +75,25 @@ impl Permutation for SyncPermutation {
         } else {
             let self_size = self.lmp().unwrap_or(0);
             let other_size = other.lmp().unwrap_or(0);
-            let size = max(self_size, other_size);
             debug_assert!(self_size > 0);
             debug_assert!(other_size > 0);
             // Special case for if the lhs or rhs is of smaller degree
             // If lhs is of smaller degree, we can just copy the values for the larger degree rhs permutation and we do not need to bounds check.
             let v: Vec<usize> = if self_size <= other_size {
                 // We can skip bounds checking in this case, and ignore lhs for larger points.
-                (0..=self_size)
-                    .map(|x| other.vals[self.vals[x]])
-                    .chain((self_size + 1..=other_size).map(|x| other.vals[x]))
-                    .collect()
+                let mut result = Vec::with_capacity(other_size + 1);
+                for i in 0..(self_size + 1) {
+                    result.push(other.vals[self.vals[i]]);
+                }
+                for i in (self_size + 1)..(other_size + 1) {
+                    result.push(other.vals[i]);
+                }
+                result
             } else {
                 // Otherwise we can skip bounds checking for self
-                (0..=size).map(|x| other.apply(self.vals[x])).collect()
+                (0..self_size + 1)
+                    .map(|x| other.apply(self.vals[x]))
+                    .collect()
             };
             SyncPermutation::from_vec_unchecked(v)
         }
