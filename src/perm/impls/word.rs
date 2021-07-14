@@ -31,7 +31,9 @@ where
 
     /// Get an underlying permutation
     pub fn evaluate(&self) -> P {
-        self.word.iter().fold(P::id(), |acc, p| acc.multiply(p))
+        let n = self.lmp_upper().unwrap_or(0);
+        let image: Vec<usize> = (0..n + 1).map(|x| self.apply(x)).collect();
+        P::from_images(&image)
     }
 
     /// Check for equality on a general iterator. Note that equality on 0..=self.lmp() <= self.lmp_upper() will imply actual equality
