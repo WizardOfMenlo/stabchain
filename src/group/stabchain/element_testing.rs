@@ -124,7 +124,7 @@ where
 
 /// Sift the permutation word through the chain, returning the residue it generates and the drop out level.
 pub fn residue_as_words_from_words<'a, V, A, P>(
-    it: impl IntoIterator<Item = &'a mut StabchainRecord<P, V, A>>,
+    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
     p: &WordPermutation<P>,
 ) -> (usize, WordPermutation<P>)
 where
@@ -147,14 +147,12 @@ where
         }
         let transversal = &record.transversal;
         //Already check the point is present, so there should be a representative.
-        let representative = record
-            .representative_cache
-            .entry(application.clone())
-            .or_insert_with(|| {
-                V::default()
-                    .representative_as_word(transversal, base.clone(), application)
-                    .unwrap()
-            });
+        let cache = &mut *record.representative_cache.borrow_mut();
+        let representative = cache.entry(application.clone()).or_insert_with(|| {
+            V::default()
+                .representative_as_word(transversal, base.clone(), application)
+                .unwrap()
+        });
         g.multiply_mut_word(&representative.inv_lazy());
         k += 1;
     }

@@ -222,7 +222,7 @@ where
     gens: Group<P>,
     transversal: DetHashMap<A::OrbitT, P>,
     resolver: V,
-    representative_cache: DetHashMap<A::OrbitT, WordPermutation<P>>,
+    representative_cache: RefCell<DetHashMap<A::OrbitT, WordPermutation<P>>>,
 }
 
 impl<P, V, A> StabchainRecord<P, V, A>
@@ -257,7 +257,7 @@ where
             gens,
             transversal,
             resolver: V::default(),
-            representative_cache: DetHashMap::default(),
+            representative_cache: DetHashMap::default().into(),
         }
     }
     ///Create a trivial record that represents the trivial group.
@@ -267,7 +267,7 @@ where
             gens: Group::new(&[]),
             transversal: [(base, P::id())].iter().cloned().collect(),
             resolver: V::default(),
-            representative_cache: DetHashMap::default(),
+            representative_cache: DetHashMap::default().into(),
         }
     }
 
@@ -283,6 +283,7 @@ where
     }
 }
 
+use std::cell::RefCell;
 use std::fmt;
 
 impl<P, V, A> fmt::Display for Stabchain<P, V, A>

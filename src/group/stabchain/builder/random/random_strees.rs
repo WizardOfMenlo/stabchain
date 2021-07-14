@@ -14,7 +14,6 @@ use rand::prelude::SliceRandom;
 use rand::rngs::ThreadRng;
 use rand::{seq::IteratorRandom, Rng};
 use std::cell::RefCell;
-use std::collections::VecDeque;
 use std::iter::{repeat_with, Iterator};
 
 use std::fmt::Debug;
@@ -72,9 +71,9 @@ where
     }
 
     fn current_chain(
-        &mut self,
-    ) -> impl Iterator<Item = &mut StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
-        self.chain.iter_mut().skip(self.current_pos)
+        &self,
+    ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
+        self.chain.iter().skip(self.current_pos)
     }
 
     pub(super) fn build(self) -> Stabchain<P, FactoredTransversalResolver<A>, A> {
@@ -139,19 +138,25 @@ where
         let subproduct_iter = subproduct_w1_iter
             .interleave(subproduct_w2_iter)
             .take(2 * subproducts);
+        let cache = &mut *record.representative_cache.borrow_mut();
         //Precompute all coset representatives.
         let coset_reps: Vec<WordPermutation<P>> = record
             .transversal
             .keys()
             .map(|point| {
-                representative_raw_as_word(
-                    &record.transversal,
-                    record.base,
-                    *point,
-                    &self.action,
-                    self.depths[self.current_pos],
-                )
-                .unwrap()
+                cache
+                    .entry(point.clone())
+                    .or_insert_with(|| {
+                        representative_raw_as_word(
+                            &record.transversal,
+                            record.base,
+                            point.clone(),
+                            &self.action,
+                            self.depths[self.current_pos],
+                        )
+                        .unwrap()
+                    })
+                    .clone()
             })
             .collect();
         // Iterator of random coset representatives.
@@ -195,7 +200,7 @@ where
         //Update the depths of the current position.
         self.depths[level] = new_depth;
         // Clear the cache
-        record.representative_cache.clear();
+        record.representative_cache.borrow_mut().clear();
     }
 
     ///Check if the permutation augments the orbit at a level, resetting the position afterwards.
