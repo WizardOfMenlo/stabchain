@@ -97,7 +97,6 @@ where
             .min()
             .unwrap();
         //Create the top level record for this chain, and add it to the chain.
-        //TODO check if you should add generators 1 by 1, in case there are redundant generators.
         let mut initial_gens = group.clone();
         self.original_generators = initial_gens.clone();
         let (transversal, initial_depth) = shallow_transversal(
@@ -281,25 +280,7 @@ where
                     all_discarded = false;
                     let h_star = h_residue.evaluate();
                     //Add a new base point, along with a new record for that base point.
-                    let new_base_point = self.selector.moved_point(&h_star, self.current_pos);
-                    //self.check_transversal_augmentation(h_star);
-                    debug_assert!(!self.base.contains(&new_base_point));
-                    debug!(perm = %h_star, moved_point = new_base_point, level=self.current_pos, "Extending chain");
-                    self.base.push(new_base_point);
-                    //Fields for the new record.
-                    let mut gens = Group::new(&[h_star]);
-                    let (transversal, depths) = shallow_transversal(
-                        &mut gens,
-                        new_base_point,
-                        &self.action,
-                        &mut *self.rng.borrow_mut(),
-                    );
-                    debug!(gens=%gens, orbit=?transversal.keys(), "New transversal");
-                    let record = StabchainRecord::new(new_base_point, gens, transversal);
-                    self.depths.push(depths);
-                    self.chain.push(record);
-                    //Now up to date beneath the newly added point.
-                    self.up_to_date = self.base.len() + 1;
+                    self.add_new_record(h_star);
                 } else if self.constants.quick_test && first_test {
                     //The quick test is only sifting one generator, and early exit if this sifts through.
                     break;
@@ -396,23 +377,7 @@ where
             let collapsed_residue = residue.evaluate();
             //If this point sifted through but isn't trivial, then we need a new record and base point.
             if self.sifted(drop_out_level) {
-                //TODO add function to add a new level
-                let moved_point = self
-                    .selector
-                    .moved_point(&collapsed_residue, self.current_pos);
-                debug!(perm = %collapsed_residue, moved_point = moved_point, "Extending chain");
-                let mut gens = Group::new(&[collapsed_residue]);
-                let (transversal, depth) = shallow_transversal(
-                    &mut gens,
-                    moved_point,
-                    &self.action,
-                    &mut *self.rng.borrow_mut(),
-                );
-                let initial_record = StabchainRecord::new(moved_point, gens, transversal);
-                self.base.push(moved_point);
-                self.depths.push(depth);
-                self.chain.push(initial_record);
-                self.up_to_date = self.base.len() + 1;
+                self.add_new_record(collapsed_residue);
             } else {
                 //Otherwise add it to the generators at that level, and invoke the SGC at that level.
                 self.check_transversal_augmentation_from_level(invoke_level, collapsed_residue);
@@ -422,6 +387,24 @@ where
         } else {
             None
         }
+    }
+
+    /// Add a new level to the chain, starting with this permutation.
+    fn add_new_record(&mut self, gen: P) {
+        let moved_point = self.selector.moved_point(&gen, self.current_pos);
+        debug!(perm = %gen, moved_point = moved_point, "Extending chain");
+        let mut gens = Group::new(&[gen]);
+        let (transversal, depth) = shallow_transversal(
+            &mut gens,
+            moved_point,
+            &self.action,
+            &mut *self.rng.borrow_mut(),
+        );
+        let initial_record = StabchainRecord::new(moved_point, gens, transversal);
+        self.base.push(moved_point);
+        self.depths.push(depth);
+        self.chain.push(initial_record);
+        self.up_to_date = self.base.len() + 1;
     }
 
     //Utility function to check if a given drop out level is the bottom of the chain.
