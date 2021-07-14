@@ -781,7 +781,7 @@ mod tests {
                 SimpleApplication::default(),
                 crate::group::stabchain::base::selectors::FmpSelector::default(),
                 RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
+                    .rng(rand_xorshift::XorShiftRng::from_seed([52; 16])),
             )
         },
         random_shallow
