@@ -107,6 +107,19 @@ macro_rules! permutation_tests {
                 );
             }
 
+            /// Check that multiplication for larger/smaller degree permutations works
+            ///
+            /// This is for any implementations that may treat these as special cases
+            #[test]
+            fn mult_perm_different_sizes() {
+                let perm1 = <$name>::from_images(&[1, 5, 4, 0, 2, 3]);
+                let perm2 = <$name>::from_images(&[3, 2, 0, 1]);
+                let perm1_perm2 = <$name>::from_images(&[2, 5, 4, 3, 0, 1]);
+                let perm2_perm1 = <$name>::from_images(&[0, 4, 1, 5, 2, 3]);
+                assert_eq!(perm1.multiply(&perm2), perm1_perm2);
+                assert_eq!(perm2.multiply(&perm1), perm2_perm1);
+            }
+
             /// Test that multiplication for the lazy or eager implementaions are identical
             #[test]
             fn mult_perm_lazy_eager() {

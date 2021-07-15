@@ -87,18 +87,38 @@ impl Permutation for StandardPermutation {
     }
 
     fn multiply(&self, other: &StandardPermutation) -> Self {
+        // id * g = g
         if self.is_id() {
-            if other.is_id() {
-                return self.clone();
-            }
-            let size = other.lmp().unwrap();
-            StandardPermutation::from_vec_unchecked((0..=size).map(|x| other.apply(x)).collect())
+            other.clone()
+        // g * id = g
         } else if other.is_id() {
             self.clone()
         } else {
-            let size = max(self.lmp().unwrap_or(0), other.lmp().unwrap_or(0));
-            debug_assert!(size > 0);
-            let v = (0..=size).map(|x| other.apply(self.apply(x))).collect();
+            let self_size = self.lmp().unwrap_or(0);
+            let other_size = other.lmp().unwrap_or(0);
+            debug_assert!(self_size > 0);
+            debug_assert!(other_size > 0);
+            // Special case for if the lhs or rhs is of smaller degree
+            // If lhs is of smaller degree, we can just copy the values for the larger degree rhs permutation and we do not need to bounds check.
+            let v: Vec<usize> = if self_size <= other_size {
+                // We can skip bounds checking in this case, and ignore lhs for larger points.
+                // This would be much nicer as an iterator, but chain is slow.
+                let mut result = Vec::with_capacity(other_size + 1);
+                for i in 0..(self_size + 1) {
+                    result.push(other.vals[self.vals[i]]);
+                }
+                for i in (self_size + 1)..(other_size + 1) {
+                    result.push(other.vals[i]);
+                }
+                result
+            } else {
+                // Otherwise we can skip bounds checking for self
+                (0..self_size + 1)
+                    .map(|x| other.apply(self.vals[x]))
+                    .collect()
+            };
+            // TODO check for premultiplying inverses if both exist
+            debug_assert!(v.len() == max(self_size, other_size) + 1);
             StandardPermutation::from_vec_unchecked(v)
         }
     }
