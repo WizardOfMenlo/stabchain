@@ -144,12 +144,12 @@ where
             .keys()
             .map(|point| {
                 cache
-                    .entry(point.clone())
+                    .entry(*point)
                     .or_insert_with(|| {
                         representative_raw_as_word(
                             &record.transversal,
                             record.base,
-                            point.clone(),
+                            *point,
                             &self.action,
                             self.depths[self.current_pos],
                         )
@@ -186,7 +186,7 @@ where
             // If there are any new orbit elements found, then we add this generator to this level.
             return;
         }
-        debug_assert!(!record.gens.generators.contains(&p));
+        debug_assert!(!record.gens.generators.contains(p));
         record.gens.generators.push(p.clone());
         //Calculate a new shallow transversal.
         let (transversal, new_depth) = shallow_transversal(
