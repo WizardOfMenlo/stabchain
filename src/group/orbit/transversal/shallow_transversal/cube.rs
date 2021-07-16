@@ -17,7 +17,7 @@ where
     P: Permutation + 'a,
     A: Action<P>,
 {
-    pub(super) fn new(base: A::OrbitT, seq: &[P], strat: &A) -> Self {
+    pub(super) fn new(base: A::OrbitT, seq: &[P], strat: &A, orbit_size: Option<usize>) -> Self {
         let mut orbit = DetHashMap::default();
         orbit.insert(base.clone(), P::id());
         let mut depth = DetHashMap::default();
@@ -50,6 +50,10 @@ where
             //Take the union of cube[i] and temp.
             temp.extend(cubes[i - 1].iter().cloned());
             cubes.push(temp);
+            // Early exit if we've got the right orbit size
+            if Some(orbit.len()) == orbit_size {
+                break;
+            }
         }
         Cube {
             orbit,
@@ -73,7 +77,7 @@ mod tests {
             vec![CyclePermutation::single_cycle(&[1_usize, 2, 3]).into()];
         let g = Group::from_list(gens);
         let strat = SimpleApplication::default();
-        let cube = Cube::new(1, g.generators(), &strat);
+        let cube = Cube::new(1, g.generators(), &strat, None);
         //Check the orbit is correct. All points should be in the orbit.
         assert!(cube.orbit.contains_key(&0));
         assert!(cube.orbit.contains_key(&1));

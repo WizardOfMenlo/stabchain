@@ -1,6 +1,7 @@
 //! Collection of functions that will compute shallow(er) transversals.
 
-use crate::group::random_perm::RandPerm;
+use crate::group::orbit::orbit_complete_opt;
+use crate::group::random_perm::{random_cayley_walk, random_lazy_cayley_walk, RandPerm};
 use crate::group::{Action, Group};
 use crate::perm::impls::word::WordPermutation;
 use crate::perm::Permutation;
@@ -82,7 +83,7 @@ where
     A: Action<P>,
     R: Rng + Clone,
 {
-    let orbit = g.orbit_of_action(base.clone(), strat).orbit;
+    let orbit = orbit_complete_opt(g, base.clone(), strat);
     let mut rand_perm_gen = RandPerm::new(11, g, 50, rng.clone());
     let mut initial_gen = rand_perm_gen.random_permutation();
     //We don't want to start off wit the identity.
@@ -90,8 +91,8 @@ where
         initial_gen = rand_perm_gen.random_permutation();
     }
     let mut gen_seq = vec![initial_gen];
-    let mut cube = cube::Cube::new(base.clone(), &gen_seq[..], strat);
-    while !cube.cube.eq(&orbit) {
+    let mut cube = cube::Cube::new(base.clone(), &gen_seq[..], strat, Some(orbit.len()));
+    while cube.cube.len() != orbit.len() {
         let mut new_element = rand_perm_gen.random_permutation();
         // "extending by the identity is stoopid"
         if new_element.is_id() {
@@ -100,7 +101,7 @@ where
         debug_assert!(!new_element.is_id());
         if !gen_seq.contains(&new_element) {
             gen_seq.push(new_element);
-            cube = cube::Cube::new(base.clone(), &gen_seq[..], strat);
+            cube = cube::Cube::new(base.clone(), &gen_seq[..], strat, Some(orbit.len()));
         }
     }
     //Update the generators of the group.
