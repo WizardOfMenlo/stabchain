@@ -15,6 +15,7 @@ use rand::prelude::SliceRandom;
 use rand::rngs::ThreadRng;
 use rand::{seq::IteratorRandom, Rng};
 use std::cell::RefCell;
+use std::collections::hash_map::Entry;
 use std::collections::VecDeque;
 use std::iter::{repeat_with, Iterator};
 
@@ -196,7 +197,7 @@ where
         // We now check if a new shallow transversal is required, or the new one will not exceed the depth.
         let mut recompute_transversal = false;
         // First partion points at maximum depth and those not.
-        let max_depth = self.max_depths[self.current_pos].clone();
+        let max_depth = self.max_depths[self.current_pos];
         let (max_depth_points, mut to_check): (VecDeque<usize>, VecDeque<usize>) = self.depths
             [level]
             .keys()
@@ -234,18 +235,18 @@ where
             'element_checking: while !to_check.is_empty() {
                 // Get the pair
                 let orbit_element = to_check.pop_front().unwrap();
-                let orbit_depth = self.depths[level].get(&orbit_element).unwrap().clone();
+                let orbit_depth = *self.depths[level].get(&orbit_element).unwrap();
                 // For each generator (and p)
                 for generator in record.gens.generators() {
                     let new_image = self.action.apply(generator, orbit_element);
                     // If we haven't already seen the image
-                    if !record.transversal.contains_key(&new_image) {
+                    if let Entry::Vacant(e) = record.transversal.entry(new_image) {
                         // If we've reached the maximum depth then we need to stop and recompute.
                         if orbit_depth == max_depth {
                             recompute_transversal = true;
                             break 'element_checking;
                         } else {
-                            record.transversal.insert(new_image, generator.inv());
+                            e.insert(generator.inv());
                             self.depths[level].insert(new_image, orbit_depth + 1);
                             to_check.push_back(new_image)
                         }
