@@ -9,7 +9,6 @@ use stabchain::group::Group;
 use stabchain::perm::actions::SimpleApplication;
 
 use num::BigUint;
-use rand::SeedableRng;
 
 ///Macro for benchmarking a specific stabiliser chain strategy.
 macro_rules! bench_stabchain_impl {

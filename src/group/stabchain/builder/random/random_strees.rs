@@ -387,7 +387,6 @@ where
         let original_position = self.current_pos;
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
-        let mut current_order = None;
         // If we know the order we can just check if the order is correct.
         if let Some(known_order) = self.constants.order.as_ref() {
             let current_order_val = order(self.chain.iter());
@@ -395,8 +394,6 @@ where
                 // Call the sgc starting from the top level
                 return;
             }
-            // Save for later check
-            current_order = Some(current_order_val);
         }
         //The union of the generator sets in the chain to this point.
         let gens = self
@@ -429,7 +426,7 @@ where
         }
         // Make sure we don't exit without having the correct order.
         if let Some(known_order) = self.constants.order.as_ref() {
-            if *known_order != current_order.unwrap() {
+            if *known_order != order(self.chain.iter()) {
                 // Call the sgc starting from the top level
                 self.sgc();
             }
