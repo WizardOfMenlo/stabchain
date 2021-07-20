@@ -134,7 +134,7 @@ where
         // Either multiply by random element or identity.
         if rng.gen() {
             let elem = g.generators.choose(rng).unwrap();
-            p.multiply_mut(&elem);
+            p.multiply_mut(elem);
         }
     }
     p.evaluate()
