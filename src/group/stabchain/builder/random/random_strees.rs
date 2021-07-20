@@ -9,11 +9,13 @@ use crate::group::utils::{random_subproduct_word_full, random_subproduct_word_su
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::{impls::word::WordPermutation, Action, Permutation};
+use crate::DetHashMap;
 use itertools::Itertools;
 use rand::prelude::SliceRandom;
 use rand::rngs::ThreadRng;
 use rand::{seq::IteratorRandom, Rng};
 use std::cell::RefCell;
+use std::collections::VecDeque;
 use std::iter::{repeat_with, Iterator};
 
 use std::fmt::Debug;
@@ -41,7 +43,8 @@ where
     //For zero indexing this would have to be a signed type, which doesn't really seem worth it just to require one negative value at the end condition.
     up_to_date: usize,
     //Store the depths of each of the schrier trees.
-    depths: Vec<usize>,
+    depths: Vec<DetHashMap<A::OrbitT, usize>>,
+    max_depths: Vec<usize>,
     original_generators: Group<P>,
     constants: super::parameters::Constants,
 }
@@ -65,6 +68,7 @@ where
             rng: RefCell::new(random),
             up_to_date: 1,
             depths: Vec::new(),
+            max_depths: Vec::new(),
             original_generators: Group::new(&[]),
             constants,
         }
@@ -108,6 +112,7 @@ where
         debug!(group = %initial_gens, moved_point = moved_point, orbit=?transversal.keys(), "Adding initial record");
         let initial_record = StabchainRecord::new(moved_point, initial_gens, transversal);
         self.base.push(moved_point);
+        self.max_depths.push(*initial_depth.values().max().unwrap());
         self.depths.push(initial_depth);
         self.chain.push(initial_record);
         self.sgc();
@@ -125,7 +130,7 @@ where
             "Random generation of Schrier Generators"
         );
         // Sum of all the depths in the tree.
-        let t: usize = self.depths.iter().sum();
+        let t: usize = self.max_depths.iter().sum();
         let record = &self.chain[self.current_pos];
         let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0..1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
@@ -151,7 +156,7 @@ where
                             record.base,
                             *point,
                             &self.action,
-                            self.depths[self.current_pos],
+                            self.max_depths[self.current_pos],
                         )
                         .unwrap()
                     })
@@ -188,18 +193,81 @@ where
         }
         debug_assert!(!record.gens.generators.contains(p));
         record.gens.generators.push(p.clone());
+        // We now check if a new shallow transversal is required, or the new one will not exceed the depth.
+        let mut recompute_transversal = false;
+        // First partion points at maximum depth and those not.
+        let max_depth = self.max_depths[self.current_pos].clone();
+        let (max_depth_points, mut to_check): (VecDeque<usize>, VecDeque<usize>) = self.depths
+            [level]
+            .keys()
+            .cloned()
+            .partition(|&x| x == max_depth);
+        // If any point at maximum depth is augmented then we recompute, as this exceeds the current maximum depth.
+        for x in max_depth_points {
+            let application = self.action.apply(p, x);
+            // If we find a point that exceeds the depth, then we need a new shallow transversal.
+            if !record.transversal.contains_key(&application) {
+                recompute_transversal = true;
+                break;
+            }
+        }
+        // If all points at max depth are fine, then check points at depth less than
+        if !recompute_transversal {
+            let mut new_transversal = DetHashMap::default();
+            let mut new_depths = DetHashMap::default();
+            while !to_check.is_empty() {
+                let x = to_check.pop_front().unwrap();
+                let current_depth = self.depths[level].get(&x).unwrap();
+                let new_image = self.action.apply(p, x);
+                if !(record.transversal.contains_key(&new_image)
+                    || new_transversal.contains_key(&new_image))
+                {
+                    new_transversal.insert(new_image, p.inv());
+                    new_depths.insert(new_image, current_depth + 1);
+                }
+            }
+            to_check.extend(new_transversal.keys().cloned());
+            // Update the transversal
+            record.transversal.extend(new_transversal);
+            self.depths[level].extend(new_depths);
+            // Check the newly added points
+            'element_checking: while !to_check.is_empty() {
+                // Get the pair
+                let orbit_element = to_check.pop_front().unwrap();
+                let orbit_depth = self.depths[level].get(&orbit_element).unwrap().clone();
+                // For each generator (and p)
+                for generator in record.gens.generators() {
+                    let new_image = self.action.apply(generator, orbit_element);
+                    // If we haven't already seen the image
+                    if !record.transversal.contains_key(&new_image) {
+                        // If we've reached the maximum depth then we need to stop and recompute.
+                        if orbit_depth == max_depth {
+                            recompute_transversal = true;
+                            break 'element_checking;
+                        } else {
+                            record.transversal.insert(new_image, generator.inv());
+                            self.depths[level].insert(new_image, orbit_depth + 1);
+                            to_check.push_back(new_image)
+                        }
+                    }
+                }
+            }
+        }
         //Calculate a new shallow transversal.
-        let (transversal, new_depth) = shallow_transversal(
-            &mut record.gens,
-            record.base,
-            &self.action,
-            &mut *self.rng.borrow_mut(),
-        );
-        record.transversal = transversal;
-        //Update the depths of the current position.
-        self.depths[level] = new_depth;
-        // Clear the cache
-        record.representative_cache.borrow_mut().clear();
+        if recompute_transversal {
+            let (transversal, new_depth) = shallow_transversal(
+                &mut record.gens,
+                record.base,
+                &self.action,
+                &mut *self.rng.borrow_mut(),
+            );
+            record.transversal = transversal;
+            //Update the depths of the current position.
+            self.max_depths.push(*new_depth.values().max().unwrap());
+            self.depths[level] = new_depth;
+            // Clear the cache
+            record.representative_cache.borrow_mut().clear();
+        }
     }
 
     ///Check if the permutation augments the orbit at a level, resetting the position afterwards.
@@ -402,6 +470,7 @@ where
         );
         let initial_record = StabchainRecord::new(moved_point, gens, transversal);
         self.base.push(moved_point);
+        self.max_depths.push(*depth.values().max().unwrap());
         self.depths.push(depth);
         self.chain.push(initial_record);
         self.up_to_date = self.base.len() + 1;

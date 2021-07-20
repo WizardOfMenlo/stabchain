@@ -1,7 +1,7 @@
 //! Collection of functions that will compute shallow(er) transversals.
 
 use crate::group::orbit::orbit_complete_opt;
-use crate::group::random_perm::{random_cayley_walk, random_lazy_cayley_walk, RandPerm};
+use crate::group::random_perm::RandPerm;
 use crate::group::{Action, Group};
 use crate::perm::impls::word::WordPermutation;
 use crate::perm::Permutation;
@@ -77,7 +77,7 @@ pub fn shallow_transversal<P, A, R>(
     base: A::OrbitT,
     strat: &A,
     rng: &mut R,
-) -> (DetHashMap<A::OrbitT, P>, usize)
+) -> (DetHashMap<A::OrbitT, P>, DetHashMap<A::OrbitT, usize>)
 where
     P: Permutation,
     A: Action<P>,
@@ -106,8 +106,8 @@ where
     }
     //Update the generators of the group.
     g.generators = gen_seq;
-    //Return the shallow transversal orbit, along with the maximum depth of the tree.
-    (cube.orbit, *cube.depth.values().max().unwrap())
+    //Return the shallow transversal orbit, along with the depths of the tree.
+    (cube.orbit, cube.depth)
 }
 
 /// Calculate a representative from the given orbit.
