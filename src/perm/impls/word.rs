@@ -68,12 +68,15 @@ where
 
     /// Multiply in place.
     pub fn multiply_mut(&mut self, other: &P) {
-        self.word.push(other.clone());
+        if !other.is_id() {
+            self.word.push(other.clone());
+        }
     }
 
     /// Multiply in place by another word.
     pub fn multiply_mut_word(&mut self, other: &Self) {
-        self.word.extend(other.word.iter().cloned());
+        self.word
+            .extend(other.word.iter().filter(|p| !p.is_id()).cloned());
     }
 }
 
