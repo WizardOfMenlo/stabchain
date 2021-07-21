@@ -67,6 +67,17 @@ fn stabchain_cyclic(c: &mut Criterion) {
                 RandomAlgoParameters::default().order(i),
             )
         );
+        bench_stabchain_impl_with_order!(
+            group,
+            "random_shallow_known_order_quick_test",
+            i,
+            (|i: &usize| Group::cyclic(*i)),
+            |i: BigUint| RandomBuilderStrategyShallow::new_with_params(
+                SimpleApplication::default(),
+                DefaultSelector::default(),
+                RandomAlgoParameters::default().order(i).quick_test(true),
+            )
+        );
         bench_stabchain_impl!(
             group,
             "random_shallow_quick_test",
@@ -132,6 +143,17 @@ fn stabchain_symmetric(c: &mut Criterion) {
                 RandomAlgoParameters::default().order(i),
             )
         );
+        bench_stabchain_impl_with_order!(
+            group,
+            "random_shallow_known_order_quick_test",
+            i,
+            (|i: &usize| Group::symmetric(*i)),
+            |i: BigUint| RandomBuilderStrategyShallow::new_with_params(
+                SimpleApplication::default(),
+                DefaultSelector::default(),
+                RandomAlgoParameters::default().order(i).quick_test(true),
+            )
+        );
     }
     group.finish();
 }
@@ -191,6 +213,17 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
                 RandomAlgoParameters::default().order(i),
             )
         );
+        bench_stabchain_impl_with_order!(
+            group,
+            "random_shallow_known_order_quick_test",
+            i,
+            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
+            |i: BigUint| RandomBuilderStrategyShallow::new_with_params(
+                SimpleApplication::default(),
+                DefaultSelector::default(),
+                RandomAlgoParameters::default().order(i).quick_test(true),
+            )
+        );
     }
     group.finish();
 }
@@ -244,11 +277,22 @@ fn stabchain_copies_of_cyclic(c: &mut Criterion) {
             group,
             "random_shallow_known_order",
             i,
-            (|i: &usize| copies_of_cyclic(&[*i, *i, *i, *i, *i])),
+            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
             |i: BigUint| RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
                 DefaultSelector::default(),
                 RandomAlgoParameters::default().order(i),
+            )
+        );
+        bench_stabchain_impl_with_order!(
+            group,
+            "random_shallow_known_order_quick_test",
+            i,
+            (|i: &usize| Group::product(&Group::symmetric(*i), &Group::symmetric(*i))),
+            |i: BigUint| RandomBuilderStrategyShallow::new_with_params(
+                SimpleApplication::default(),
+                DefaultSelector::default(),
+                RandomAlgoParameters::default().order(i).quick_test(true),
             )
         );
     }
