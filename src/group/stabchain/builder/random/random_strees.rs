@@ -170,11 +170,7 @@ where
         //Create an iterator that contains combintations of each coset representative with each pair of subproducts.
         g_iter
             .zip(subproduct_iter.cycle())
-            .map(|(g, w)| {
-                let mut gw = g.clone();
-                gw.multiply_mut_word(&w);
-                gw
-            })
+            .map(|(g, w)| g.multiply(&w))
             .collect()
     }
 
