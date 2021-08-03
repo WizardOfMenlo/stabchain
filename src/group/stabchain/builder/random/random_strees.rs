@@ -288,11 +288,7 @@ where
             .iter()
             .filter(|&b| record.transversal.contains_key(b))
             .count();
-        let gens = self
-            .current_chain()
-            .flat_map(|record| record.gens.generators())
-            .cloned()
-            .collect::<Vec<P>>();
+        let gens = self.union_gen_set();
         //Random products of the form gw
         let mut random_gens =
             self.random_schrier_generators_as_word(self.constants.c1, self.constants.c2, &gens[..]);
@@ -393,12 +389,7 @@ where
             }
         }
         //The union of the generator sets in the chain to this point.
-        let gens = self
-            .chain
-            .iter()
-            .flat_map(|record| record.gens.generators())
-            .cloned()
-            .collect::<Vec<P>>();
+        let gens = self.union_gen_set();
         //Create an iterator that first has the original generators, and then the random schrier generators.
         let products: Vec<WordPermutation<P>> = self
             .original_generators
@@ -473,6 +464,20 @@ where
     //Utility function to check if a given drop out level is the bottom of the chain.
     fn sifted(&self, drop_out_level: usize) -> bool {
         self.current_pos + drop_out_level == self.chain.len()
+    }
+
+    // Take the union of the generating sets from current position onwards.
+    fn union_gen_set(&self) -> Vec<P> {
+        let mut gen_set = Vec::new();
+        for p in self
+            .current_chain()
+            .flat_map(|record| record.gens.generators())
+        {
+            if !gen_set.contains(p) {
+                gen_set.push(p.clone())
+            }
+        }
+        gen_set
     }
 }
 
