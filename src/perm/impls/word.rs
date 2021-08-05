@@ -78,6 +78,16 @@ where
         self.word
             .extend(other.word.iter().filter(|p| !p.is_id()).cloned());
     }
+
+    // Invert word permutation lazily in place.
+    pub fn inv_lazy_mut(&mut self) {
+        // Reverse and take inverse, using (ab)^-1 = b^-1a^-1
+        self.word.reverse();
+
+        for p in self.word.iter_mut() {
+            *p = p.inv()
+        }
+    }
 }
 
 impl<P> FromIterator<P> for WordPermutation<P>

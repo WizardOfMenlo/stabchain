@@ -13,7 +13,6 @@ use crate::perm::{impls::word::WordPermutation, Action, Permutation};
 use crate::DetHashMap;
 use itertools::Itertools;
 use num::BigUint;
-use rand::prelude::SliceRandom;
 use rand::rngs::ThreadRng;
 use rand::{seq::IteratorRandom, Rng};
 use std::cell::RefCell;
@@ -147,35 +146,67 @@ where
         let subproduct_iter = subproduct_w1_iter
             .interleave(subproduct_w2_iter)
             .take(2 * subproducts);
-        let cache = &mut *record.representative_cache.borrow_mut();
-        //Precompute all coset representatives.
-        let coset_reps: Vec<WordPermutation<P>> = record
-            .transversal
-            .keys()
-            .map(|point| {
-                cache
-                    .entry(*point)
-                    .or_insert_with(|| {
-                        representative_raw_as_word(
-                            &record.transversal,
-                            record.base,
-                            *point,
-                            &self.action,
-                            self.max_depths[self.current_pos],
-                        )
-                        .unwrap()
+        // First create coset_representative * t random coset reprensentatives.
+        //Precompute all coset representatives if we'll be selecting more than there are in the orbit
+        let mut gens: Vec<WordPermutation<P>> = {
+            let cache = &mut *record.representative_cache.borrow_mut();
+            if coset_representatives * t >= record.transversal.len() {
+                record
+                    .transversal
+                    .keys()
+                    .map(|point| {
+                        cache
+                            .entry(*point)
+                            .or_insert_with(|| {
+                                representative_raw_as_word(
+                                    &record.transversal,
+                                    record.base,
+                                    *point,
+                                    &self.action,
+                                    self.max_depths[self.current_pos],
+                                )
+                                .unwrap()
+                            })
+                            .clone()
                     })
-                    .clone()
-            })
-            .collect();
-        // Iterator of random coset representatives.
-        let g_iter =
-            coset_reps.choose_multiple(&mut *self.rng.borrow_mut(), coset_representatives * t);
-        //Create an iterator that contains combintations of each coset representative with each pair of subproducts.
-        g_iter
+                    .choose_multiple(&mut *self.rng.borrow_mut(), coset_representatives * t)
+            } else {
+                record
+                    .transversal
+                    .keys()
+                    .choose_multiple(&mut *self.rng.borrow_mut(), coset_representatives * t)
+                    .iter()
+                    .map(|&&point| {
+                        cache
+                            .entry(point)
+                            .or_insert_with(|| {
+                                representative_raw_as_word(
+                                    &record.transversal,
+                                    record.base,
+                                    point,
+                                    &self.action,
+                                    self.max_depths[self.current_pos],
+                                )
+                                .unwrap()
+                            })
+                            .clone()
+                    })
+                    .collect()
+            }
+        };
+        //Combine each generator with a random subproduct.
+        gens.iter_mut()
             .zip(subproduct_iter.cycle())
-            .map(|(g, w)| g.multiply(&w))
-            .collect()
+            .for_each(|(g, w)| g.multiply_mut_word(&w));
+        // Optionally apply bar func to get possible schrier generators
+        if bar_func {
+            // We need to filter any cases where the bar function can fail.
+            gens.iter()
+                .filter_map(|w| self.bar_func(&w).map(|w_bar| w.multiply(&w_bar.inv_lazy())))
+                .collect()
+        } else {
+            gens
+        }
     }
 
     /// Check if adding a new element modifies the current layer of the chain.
@@ -294,23 +325,12 @@ where
             .count();
         let gens = self.union_gen_set();
         //Random products of the form gw
-        let mut random_gens = self.random_schrier_generators_as_word(
+        let random_gens = self.random_schrier_generators_as_word(
             self.constants.c1,
             self.constants.c2,
             &gens[..],
             true,
         );
-        //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
-        random_gens.iter_mut().for_each(|gw| {
-            //Get the residue of this word
-            let (_, gw_bar) = residue_as_words_from_words(self.full_chain(), gw);
-            //Append the inverse of the residue to the word, to get a schrier generator.
-            gw_bar
-                .into_iter()
-                .map(|p| p.inv())
-                .rev()
-                .for_each(|p| gw.multiply_mut(&p));
-        });
         //To see if all generators are discarded.
         let mut all_discarded = true;
         //If the element we are testing is the first schrier generator tested.
@@ -516,6 +536,31 @@ where
             }
         }
         gen_set
+    }
+    // Get permutation p_bar such that p.apply(base) == p_bar.apply(base)
+    fn bar_func(&self, p: &WordPermutation<P>) -> Option<WordPermutation<P>> {
+        let record = &self.chain[self.current_pos];
+        let x = p.apply(record.base);
+        if !record.transversal.contains_key(&x) {
+            return None;
+        }
+        let p_bar = record
+            .representative_cache
+            .borrow_mut()
+            .entry(x)
+            .or_insert_with(|| {
+                representative_raw_as_word(
+                    &record.transversal,
+                    record.base,
+                    x,
+                    &self.action,
+                    self.max_depths[self.current_pos],
+                )
+                .unwrap()
+            })
+            .clone();
+        debug_assert!(p.apply(record.base) == p_bar.apply(record.base));
+        Some(p_bar)
     }
 }
 
