@@ -200,10 +200,18 @@ where
             .for_each(|(g, w)| g.multiply_mut_word(&w));
         // Optionally apply bar func to get possible schrier generators
         if bar_func {
-            // We need to filter any cases where the bar function can fail.
-            gens.iter()
-                .filter_map(|w| self.bar_func(&w).map(|w_bar| w.multiply(&w_bar.inv_lazy())))
-                .collect()
+            let mut bar_gens = Vec::with_capacity(gens.len());
+            // Drain to avoid reallocation for words.
+            for mut gw in gens.drain(0..gens.len() - 1) {
+                let gw_bar_opt = self.bar_func(&gw);
+                // We need to filter any cases where the bar function can fail.
+                if let Some(mut gw_bar) = gw_bar_opt {
+                    gw_bar.inv_lazy_mut();
+                    gw.multiply_mut_word(&gw_bar);
+                    bar_gens.push(gw_bar)
+                }
+            }
+            bar_gens
         } else {
             gens
         }
