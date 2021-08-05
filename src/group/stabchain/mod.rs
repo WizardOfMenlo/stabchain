@@ -5,10 +5,10 @@ pub mod base_change_builder;
 pub mod builder;
 pub mod element_testing;
 
-use crate::group::orbit::abstraction::TransversalResolver;
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
 use crate::perm::*;
+use crate::{group::orbit::abstraction::TransversalResolver, perm::impls::word::WordPermutation};
 use base::Base;
 use base_change_builder::{BaseChangeBuilder, BaseChangeBuilderStrategy};
 use builder::{Builder, BuilderStrategy};
@@ -25,6 +25,7 @@ use tracing::debug;
 pub struct Stabchain<P, V, A = SimpleApplication<P>>
 where
     A: Action<P>,
+    P: Permutation,
 {
     chain: Vec<StabchainRecord<P, V, A>>,
 }
@@ -200,6 +201,7 @@ where
 impl<P, V, A> IntoIterator for Stabchain<P, V, A>
 where
     A: Action<P>,
+    P: Permutation,
 {
     type Item = StabchainRecord<P, V, A>;
     type IntoIter = std::vec::IntoIter<Self::Item>;
@@ -214,16 +216,19 @@ where
 pub struct StabchainRecord<P, V, A = SimpleApplication<P>>
 where
     A: Action<P>,
+    P: Permutation,
 {
     base: A::OrbitT,
     gens: Group<P>,
     transversal: DetHashMap<A::OrbitT, P>,
     resolver: V,
+    representative_cache: RefCell<DetHashMap<A::OrbitT, WordPermutation<P>>>,
 }
 
 impl<P, V, A> StabchainRecord<P, V, A>
 where
     A: Action<P>,
+    P: Permutation,
 {
     /// Get the associated group
     pub fn group(&self) -> &Group<P> {
@@ -252,6 +257,7 @@ where
             gens,
             transversal,
             resolver: V::default(),
+            representative_cache: DetHashMap::default().into(),
         }
     }
     ///Create a trivial record that represents the trivial group.
@@ -261,6 +267,7 @@ where
             gens: Group::new(&[]),
             transversal: [(base, P::id())].iter().cloned().collect(),
             resolver: V::default(),
+            representative_cache: DetHashMap::default().into(),
         }
     }
 
@@ -276,6 +283,7 @@ where
     }
 }
 
+use std::cell::RefCell;
 use std::fmt;
 
 impl<P, V, A> fmt::Display for Stabchain<P, V, A>
@@ -774,7 +782,7 @@ mod tests {
                 SimpleApplication::default(),
                 crate::group::stabchain::base::selectors::FmpSelector::default(),
                 RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16])),
+                    .rng(rand_xorshift::XorShiftRng::from_seed([52; 16])),
             )
         },
         random_shallow
@@ -787,7 +795,7 @@ mod tests {
                 SimpleApplication::default(),
                 crate::group::stabchain::base::selectors::FmpSelector::default(),
                 RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([41; 16]))
+                    .rng(rand_xorshift::XorShiftRng::from_seed([42; 16]))
                     .quick_test(true),
             )
         },

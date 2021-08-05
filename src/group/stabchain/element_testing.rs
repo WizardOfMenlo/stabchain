@@ -145,12 +145,15 @@ where
         if !record.transversal.contains_key(&application) {
             break;
         }
+        let transversal = &record.transversal;
         //Already check the point is present, so there should be a representative.
-        let representative = record
-            .resolver()
-            .representative(&record.transversal, base.clone(), application)
-            .unwrap();
-        g.multiply_mut(&representative.inv());
+        let cache = &mut *record.representative_cache.borrow_mut();
+        let representative = cache.entry(application.clone()).or_insert_with(|| {
+            V::default()
+                .representative_as_word(transversal, base.clone(), application)
+                .unwrap()
+        });
+        g.multiply_mut_word(&representative.inv_lazy());
         k += 1;
     }
     (k, g)

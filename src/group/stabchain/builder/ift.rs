@@ -16,6 +16,7 @@ use tracing::{debug, trace};
 pub struct StabchainBuilderIft<P, S, A = SimpleApplication<P>>
 where
     A: Action<P>,
+    P: Permutation,
 {
     current_pos: usize,
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
@@ -26,6 +27,7 @@ where
 impl<P, S, A> StabchainBuilderIft<P, S, A>
 where
     A: Action<P>,
+    P: Permutation,
 {
     pub(super) fn new(selector: S, action: A) -> Self {
         StabchainBuilderIft {

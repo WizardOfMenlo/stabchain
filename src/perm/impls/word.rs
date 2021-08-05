@@ -31,7 +31,9 @@ where
 
     /// Get an underlying permutation
     pub fn evaluate(&self) -> P {
-        self.word.iter().fold(P::id(), |acc, p| acc.multiply(p))
+        let n = self.lmp_upper().unwrap_or(0);
+        let image: Vec<usize> = (0..n + 1).map(|x| self.apply(x)).collect();
+        P::from_images(&image)
     }
 
     /// Check for equality on a general iterator. Note that equality on 0..=self.lmp() <= self.lmp_upper() will imply actual equality
@@ -66,12 +68,25 @@ where
 
     /// Multiply in place.
     pub fn multiply_mut(&mut self, other: &P) {
-        self.word.push(other.clone());
+        if !other.is_id() {
+            self.word.push(other.clone());
+        }
     }
 
     /// Multiply in place by another word.
     pub fn multiply_mut_word(&mut self, other: &Self) {
-        self.word.extend(other.word.iter().cloned());
+        self.word
+            .extend(other.word.iter().filter(|p| !p.is_id()).cloned());
+    }
+
+    // Invert word permutation lazily in place.
+    pub fn inv_lazy_mut(&mut self) {
+        // Reverse and take inverse, using (ab)^-1 = b^-1a^-1
+        self.word.reverse();
+
+        for p in self.word.iter_mut() {
+            *p = p.inv()
+        }
     }
 }
 

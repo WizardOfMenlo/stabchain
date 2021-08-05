@@ -1,5 +1,6 @@
 //! Collection of functions that will compute shallow(er) transversals.
 
+use crate::group::orbit::orbit_complete_opt;
 use crate::group::random_perm::RandPerm;
 use crate::group::{Action, Group};
 use crate::perm::impls::word::WordPermutation;
@@ -76,13 +77,13 @@ pub fn shallow_transversal<P, A, R>(
     base: A::OrbitT,
     strat: &A,
     rng: &mut R,
-) -> (DetHashMap<A::OrbitT, P>, usize)
+) -> (DetHashMap<A::OrbitT, P>, DetHashMap<A::OrbitT, usize>)
 where
     P: Permutation,
     A: Action<P>,
     R: Rng + Clone,
 {
-    let orbit = g.orbit_of_action(base.clone(), strat).orbit;
+    let orbit = orbit_complete_opt(g, base.clone(), strat);
     let mut rand_perm_gen = RandPerm::new(11, g, 50, rng.clone());
     let mut initial_gen = rand_perm_gen.random_permutation();
     //We don't want to start off wit the identity.
@@ -90,8 +91,8 @@ where
         initial_gen = rand_perm_gen.random_permutation();
     }
     let mut gen_seq = vec![initial_gen];
-    let mut cube = cube::Cube::new(base.clone(), &gen_seq[..], strat);
-    while !cube.cube.eq(&orbit) {
+    let mut cube = cube::Cube::new(base.clone(), &gen_seq[..], strat, Some(orbit.len()));
+    while cube.cube.len() != orbit.len() {
         let mut new_element = rand_perm_gen.random_permutation();
         // "extending by the identity is stoopid"
         if new_element.is_id() {
@@ -100,13 +101,13 @@ where
         debug_assert!(!new_element.is_id());
         if !gen_seq.contains(&new_element) {
             gen_seq.push(new_element);
-            cube = cube::Cube::new(base.clone(), &gen_seq[..], strat);
+            cube = cube::Cube::new(base.clone(), &gen_seq[..], strat, Some(orbit.len()));
         }
     }
     //Update the generators of the group.
     g.generators = gen_seq;
-    //Return the shallow transversal orbit, along with the maximum depth of the tree.
-    (cube.orbit, *cube.depth.values().max().unwrap())
+    //Return the shallow transversal orbit, along with the depths of the tree.
+    (cube.orbit, cube.depth)
 }
 
 /// Calculate a representative from the given orbit.

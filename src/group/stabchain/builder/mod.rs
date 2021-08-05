@@ -23,6 +23,7 @@ pub mod random;
 pub trait Builder<P, V, A>: Debug
 where
     A: Action<P>,
+    P: Permutation,
 {
     /// Add the generators to be used for the construction
     fn set_generators(&mut self, gens: &Group<P>);
@@ -33,7 +34,10 @@ where
 
 /// A strategy is a lightweight struct that allows to
 /// (hopefully at compile time plz compiler) select which builder to use
-pub trait BuilderStrategy<P>: Debug {
+pub trait BuilderStrategy<P>: Debug
+where
+    P: Permutation,
+{
     /// The action that this strategy uses
     type Action: Action<P>;
 

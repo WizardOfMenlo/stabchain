@@ -1,7 +1,9 @@
 //! Utility for generating random elements of a subgroup
 
 use super::Group;
+use crate::perm::impls::word::WordPermutation;
 use crate::perm::{DefaultPermutation, Permutation};
+use rand::prelude::SliceRandom;
 use rand::rngs::ThreadRng;
 use rand::Rng;
 use std::cmp::max;
@@ -93,6 +95,49 @@ where
     pub fn from_generators(min_size: usize, g: &Group<P>, initial_runs: usize) -> Self {
         Self::new(min_size, g, initial_runs, rand::thread_rng())
     }
+}
+
+/// Perform a random walk of the cayley graph of a group.
+pub fn random_cayley_walk<P, R>(g: &Group<P>, iters: usize, rng: &mut R) -> P
+where
+    P: Permutation,
+    R: Rng,
+{
+    if g.generators.is_empty() {
+        return P::id();
+    }
+    // Create a word permutation to reduce allocations.
+    let mut p = WordPermutation::<P>::id_with_capacity(iters);
+    // The multiply by iters random elements from the genset.
+    for _ in 0..iters {
+        let elem = g.generators.choose(rng).unwrap();
+        let inv = elem.inv();
+        p.multiply_mut(if rng.gen() { elem } else { &inv });
+    }
+    p.evaluate()
+}
+
+/// Perform a random walk of the cayley graph of a group, but optionally walking to neighbour vertex or staying put.
+/// This is effectively a walk where we either multiply by identity or an element.
+pub fn random_lazy_cayley_walk<P, R>(g: &Group<P>, iters: usize, rng: &mut R) -> P
+where
+    P: Permutation,
+    R: Rng,
+{
+    if g.generators.is_empty() {
+        return P::id();
+    }
+    // Create a word permutation to reduce allocations.
+    let mut p = WordPermutation::<P>::id_with_capacity(iters);
+    // The multiply by iters random elements from the genset.
+    for _ in 0..iters {
+        // Either multiply by random element or identity.
+        if rng.gen() {
+            let elem = g.generators.choose(rng).unwrap();
+            p.multiply_mut(elem);
+        }
+    }
+    p.evaluate()
 }
 
 #[cfg(test)]
