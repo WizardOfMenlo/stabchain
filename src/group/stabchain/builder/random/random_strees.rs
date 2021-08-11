@@ -118,7 +118,16 @@ where
         self.max_depths.push(*initial_depth.values().max().unwrap());
         self.depths.push(initial_depth);
         self.chain.push(initial_record);
-        self.sgc();
+        let mut complete = false;
+        while !complete {
+            if self.sgc() {
+                // Different strong generating tests depending on if we know the size or not.
+                complete = match self.constants.order.clone() {
+                    Some(known_order) => self.sgt_size(known_order),
+                    None => self.sgt(),
+                };
+            }
+        }
     }
 
     /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
@@ -319,7 +328,7 @@ where
         self.check_transversal_augmentation(&p, level, false);
     }
 
-    fn sgc(&mut self) {
+    fn sgc(&mut self) -> bool {
         trace!(
             level = self.current_pos,
             "Strong Generating Set Construction"
@@ -400,14 +409,7 @@ where
             debug!(level = self.current_pos, "All generators discarded");
             // SGC terminates when we are up to date below position 0
             if self.current_pos == 0 {
-                // Different strong generating tests depending on if we know the size or not.
-                match self.constants.order.clone() {
-                    Some(known_order) => {
-                        self.sgt_size(known_order);
-                    }
-                    None => self.sgt(),
-                }
-                return;
+                return true;
             } else {
                 self.current_pos -= 1;
             }
@@ -415,16 +417,16 @@ where
         } else if self.constants.order.is_some()
             && self.constants.order == Some(order(self.full_chain()))
         {
-            return;
+            return true;
         }
         // Continue with SGC.
-        self.sgc();
+        false
     }
 
     /// Test that the current strong generating set is indeed a strong generating set, returning true if it (probably) is.
-    fn sgt(&mut self) {
+    fn sgt(&mut self) -> bool {
         trace!("Strong Generating Test");
-        let original_position = self.current_pos;
+        self.current_pos = 0;
         //Should be at the top of the chain, I think.
         debug_assert!(self.current_pos == 0);
         //The union of the generator sets in the chain to this point.
@@ -448,11 +450,10 @@ where
             if let Some(sgc_invoke_level) = self.sgt_test(&p) {
                 self.current_pos = sgc_invoke_level;
                 debug!(level = sgc_invoke_level, "SGT failed");
-                self.sgc();
-                break;
+                return false;
             };
         }
-        self.current_pos = original_position;
+        true
     }
 
     fn sgt_test(&mut self, p: &WordPermutation<P>) -> Option<usize> {
@@ -475,12 +476,12 @@ where
     }
 
     /// Test that the current strong generating set is indeed a strong generating set using the size, returning true if it is.
-    fn sgt_size(&mut self, size: BigUint) {
+    fn sgt_size(&mut self, size: BigUint) -> bool {
         trace!("Strong Generating Test");
         //Should be at the top of the chain, I think.
         self.current_pos = 0;
         if size == order(self.chain.iter()) {
-            return;
+            return true;
         }
         //The union of the generator sets in the chain to this point.
         let mut gens = self.union_gen_set();
@@ -520,6 +521,7 @@ where
                 }
             }
         }
+        true
     }
 
     /// Add a new level to the chain, starting with this permutation.
