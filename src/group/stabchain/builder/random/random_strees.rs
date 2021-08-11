@@ -484,25 +484,39 @@ where
         }
         //The union of the generator sets in the chain to this point.
         let mut gens = self.union_gen_set();
+        let mut products: VecDeque<_> = self
+            .original_generators
+            .generators()
+            .iter()
+            .map(|p| WordPermutation::from_perm(p))
+            .collect();
         gens.extend(self.original_generators.generators().iter().cloned());
-        // copy the rng to supply to the perm generator
-        let mut rng = self.rng.borrow().clone();
-        //Create an iterator that first has the original generators, and then the random schrier generators.
-        let mut random = RandPerm::new(11, &Group::new(&gens), 50, &mut rng);
+        // // copy the rng to supply to the perm generator
+        // let mut rng = self.rng.borrow().clone();
+        // //Create an iterator that first has the original generators, and then the random schrier generators.
+        // let mut random = RandPerm::new(11, &Group::new(&gens), 50, &mut rng);
         //Sift the original generators, and all products of the form g*w_{1,2}.
         while size != order(self.chain.iter()) {
-            let p = WordPermutation::from_perm(&random.random_permutation());
+            if products.is_empty() {
+                products.extend(self.random_schrier_generators_as_word(
+                    self.constants.c3,
+                    self.constants.c4,
+                    &gens[..],
+                    false,
+                ))
+            }
+            let p = products.pop_front().unwrap();
             let (drop_out_level, residue) = residue_as_words_from_words(self.full_chain(), &p);
             if !residue.id_on_iter(0..self.n) {
                 let invoke_level = drop_out_level;
                 let collapsed_residue = residue.evaluate();
                 //If this point sifted through but isn't trivial, then we need a new record and base point.
+                gens.push(collapsed_residue.clone());
                 if self.sifted(drop_out_level) {
                     self.add_new_record(collapsed_residue);
                 } else {
                     //Otherwise add it to the generators at that level, and invoke the SGC at that level.
                     self.check_transversal_augmentation_from_level(invoke_level, collapsed_residue);
-                    self.current_pos = drop_out_level;
                 }
             }
         }
