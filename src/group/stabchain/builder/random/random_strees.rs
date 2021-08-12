@@ -411,6 +411,7 @@ where
             if level == 0 {
                 None
             } else {
+                // Otherwise proceed at level - 1
                 Some(level - 1)
             }
         // Check the order for an early exit, as we know that something new has been added.
@@ -419,9 +420,9 @@ where
         {
             None
         } else {
+            // Continue with SGC.
             Some(invoke_level)
         }
-        // Continue with SGC.
     }
 
     fn sgt(&mut self) -> Option<usize> {
@@ -495,11 +496,7 @@ where
             .map(|p| WordPermutation::from_perm(p))
             .collect();
         gens.extend(self.original_generators.generators().iter().cloned());
-        // // copy the rng to supply to the perm generator
-        // let mut rng = self.rng.borrow().clone();
-        // //Create an iterator that first has the original generators, and then the random schrier generators.
-        // let mut random = RandPerm::new(11, &Group::new(&gens), 50, &mut rng);
-        //Sift the original generators, and all products of the form g*w_{1,2}.
+        //Sift the original generators, and products of the form g*w_{1,2}.
         while size != order(self.chain.iter()) {
             while products.is_empty() {
                 products.extend(self.random_schrier_generators_as_word(
