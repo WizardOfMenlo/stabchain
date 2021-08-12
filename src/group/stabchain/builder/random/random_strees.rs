@@ -327,12 +327,11 @@ where
 
     fn sgc(&mut self, level: usize) -> Option<usize> {
         trace!(level = level, "Strong Generating Set Construction");
-        let record = self.chain[level].clone();
         //Number of base points than are in the current orbit.
         let b_star = self
             .base
             .iter()
-            .filter(|&b| record.transversal.contains_key(b))
+            .filter(|&b| self.chain[level].transversal.contains_key(b))
             .count();
         let gens = self.union_gen_set(level);
         //Random products of the form gw
@@ -356,12 +355,12 @@ where
             if self.sifted(drop_out_level) {
                 //Pick the points that should be evaluated. This is a heuristic to speed up run times.
                 let evaluated_points: Vec<A::OrbitT> =
-                    if record.transversal.len() <= self.constants.orbit_bound {
+                    if self.chain[level].transversal.len() <= self.constants.orbit_bound {
                         //Evaluate on all points of the current orbit.
-                        record.transversal.keys().cloned().collect()
+                        self.chain[level].transversal.keys().cloned().collect()
                     } else if self.base.len() <= self.constants.base_bound {
                         //Evaluate on BASE_BOUND randomly chosen points.
-                        record
+                        self.chain[level]
                             .transversal
                             .keys()
                             .choose_multiple(&mut *self.rng.borrow_mut(), self.constants.base_bound)
@@ -370,7 +369,7 @@ where
                             .collect()
                     } else {
                         //Evaluate on b_star randomly chosen points.
-                        record
+                        self.chain[level]
                             .transversal
                             .keys()
                             .choose_multiple(&mut *self.rng.borrow_mut(), b_star)
