@@ -3,7 +3,6 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::shallow_transversal::{
     representative_raw_as_word, shallow_transversal,
 };
-use crate::group::random_perm::RandPerm;
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
 use crate::group::stabchain::{base::selectors::BaseSelector, order, Stabchain, StabchainRecord};
 use crate::group::utils::{random_subproduct_word_full, random_subproduct_word_subset};
@@ -245,7 +244,7 @@ where
         // We now check if a new shallow transversal is required, or the new one will not exceed the depth.
         let mut recompute_transversal = false;
         // First partion points at maximum depth and those not.
-        let max_depth = self.max_depths[self.current_pos];
+        let max_depth = self.max_depths[level];
         let (max_depth_points, mut to_check): (VecDeque<usize>, VecDeque<usize>) = self.depths
             [level]
             .keys()
@@ -526,7 +525,7 @@ where
 
     /// Add a new level to the chain, starting with this permutation.
     fn add_new_record(&mut self, gen: P) {
-        let moved_point = self.selector.moved_point(&gen, self.current_pos);
+        let moved_point = self.selector.moved_point(&gen, self.base.len());
         debug!(perm = %gen, moved_point = moved_point, "Extending chain");
         let mut gens = Group::new(&[gen]);
         let (transversal, depth) = shallow_transversal(
