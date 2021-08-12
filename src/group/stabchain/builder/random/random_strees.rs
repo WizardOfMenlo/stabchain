@@ -15,6 +15,7 @@ use num::BigUint;
 use rand::rngs::ThreadRng;
 use rand::{seq::IteratorRandom, Rng};
 use std::cell::RefCell;
+use std::cmp::max;
 use std::collections::hash_map::Entry;
 use std::collections::VecDeque;
 use std::iter::{repeat_with, Iterator};
@@ -117,14 +118,15 @@ where
         self.max_depths.push(*initial_depth.values().max().unwrap());
         self.depths.push(initial_depth);
         self.chain.push(initial_record);
-        let mut complete = false;
-        while !complete {
-            if self.sgc() {
-                // Different strong generating tests depending on if we know the size or not.
-                complete = match self.constants.order.clone() {
-                    Some(known_order) => self.sgt_size(known_order),
-                    None => self.sgt(),
-                };
+        // We start at position zero
+        let mut invoke_opt = Some(0);
+        // Repeat until the SGT passes, i.e gives no level invoke on
+        while let Some(invoke_level) = invoke_opt {
+            self.current_pos = invoke_level;
+            // If sgc is passed, then we also need to pass the strong generating test
+            invoke_opt = match self.sgc() {
+                Some(invoke_level) => Some(invoke_level),
+                None => self.sgt(),
             }
         }
     }
@@ -327,7 +329,7 @@ where
         self.check_transversal_augmentation(&p, level, false);
     }
 
-    fn sgc(&mut self) -> bool {
+    fn sgc(&mut self) -> Option<usize> {
         trace!(
             level = self.current_pos,
             "Strong Generating Set Construction"
@@ -351,6 +353,7 @@ where
         let mut all_discarded = true;
         //If the element we are testing is the first schrier generator tested.
         let mut first_test = true;
+        let mut invoke_level = 0;
         debug!(generators = random_gens.len(), "Sifting generators");
         for h in random_gens {
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.full_chain(), &h);
@@ -386,6 +389,8 @@ where
                     let h_star = h_residue.evaluate();
                     //Add a new base point, along with a new record for that base point.
                     self.add_new_record(h_star);
+                    // Up to date at highest level of chain.
+                    invoke_level = self.chain.len() - 1;
                 } else if self.constants.quick_test && first_test {
                     //The quick test is only sifting one generator, and early exit if this sifts through.
                     break;
@@ -398,8 +403,8 @@ where
                 debug!(perm = %h_star, level = drop_out_level, "Permutation not sifting through");
                 //Add as a generator and update the transversal.
                 self.check_transversal_augmentation_from_level(drop_out_level, h_star);
-                //Consider the chain now up to date below drop out level
-                self.current_pos = drop_out_level;
+                //Set invoke level to drop out level, unless it's already deeper
+                invoke_level = max(drop_out_level, invoke_level);
             }
             //This is now not the first element to be tested.
             first_test = false;
@@ -408,25 +413,34 @@ where
             debug!(level = self.current_pos, "All generators discarded");
             // SGC terminates when we are up to date below position 0
             if self.current_pos == 0 {
-                return true;
+                None
             } else {
-                self.current_pos -= 1;
+                Some(self.current_pos - 1)
             }
         // Check the order for an early exit, as we know that something new has been added.
         } else if self.constants.order.is_some()
             && self.constants.order == Some(order(self.full_chain()))
         {
-            return true;
+            None
+        } else {
+            Some(invoke_level)
         }
         // Continue with SGC.
-        false
+    }
+
+    fn sgt(&mut self) -> Option<usize> {
+        self.current_pos = 0;
+        // Different strong generating tests depending on if we know the size or not.
+        match self.constants.order.clone() {
+            Some(known_order) => self.sgt_size(known_order),
+            None => self.sgt_probabalistic(),
+        }
     }
 
     /// Test that the current strong generating set is indeed a strong generating set, returning true if it (probably) is.
-    fn sgt(&mut self) -> bool {
+    fn sgt_probabalistic(&mut self) -> Option<usize> {
         trace!("Strong Generating Test");
-        self.current_pos = 0;
-        //Should be at the top of the chain, I think.
+        // We should be at the top of the chain
         debug_assert!(self.current_pos == 0);
         //The union of the generator sets in the chain to this point.
         let gens = self.union_gen_set();
@@ -447,12 +461,11 @@ where
         for p in products {
             //If we have found a non-trivial element, then invoke the sgc at the specified level.
             if let Some(sgc_invoke_level) = self.sgt_test(&p) {
-                self.current_pos = sgc_invoke_level;
                 debug!(level = sgc_invoke_level, "SGT failed");
-                return false;
+                return Some(sgc_invoke_level);
             };
         }
-        true
+        None
     }
 
     fn sgt_test(&mut self, p: &WordPermutation<P>) -> Option<usize> {
@@ -466,7 +479,6 @@ where
             } else {
                 //Otherwise add it to the generators at that level, and invoke the SGC at that level.
                 self.check_transversal_augmentation_from_level(drop_out_level, collapsed_residue);
-                self.current_pos = drop_out_level;
             }
             Some(drop_out_level)
         } else {
@@ -475,12 +487,12 @@ where
     }
 
     /// Test that the current strong generating set is indeed a strong generating set using the size, returning true if it is.
-    fn sgt_size(&mut self, size: BigUint) -> bool {
+    fn sgt_size(&mut self, size: BigUint) -> Option<usize> {
         trace!("Strong Generating Test");
-        //Should be at the top of the chain, I think.
-        self.current_pos = 0;
+        // We should be at the top of the chain
+        debug_assert!(self.current_pos == 0);
         if size == order(self.chain.iter()) {
-            return true;
+            return None;
         }
         //The union of the generator sets in the chain to this point.
         let mut gens = self.union_gen_set();
@@ -497,7 +509,7 @@ where
         // let mut random = RandPerm::new(11, &Group::new(&gens), 50, &mut rng);
         //Sift the original generators, and all products of the form g*w_{1,2}.
         while size != order(self.chain.iter()) {
-            if products.is_empty() {
+            while products.is_empty() {
                 products.extend(self.random_schrier_generators_as_word(
                     self.constants.c3,
                     self.constants.c4,
@@ -520,7 +532,7 @@ where
                 }
             }
         }
-        true
+        None
     }
 
     /// Add a new level to the chain, starting with this permutation.
@@ -539,7 +551,6 @@ where
         self.max_depths.push(*depth.values().max().unwrap());
         self.depths.push(depth);
         self.chain.push(initial_record);
-        self.current_pos = self.base.len() - 1;
     }
 
     //Utility function to check if a given drop out level is the bottom of the chain.
