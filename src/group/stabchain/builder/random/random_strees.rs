@@ -349,14 +349,14 @@ where
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.full_chain(), &h);
             if self.sifted(drop_out_level) {
                 //Pick the points that should be evaluated. This is a heuristic to speed up run times.
-                let evaluated_points: Vec<A::OrbitT> =
-                    if self.chain[level].transversal.len() <= self.constants.orbit_bound {
+                let evaluated_points: Vec<A::OrbitT> = {
+                    let transversal = &self.chain[level].transversal;
+                    if transversal.len() <= self.constants.orbit_bound {
                         //Evaluate on all points of the current orbit.
-                        self.chain[level].transversal.keys().cloned().collect()
+                        transversal.keys().cloned().collect()
                     } else if self.base.len() <= self.constants.base_bound {
                         //Evaluate on BASE_BOUND randomly chosen points.
-                        self.chain[level]
-                            .transversal
+                        transversal
                             .keys()
                             .choose_multiple(&mut *self.rng.borrow_mut(), self.constants.base_bound)
                             .into_iter()
@@ -367,17 +367,18 @@ where
                         let b_star = self
                             .base
                             .iter()
-                            .filter(|&b| self.chain[level].transversal.contains_key(b))
+                            .filter(|&b| transversal.contains_key(b))
                             .count();
                         //Evaluate on b_star randomly chosen points.
-                        self.chain[level]
-                            .transversal
+
+                        transversal
                             .keys()
                             .choose_multiple(&mut *self.rng.borrow_mut(), b_star)
                             .into_iter()
                             .cloned()
                             .collect()
-                    };
+                    }
+                };
                 //We have found a residue that has not sifted through, so we add a new base point with this point as a generator.
                 if !h_residue.id_on_iter(evaluated_points) {
                     //Not all permutations have been discarded
