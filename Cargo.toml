@@ -7,16 +7,16 @@ version = "0.1.1"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-itertools = "0.9"
-num = "0.3"
-num-bigint = {version = "0.3", features = ["serde"]}
+itertools = "0.10.1"
+num = "0.4"
+num-bigint = {version = "0.4", features = ["serde"]}
 rand = "0.8"
 serde = {version = "1.0", features = ["derive", "rc"]}
 tracing = "0.1"
 
 [dev-dependencies]
-criterion = "0.3"
-indicatif = "0.15"
+criterion = "0.3.5"
+indicatif = "0.16.2"
 lazy_static = "1.4"
 rand_xorshift = "0.3"
 rayon = "1.5"
