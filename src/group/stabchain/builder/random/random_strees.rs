@@ -327,12 +327,7 @@ where
 
     fn sgc(&mut self, level: usize) -> Option<usize> {
         trace!(level = level, "Strong Generating Set Construction");
-        //Number of base points than are in the current orbit.
-        let b_star = self
-            .base
-            .iter()
-            .filter(|&b| self.chain[level].transversal.contains_key(b))
-            .count();
+        // Take union of generating sets.
         let gens = self.union_gen_set(level);
         //Random products of the form gw
         let random_gens = self.random_schrier_generators_as_word(
@@ -368,6 +363,12 @@ where
                             .cloned()
                             .collect()
                     } else {
+                        //Number of base points than are in the current orbit.
+                        let b_star = self
+                            .base
+                            .iter()
+                            .filter(|&b| self.chain[level].transversal.contains_key(b))
+                            .count();
                         //Evaluate on b_star randomly chosen points.
                         self.chain[level]
                             .transversal
