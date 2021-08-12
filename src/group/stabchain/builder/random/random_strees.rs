@@ -32,7 +32,6 @@ where
     R: rand::Rng,
     P: Permutation,
 {
-    current_pos: usize,
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
     selector: S,
     action: A,
@@ -57,7 +56,6 @@ where
     pub fn new(selector: S, action: A, params: RandomAlgoParameters<R>) -> Self {
         let (constants, random) = params.consts();
         StabchainBuilderRandomSTrees {
-            current_pos: 0,
             chain: Vec::new(),
             selector,
             action,
@@ -73,8 +71,9 @@ where
 
     fn current_chain(
         &self,
+        level: usize,
     ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
-        self.chain.iter().skip(self.current_pos)
+        self.chain.iter().skip(level)
     }
 
     fn full_chain(
@@ -122,9 +121,8 @@ where
         let mut invoke_opt = Some(0);
         // Repeat until the SGT passes, i.e gives no level invoke on
         while let Some(invoke_level) = invoke_opt {
-            self.current_pos = invoke_level;
             // If sgc is passed, then we also need to pass the strong generating test
-            invoke_opt = match self.sgc() {
+            invoke_opt = match self.sgc(invoke_level) {
                 Some(invoke_level) => Some(invoke_level),
                 None => self.sgt(),
             }
@@ -134,18 +132,16 @@ where
     /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
     fn random_schrier_generators_as_word(
         &self,
+        level: usize,
         subproducts: usize,
         coset_representatives: usize,
         gens: &[P],
         bar_func: bool,
     ) -> Vec<WordPermutation<P>> {
-        debug!(
-            level = self.current_pos,
-            "Random generation of Schrier Generators"
-        );
+        debug!(level = level, "Random generation of Schrier Generators");
         // Sum of all the depths in the tree.
         let t: usize = self.max_depths.iter().sum();
-        let record = &self.chain[self.current_pos];
+        let record = &self.chain[level];
         let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0..1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
@@ -173,7 +169,7 @@ where
                                     record.base,
                                     *point,
                                     &self.action,
-                                    self.max_depths[self.current_pos],
+                                    self.max_depths[level],
                                 )
                                 .unwrap()
                             })
@@ -195,7 +191,7 @@ where
                                     record.base,
                                     point,
                                     &self.action,
-                                    self.max_depths[self.current_pos],
+                                    self.max_depths[level],
                                 )
                                 .unwrap()
                             })
@@ -213,7 +209,7 @@ where
             let mut bar_gens = Vec::with_capacity(gens.len());
             // Drain to avoid reallocation for words.
             for mut gw in gens.drain(0..gens.len() - 1) {
-                let gw_bar_opt = self.bar_func(&gw);
+                let gw_bar_opt = self.bar_func(&gw, level);
                 // We need to filter any cases where the bar function can fail.
                 if let Some(mut gw_bar) = gw_bar_opt {
                     gw_bar.inv_lazy_mut();
@@ -329,21 +325,19 @@ where
         self.check_transversal_augmentation(&p, level, false);
     }
 
-    fn sgc(&mut self) -> Option<usize> {
-        trace!(
-            level = self.current_pos,
-            "Strong Generating Set Construction"
-        );
-        let record = self.chain[self.current_pos].clone();
+    fn sgc(&mut self, level: usize) -> Option<usize> {
+        trace!(level = level, "Strong Generating Set Construction");
+        let record = self.chain[level].clone();
         //Number of base points than are in the current orbit.
         let b_star = self
             .base
             .iter()
             .filter(|&b| record.transversal.contains_key(b))
             .count();
-        let gens = self.union_gen_set();
+        let gens = self.union_gen_set(level);
         //Random products of the form gw
         let random_gens = self.random_schrier_generators_as_word(
+            level,
             self.constants.c1,
             self.constants.c2,
             &gens[..],
@@ -353,8 +347,10 @@ where
         let mut all_discarded = true;
         //If the element we are testing is the first schrier generator tested.
         let mut first_test = true;
+        // Level to invoke SGC on next
         let mut invoke_level = 0;
         debug!(generators = random_gens.len(), "Sifting generators");
+        // Sift all the random schrier generators.
         for h in random_gens {
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.full_chain(), &h);
             if self.sifted(drop_out_level) {
@@ -410,12 +406,12 @@ where
             first_test = false;
         }
         if all_discarded {
-            debug!(level = self.current_pos, "All generators discarded");
+            debug!(level = level, "All generators discarded");
             // SGC terminates when we are up to date below position 0
-            if self.current_pos == 0 {
+            if level == 0 {
                 None
             } else {
-                Some(self.current_pos - 1)
+                Some(level - 1)
             }
         // Check the order for an early exit, as we know that something new has been added.
         } else if self.constants.order.is_some()
@@ -429,7 +425,6 @@ where
     }
 
     fn sgt(&mut self) -> Option<usize> {
-        self.current_pos = 0;
         // Different strong generating tests depending on if we know the size or not.
         match self.constants.order.clone() {
             Some(known_order) => self.sgt_size(known_order),
@@ -440,10 +435,8 @@ where
     /// Test that the current strong generating set is indeed a strong generating set, returning true if it (probably) is.
     fn sgt_probabalistic(&mut self) -> Option<usize> {
         trace!("Strong Generating Test");
-        // We should be at the top of the chain
-        debug_assert!(self.current_pos == 0);
         //The union of the generator sets in the chain to this point.
-        let gens = self.union_gen_set();
+        let gens = self.union_gen_set(0);
         //Create an iterator that first has the original generators, and then the random schrier generators.
         let products: Vec<WordPermutation<P>> = self
             .original_generators
@@ -451,6 +444,7 @@ where
             .iter()
             .map(|p| WordPermutation::from_perm(p))
             .chain(self.random_schrier_generators_as_word(
+                0,
                 self.constants.c3,
                 self.constants.c4,
                 &gens[..],
@@ -489,13 +483,11 @@ where
     /// Test that the current strong generating set is indeed a strong generating set using the size, returning true if it is.
     fn sgt_size(&mut self, size: BigUint) -> Option<usize> {
         trace!("Strong Generating Test");
-        // We should be at the top of the chain
-        debug_assert!(self.current_pos == 0);
         if size == order(self.chain.iter()) {
             return None;
         }
         //The union of the generator sets in the chain to this point.
-        let mut gens = self.union_gen_set();
+        let mut gens = self.union_gen_set(0);
         let mut products: VecDeque<_> = self
             .original_generators
             .generators()
@@ -511,6 +503,7 @@ where
         while size != order(self.chain.iter()) {
             while products.is_empty() {
                 products.extend(self.random_schrier_generators_as_word(
+                    0,
                     self.constants.c3,
                     self.constants.c4,
                     &gens[..],
@@ -559,10 +552,10 @@ where
     }
 
     // Take the union of the generating sets from current position onwards.
-    fn union_gen_set(&self) -> Vec<P> {
+    fn union_gen_set(&self, level: usize) -> Vec<P> {
         let mut gen_set = Vec::new();
         for p in self
-            .current_chain()
+            .current_chain(level)
             .flat_map(|record| record.gens.generators())
         {
             if !gen_set.contains(p) {
@@ -572,8 +565,8 @@ where
         gen_set
     }
     // Get permutation p_bar such that p.apply(base) == p_bar.apply(base)
-    fn bar_func(&self, p: &WordPermutation<P>) -> Option<WordPermutation<P>> {
-        let record = &self.chain[self.current_pos];
+    fn bar_func(&self, p: &WordPermutation<P>, level: usize) -> Option<WordPermutation<P>> {
+        let record = &self.chain[level];
         let x = p.apply(record.base);
         if !record.transversal.contains_key(&x) {
             return None;
@@ -588,7 +581,7 @@ where
                     record.base,
                     x,
                     &self.action,
-                    self.max_depths[self.current_pos],
+                    self.max_depths[level],
                 )
                 .unwrap()
             })
