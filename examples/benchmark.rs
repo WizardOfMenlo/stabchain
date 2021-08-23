@@ -74,7 +74,7 @@ fn bench<S: BuilderStrategy<DefaultPermutation> + Clone>(lib: Vec<DecoratedGroup
     }
     let duration = start.elapsed();
 
-    progress_bar.finish_with_message(&format!("Finished in {:?}", duration));
+    progress_bar.finish_with_message(format!("Finished in {:?}", duration));
 
     println!("Finished in {:?}", duration);
 }
