@@ -3,7 +3,6 @@ use crate::group::orbit::abstraction::FactoredTransversalResolver;
 use crate::group::orbit::transversal::shallow_transversal::{
     representative_raw_as_word, shallow_transversal,
 };
-use crate::group::random_perm::RandPerm;
 use crate::group::stabchain::element_testing::residue_as_words_from_words;
 use crate::group::stabchain::{base::selectors::BaseSelector, order, Stabchain, StabchainRecord};
 use crate::group::utils::{random_subproduct_word_full, random_subproduct_word_subset};
@@ -16,6 +15,7 @@ use num::BigUint;
 use rand::rngs::ThreadRng;
 use rand::{seq::IteratorRandom, Rng};
 use std::cell::RefCell;
+use std::cmp::max;
 use std::collections::hash_map::Entry;
 use std::collections::VecDeque;
 use std::iter::{repeat_with, Iterator};
@@ -32,7 +32,6 @@ where
     R: rand::Rng,
     P: Permutation,
 {
-    current_pos: usize,
     chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>>,
     selector: S,
     action: A,
@@ -57,7 +56,6 @@ where
     pub fn new(selector: S, action: A, params: RandomAlgoParameters<R>) -> Self {
         let (constants, random) = params.consts();
         StabchainBuilderRandomSTrees {
-            current_pos: 0,
             chain: Vec::new(),
             selector,
             action,
@@ -73,8 +71,9 @@ where
 
     fn current_chain(
         &self,
+        level: usize,
     ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
-        self.chain.iter().skip(self.current_pos)
+        self.chain.iter().skip(level)
     }
 
     fn full_chain(
@@ -118,24 +117,31 @@ where
         self.max_depths.push(*initial_depth.values().max().unwrap());
         self.depths.push(initial_depth);
         self.chain.push(initial_record);
-        self.sgc();
+        // We start at position zero
+        let mut invoke_opt = Some(0);
+        // Repeat until the SGT passes, i.e gives no level invoke on
+        while let Some(invoke_level) = invoke_opt {
+            // If sgc is passed, then we also need to pass the strong generating test
+            invoke_opt = match self.sgc(invoke_level) {
+                Some(invoke_level) => Some(invoke_level),
+                None => self.sgt(),
+            }
+        }
     }
 
     /// Generate a permutation that is with high probably a schrier generator for the current subgroup.
     fn random_schrier_generators_as_word(
         &self,
+        level: usize,
         subproducts: usize,
         coset_representatives: usize,
         gens: &[P],
         bar_func: bool,
     ) -> Vec<WordPermutation<P>> {
-        debug!(
-            level = self.current_pos,
-            "Random generation of Schrier Generators"
-        );
+        debug!(level = level, "Random generation of Schrier Generators");
         // Sum of all the depths in the tree.
         let t: usize = self.max_depths.iter().sum();
-        let record = &self.chain[self.current_pos];
+        let record = &self.chain[level];
         let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0..1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
         let subproduct_w1_iter =
@@ -163,7 +169,7 @@ where
                                     record.base,
                                     *point,
                                     &self.action,
-                                    self.max_depths[self.current_pos],
+                                    self.max_depths[level],
                                 )
                                 .unwrap()
                             })
@@ -185,7 +191,7 @@ where
                                     record.base,
                                     point,
                                     &self.action,
-                                    self.max_depths[self.current_pos],
+                                    self.max_depths[level],
                                 )
                                 .unwrap()
                             })
@@ -203,7 +209,7 @@ where
             let mut bar_gens = Vec::with_capacity(gens.len());
             // Drain to avoid reallocation for words.
             for mut gw in gens.drain(0..gens.len() - 1) {
-                let gw_bar_opt = self.bar_func(&gw);
+                let gw_bar_opt = self.bar_func(&gw, level);
                 // We need to filter any cases where the bar function can fail.
                 if let Some(mut gw_bar) = gw_bar_opt {
                     gw_bar.inv_lazy_mut();
@@ -236,7 +242,7 @@ where
         // We now check if a new shallow transversal is required, or the new one will not exceed the depth.
         let mut recompute_transversal = false;
         // First partion points at maximum depth and those not.
-        let max_depth = self.max_depths[self.current_pos];
+        let max_depth = self.max_depths[level];
         let (max_depth_points, mut to_check): (VecDeque<usize>, VecDeque<usize>) = self.depths
             [level]
             .keys()
@@ -319,21 +325,13 @@ where
         self.check_transversal_augmentation(&p, level, false);
     }
 
-    fn sgc(&mut self) {
-        trace!(
-            level = self.current_pos,
-            "Strong Generating Set Construction"
-        );
-        let record = self.chain[self.current_pos].clone();
-        //Number of base points than are in the current orbit.
-        let b_star = self
-            .base
-            .iter()
-            .filter(|&b| record.transversal.contains_key(b))
-            .count();
-        let gens = self.union_gen_set();
+    fn sgc(&mut self, level: usize) -> Option<usize> {
+        trace!(level = level, "Strong Generating Set Construction");
+        // Take union of generating sets.
+        let gens = self.union_gen_set(level);
         //Random products of the form gw
         let random_gens = self.random_schrier_generators_as_word(
+            level,
             self.constants.c1,
             self.constants.c2,
             &gens[..],
@@ -343,34 +341,44 @@ where
         let mut all_discarded = true;
         //If the element we are testing is the first schrier generator tested.
         let mut first_test = true;
+        // Level to invoke SGC on next
+        let mut invoke_level = 0;
         debug!(generators = random_gens.len(), "Sifting generators");
+        // Sift all the random schrier generators.
         for h in random_gens {
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.full_chain(), &h);
             if self.sifted(drop_out_level) {
                 //Pick the points that should be evaluated. This is a heuristic to speed up run times.
-                let evaluated_points: Vec<A::OrbitT> =
-                    if record.transversal.len() <= self.constants.orbit_bound {
+                let evaluated_points: Vec<A::OrbitT> = {
+                    let transversal = &self.chain[level].transversal;
+                    if transversal.len() <= self.constants.orbit_bound {
                         //Evaluate on all points of the current orbit.
-                        record.transversal.keys().cloned().collect()
+                        transversal.keys().cloned().collect()
                     } else if self.base.len() <= self.constants.base_bound {
                         //Evaluate on BASE_BOUND randomly chosen points.
-                        record
-                            .transversal
+                        transversal
                             .keys()
                             .choose_multiple(&mut *self.rng.borrow_mut(), self.constants.base_bound)
                             .into_iter()
                             .cloned()
                             .collect()
                     } else {
+                        //Number of base points than are in the current orbit.
+                        let b_star = self
+                            .base
+                            .iter()
+                            .filter(|&b| transversal.contains_key(b))
+                            .count();
                         //Evaluate on b_star randomly chosen points.
-                        record
-                            .transversal
+
+                        transversal
                             .keys()
                             .choose_multiple(&mut *self.rng.borrow_mut(), b_star)
                             .into_iter()
                             .cloned()
                             .collect()
-                    };
+                    }
+                };
                 //We have found a residue that has not sifted through, so we add a new base point with this point as a generator.
                 if !h_residue.id_on_iter(evaluated_points) {
                     //Not all permutations have been discarded
@@ -378,6 +386,8 @@ where
                     let h_star = h_residue.evaluate();
                     //Add a new base point, along with a new record for that base point.
                     self.add_new_record(h_star);
+                    // Up to date at highest level of chain.
+                    invoke_level = self.chain.len() - 1;
                 } else if self.constants.quick_test && first_test {
                     //The quick test is only sifting one generator, and early exit if this sifts through.
                     break;
@@ -390,45 +400,45 @@ where
                 debug!(perm = %h_star, level = drop_out_level, "Permutation not sifting through");
                 //Add as a generator and update the transversal.
                 self.check_transversal_augmentation_from_level(drop_out_level, h_star);
-                //Consider the chain now up to date below drop out level
-                self.current_pos = drop_out_level;
+                //Set invoke level to drop out level, unless it's already deeper
+                invoke_level = max(drop_out_level, invoke_level);
             }
             //This is now not the first element to be tested.
             first_test = false;
         }
         if all_discarded {
-            debug!(level = self.current_pos, "All generators discarded");
+            debug!(level = level, "All generators discarded");
             // SGC terminates when we are up to date below position 0
-            if self.current_pos == 0 {
-                // Different strong generating tests depending on if we know the size or not.
-                match self.constants.order.clone() {
-                    Some(known_order) => {
-                        self.sgt_size(known_order);
-                    }
-                    None => self.sgt(),
-                }
-                return;
+            if level == 0 {
+                None
             } else {
-                self.current_pos -= 1;
+                // Otherwise proceed at level - 1
+                Some(level - 1)
             }
         // Check the order for an early exit, as we know that something new has been added.
         } else if self.constants.order.is_some()
             && self.constants.order == Some(order(self.full_chain()))
         {
-            return;
+            None
+        } else {
+            // Continue with SGC.
+            Some(invoke_level)
         }
-        // Continue with SGC.
-        self.sgc();
+    }
+
+    fn sgt(&mut self) -> Option<usize> {
+        // Different strong generating tests depending on if we know the size or not.
+        match self.constants.order.clone() {
+            Some(known_order) => self.sgt_size(known_order),
+            None => self.sgt_probabalistic(),
+        }
     }
 
     /// Test that the current strong generating set is indeed a strong generating set, returning true if it (probably) is.
-    fn sgt(&mut self) {
+    fn sgt_probabalistic(&mut self) -> Option<usize> {
         trace!("Strong Generating Test");
-        let original_position = self.current_pos;
-        //Should be at the top of the chain, I think.
-        debug_assert!(self.current_pos == 0);
         //The union of the generator sets in the chain to this point.
-        let gens = self.union_gen_set();
+        let gens = self.union_gen_set(0);
         //Create an iterator that first has the original generators, and then the random schrier generators.
         let products: Vec<WordPermutation<P>> = self
             .original_generators
@@ -436,6 +446,7 @@ where
             .iter()
             .map(|p| WordPermutation::from_perm(p))
             .chain(self.random_schrier_generators_as_word(
+                0,
                 self.constants.c3,
                 self.constants.c4,
                 &gens[..],
@@ -446,13 +457,11 @@ where
         for p in products {
             //If we have found a non-trivial element, then invoke the sgc at the specified level.
             if let Some(sgc_invoke_level) = self.sgt_test(&p) {
-                self.current_pos = sgc_invoke_level;
                 debug!(level = sgc_invoke_level, "SGT failed");
-                self.sgc();
-                break;
+                return Some(sgc_invoke_level);
             };
         }
-        self.current_pos = original_position;
+        None
     }
 
     fn sgt_test(&mut self, p: &WordPermutation<P>) -> Option<usize> {
@@ -466,7 +475,6 @@ where
             } else {
                 //Otherwise add it to the generators at that level, and invoke the SGC at that level.
                 self.check_transversal_augmentation_from_level(drop_out_level, collapsed_residue);
-                self.current_pos = drop_out_level;
             }
             Some(drop_out_level)
         } else {
@@ -475,42 +483,52 @@ where
     }
 
     /// Test that the current strong generating set is indeed a strong generating set using the size, returning true if it is.
-    fn sgt_size(&mut self, size: BigUint) {
+    fn sgt_size(&mut self, size: BigUint) -> Option<usize> {
         trace!("Strong Generating Test");
-        //Should be at the top of the chain, I think.
-        self.current_pos = 0;
         if size == order(self.chain.iter()) {
-            return;
+            return None;
         }
         //The union of the generator sets in the chain to this point.
-        let mut gens = self.union_gen_set();
+        let mut gens = self.union_gen_set(0);
+        let mut products: VecDeque<_> = self
+            .original_generators
+            .generators()
+            .iter()
+            .map(|p| WordPermutation::from_perm(p))
+            .collect();
         gens.extend(self.original_generators.generators().iter().cloned());
-        // copy the rng to supply to the perm generator
-        let mut rng = self.rng.borrow().clone();
-        //Create an iterator that first has the original generators, and then the random schrier generators.
-        let mut random = RandPerm::new(11, &Group::new(&gens), 50, &mut rng);
-        //Sift the original generators, and all products of the form g*w_{1,2}.
+        //Sift the original generators, and products of the form g*w_{1,2}.
         while size != order(self.chain.iter()) {
-            let p = WordPermutation::from_perm(&random.random_permutation());
+            while products.is_empty() {
+                products.extend(self.random_schrier_generators_as_word(
+                    0,
+                    self.constants.c3,
+                    self.constants.c4,
+                    &gens[..],
+                    false,
+                ))
+            }
+            let p = products.pop_front().unwrap();
             let (drop_out_level, residue) = residue_as_words_from_words(self.full_chain(), &p);
             if !residue.id_on_iter(0..self.n) {
                 let invoke_level = drop_out_level;
                 let collapsed_residue = residue.evaluate();
                 //If this point sifted through but isn't trivial, then we need a new record and base point.
+                gens.push(collapsed_residue.clone());
                 if self.sifted(drop_out_level) {
                     self.add_new_record(collapsed_residue);
                 } else {
                     //Otherwise add it to the generators at that level, and invoke the SGC at that level.
                     self.check_transversal_augmentation_from_level(invoke_level, collapsed_residue);
-                    self.current_pos = drop_out_level;
                 }
             }
         }
+        None
     }
 
     /// Add a new level to the chain, starting with this permutation.
     fn add_new_record(&mut self, gen: P) {
-        let moved_point = self.selector.moved_point(&gen, self.current_pos);
+        let moved_point = self.selector.moved_point(&gen, self.base.len());
         debug!(perm = %gen, moved_point = moved_point, "Extending chain");
         let mut gens = Group::new(&[gen]);
         let (transversal, depth) = shallow_transversal(
@@ -524,7 +542,6 @@ where
         self.max_depths.push(*depth.values().max().unwrap());
         self.depths.push(depth);
         self.chain.push(initial_record);
-        self.current_pos = self.base.len() - 1;
     }
 
     //Utility function to check if a given drop out level is the bottom of the chain.
@@ -533,10 +550,10 @@ where
     }
 
     // Take the union of the generating sets from current position onwards.
-    fn union_gen_set(&self) -> Vec<P> {
+    fn union_gen_set(&self, level: usize) -> Vec<P> {
         let mut gen_set = Vec::new();
         for p in self
-            .current_chain()
+            .current_chain(level)
             .flat_map(|record| record.gens.generators())
         {
             if !gen_set.contains(p) {
@@ -546,8 +563,8 @@ where
         gen_set
     }
     // Get permutation p_bar such that p.apply(base) == p_bar.apply(base)
-    fn bar_func(&self, p: &WordPermutation<P>) -> Option<WordPermutation<P>> {
-        let record = &self.chain[self.current_pos];
+    fn bar_func(&self, p: &WordPermutation<P>, level: usize) -> Option<WordPermutation<P>> {
+        let record = &self.chain[level];
         let x = p.apply(record.base);
         if !record.transversal.contains_key(&x) {
             return None;
@@ -562,7 +579,7 @@ where
                     record.base,
                     x,
                     &self.action,
-                    self.max_depths[self.current_pos],
+                    self.max_depths[level],
                 )
                 .unwrap()
             })
