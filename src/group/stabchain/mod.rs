@@ -4,6 +4,7 @@ pub mod base;
 pub mod base_change_builder;
 pub mod builder;
 pub mod element_testing;
+pub mod stabtree;
 
 use crate::group::Group;
 use crate::perm::actions::SimpleApplication;
