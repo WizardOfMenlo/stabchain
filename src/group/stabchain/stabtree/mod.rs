@@ -84,7 +84,8 @@ where
         StabTree { roots, nodes, size }
     }
 
-    fn base<'a>(
+    /// Create an iterator that will the chain resulting from a given base, while the base is valid.
+    fn chain_from_base<'a>(
         &'a self,
         base: &'a [A::OrbitT],
     ) -> impl Iterator<Item = &'a StabTreeRecord<P, FactoredTransversalResolver<A>, A>> {
@@ -112,7 +113,7 @@ where
         base: &[A::OrbitT],
     ) -> Option<Stabchain<P, FactoredTransversalResolver<A>, A>> {
         let chain = self
-            .base(base)
+            .chain_from_base(base)
             .map(|tree_record| tree_record.into())
             .collect();
         let stabchain = Stabchain { chain };
