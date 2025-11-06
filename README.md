@@ -1,11 +1,6 @@
 # stabchain
-![Continuous integration](https://github.com/WizardOfMenlo/stabchain/workflows/Continuous%20integration/badge.svg)
-![Benchmark](https://github.com/WizardOfMenlo/stabchain/workflows/Benchmark/badge.svg)
-![Security audit](https://github.com/WizardOfMenlo/stabchain/workflows/Security%20audit/badge.svg)
-![Full test suite Naive](https://github.com/WizardOfMenlo/stabchain/workflows/Full%20test%20suite%20Naive/badge.svg)
-![Full test suite IFT](https://github.com/WizardOfMenlo/stabchain/workflows/Full%20test%20suite%20IFT/badge.svg)
-![Full test suite Random](https://github.com/WizardOfMenlo/stabchain/workflows/Full%20test%20suite%20Random/badge.svg)
-![Full test suite Shallow](https://github.com/WizardOfMenlo/stabchain/workflows/Full%20test%20suite%20Shallow/badge.svg)
+[![Continuous integration](https://github.com/WizardOfMenlo/stabchain/workflows/Continuous%20integration/badge.svg)](https://github.com/WizardOfMenlo/stabchain/actions/workflows/rust.yml)
+[![Benchmark](https://github.com/WizardOfMenlo/stabchain/workflows/Benchmark/badge.svg)](https://github.com/WizardOfMenlo/stabchain/actions/workflows/bench_pull.yml)
 [![codecov](https://codecov.io/gh/WizardOfMenlo/stabchain/branch/master/graph/badge.svg)](https://codecov.io/gh/WizardOfMenlo/stabchain)
 
 An implementation of fundamental group theory algorithms in Rust
