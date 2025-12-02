@@ -1,5 +1,7 @@
-use super::PermBuilder;
-use crate::perm::Permutation;
+use {
+    super::PermBuilder,
+    crate::perm::Permutation,
+};
 
 #[derive(Debug, Clone)]
 pub struct Pow<Perm> {
@@ -9,7 +11,7 @@ pub struct Pow<Perm> {
 
 impl<Perm> Pow<Perm> {
     pub(crate) fn new(perm: Perm, power: isize) -> Self {
-        Pow { perm, power }
+        Self { perm, power }
     }
 
     // TODO: This is not really the conjugate I just wanted a nice name
@@ -74,8 +76,14 @@ pub fn pow<P: Permutation>(perm: P, n: usize) -> P {
 
 #[cfg(test)]
 mod tests {
-    use crate::perm::{builder::PermBuilder, DefaultPermutation, Permutation};
-    use std::iter::FromIterator;
+    use {
+        crate::perm::{
+            builder::PermBuilder,
+            DefaultPermutation,
+            Permutation,
+        },
+        std::iter::FromIterator,
+    };
     #[test]
     fn simple_exponentiation() {
         let perm = DefaultPermutation::from_images(&[1, 2, 3, 4, 5, 0]);
@@ -114,7 +122,7 @@ mod tests {
         use crate::perm::builder::join::MultiJoin;
         let perm = DefaultPermutation::from_images(&[1, 3, 2, 4, 5, 0]);
         let lazy_pow = perm.build_pow(4);
-        let lazy_mult = MultiJoin::from_iter(std::iter::repeat(perm.clone()).take(4));
+        let lazy_mult = MultiJoin::from_iter(std::iter::repeat_n(perm.clone(), 4));
         let full = perm.multiply(&perm).multiply(&perm).multiply(&perm);
 
         for i in 0..5 {
@@ -129,7 +137,7 @@ mod tests {
         let perm_inv = DefaultPermutation::from_images(&[1, 3, 2, 4, 5, 0]);
         let perm = perm_inv.inv();
         let lazy_pow = perm_inv.build_pow(-4);
-        let lazy_mult = MultiJoin::from_iter(std::iter::repeat(perm.clone()).take(4));
+        let lazy_mult = MultiJoin::from_iter(std::iter::repeat_n(perm.clone(), 4));
         let full = perm.multiply(&perm).multiply(&perm).multiply(&perm);
 
         for i in 0..5 {

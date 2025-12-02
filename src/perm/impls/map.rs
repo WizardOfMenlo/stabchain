@@ -1,8 +1,10 @@
 use crate::perm::Permutation;
 // BTree is used since it supports hash
-use std::collections::BTreeMap;
-use std::iter::FromIterator;
-use std::rc::Rc;
+use std::{
+    collections::BTreeMap,
+    iter::FromIterator,
+    rc::Rc,
+};
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct MapPermutation {
@@ -16,18 +18,13 @@ impl MapPermutation {
     }
 
     fn from_vec_unchecked(images: &[usize]) -> Self {
-        images
-            .iter()
-            .copied()
-            .enumerate()
-            .filter(|(i, o)| i != o)
-            .collect()
+        images.iter().copied().enumerate().filter(|(i, o)| i != o).collect()
     }
 }
 
 impl Permutation for MapPermutation {
     fn id() -> Self {
-        MapPermutation {
+        Self {
             images: Rc::new(BTreeMap::new()),
         }
     }
@@ -60,10 +57,7 @@ impl Permutation for MapPermutation {
             .filter(|(i, _)| !self.images.contains_key(*i))
             .map(|(&i, &o)| (i, o));
 
-        first_changes
-            .chain(second_changes)
-            .filter(|(i, o)| i != o)
-            .collect()
+        first_changes.chain(second_changes).filter(|(i, o)| i != o).collect()
     }
 
     fn inv(&self) -> Self {
@@ -75,16 +69,13 @@ impl Permutation for MapPermutation {
     }
 
     fn shift(&self, pos: usize) -> Self {
-        self.images
-            .iter()
-            .map(|(i, o)| (i + pos, o + pos))
-            .collect()
+        self.images.iter().map(|(i, o)| (i + pos, o + pos)).collect()
     }
 }
 
 impl FromIterator<(usize, usize)> for MapPermutation {
     fn from_iter<T: IntoIterator<Item = (usize, usize)>>(iter: T) -> Self {
-        MapPermutation {
+        Self {
             images: Rc::new(iter.into_iter().collect()),
         }
     }

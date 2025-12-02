@@ -1,15 +1,28 @@
 //! Traits for creating chains
 
-use super::Stabchain;
-use crate::group::orbit::abstraction::{
-    FactoredTransversalResolver, SimpleTransversalResolver, TransversalResolver,
+use {
+    super::Stabchain,
+    crate::{
+        group::{
+            orbit::abstraction::{
+                FactoredTransversalResolver,
+                SimpleTransversalResolver,
+                TransversalResolver,
+            },
+            stabchain::base::selectors::BaseSelector,
+            Group,
+        },
+        perm::{
+            Action,
+            Permutation,
+        },
+    },
 };
-use crate::group::stabchain::base::selectors::BaseSelector;
-use crate::group::Group;
-use crate::perm::{Action, Permutation};
 
-use rand::rngs::ThreadRng;
-use rand::Rng;
+use rand::{
+    rngs::ThreadRng,
+    Rng,
+};
 
 use std::fmt::Debug;
 
@@ -66,7 +79,7 @@ pub struct NaiveBuilderStrategy<A, S> {
 impl<A, S> NaiveBuilderStrategy<A, S> {
     /// Create the strategy
     pub fn new(action: A, selector: S) -> Self {
-        NaiveBuilderStrategy { selector, action }
+        Self { selector, action }
     }
 }
 
@@ -96,7 +109,7 @@ pub struct IftBuilderStrategy<A, S> {
 impl<A, S> IftBuilderStrategy<A, S> {
     /// Create the strategy
     pub fn new(action: A, selector: S) -> Self {
-        IftBuilderStrategy { selector, action }
+        Self { selector, action }
     }
 }
 
@@ -123,10 +136,7 @@ use random::parameters::RandomAlgoParameters;
 /// This should be faster than the naive and IFT methods, but is not deterministic.
 /// This should not be used, as the shallow version is faster and more reliable.
 #[derive(Debug, Clone)]
-#[deprecated(
-    since = "0.1.1",
-    note = "please use `RandomBuilderStrategyShallow` instead"
-)]
+#[deprecated(since = "0.1.1", note = "please use `RandomBuilderStrategyShallow` instead")]
 pub struct RandomBuilderStrategyNaive<A, S, R = ThreadRng> {
     selector: S,
     action: A,
@@ -136,7 +146,7 @@ pub struct RandomBuilderStrategyNaive<A, S, R = ThreadRng> {
 #[allow(deprecated)]
 impl<A, S> RandomBuilderStrategyNaive<A, S> {
     pub fn new(action: A, selector: S) -> Self {
-        RandomBuilderStrategyNaive {
+        Self {
             selector,
             action,
             params: random::parameters::RandomAlgoParameters::default(),
@@ -147,7 +157,7 @@ impl<A, S> RandomBuilderStrategyNaive<A, S> {
 #[allow(deprecated)]
 impl<A, S, R> RandomBuilderStrategyNaive<A, S, R> {
     pub fn new_with_params(action: A, selector: S, params: RandomAlgoParameters<R>) -> Self {
-        RandomBuilderStrategyNaive {
+        Self {
             selector,
             action,
             params,
@@ -183,7 +193,7 @@ pub struct RandomBuilderStrategyShallow<A, S, R = ThreadRng> {
 
 impl<A, S> RandomBuilderStrategyShallow<A, S> {
     pub fn new(action: A, selector: S) -> Self {
-        RandomBuilderStrategyShallow {
+        Self {
             action,
             selector,
             params: RandomAlgoParameters::default(),
@@ -193,7 +203,7 @@ impl<A, S> RandomBuilderStrategyShallow<A, S> {
 
 impl<A, S, R> RandomBuilderStrategyShallow<A, S, R> {
     pub fn new_with_params(action: A, selector: S, params: RandomAlgoParameters<R>) -> Self {
-        RandomBuilderStrategyShallow {
+        Self {
             selector,
             action,
             params,
@@ -213,10 +223,6 @@ where
     type BuilderT = random::random_strees::StabchainBuilderRandomSTrees<P, S, A, R>;
 
     fn make_builder(self) -> Self::BuilderT {
-        random::random_strees::StabchainBuilderRandomSTrees::new(
-            self.selector,
-            self.action,
-            self.params,
-        )
+        random::random_strees::StabchainBuilderRandomSTrees::new(self.selector, self.action, self.params)
     }
 }

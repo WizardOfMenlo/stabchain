@@ -1,9 +1,21 @@
 //! Traits for creating chains
 
-use super::Stabchain;
-use crate::group::orbit::abstraction::{FactoredTransversalResolver, TransversalResolver};
-use crate::group::stabchain::base::Base;
-use crate::perm::{Action, Permutation};
+use {
+    super::Stabchain,
+    crate::{
+        group::{
+            orbit::abstraction::{
+                FactoredTransversalResolver,
+                TransversalResolver,
+            },
+            stabchain::base::Base,
+        },
+        perm::{
+            Action,
+            Permutation,
+        },
+    },
+};
 
 mod random;
 
@@ -55,7 +67,7 @@ pub struct RandomBaseChangeStrategy<A> {
 impl<A> RandomBaseChangeStrategy<A> {
     /// Create the strategy
     pub fn new(action: A) -> Self {
-        RandomBaseChangeStrategy { action }
+        Self { action }
     }
 }
 

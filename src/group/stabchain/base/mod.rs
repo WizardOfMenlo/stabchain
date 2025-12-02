@@ -1,7 +1,11 @@
 pub mod selectors;
 
-use crate::perm::actions::SimpleApplication;
-use crate::perm::{Action, DefaultPermutation, Permutation};
+use crate::perm::{
+    actions::SimpleApplication,
+    Action,
+    DefaultPermutation,
+    Permutation,
+};
 #[derive(Clone)]
 pub struct Base<P = DefaultPermutation, A = SimpleApplication<P>>
 where
@@ -55,13 +59,15 @@ where
                         .map(move |i| (i.clone(), self.action.apply(&perm, i.clone()))),
                 )
             })
-            .flat_map(|(p, mut it)| {
-                if it.all(|pair| pair.0 == pair.1) {
-                    Some(p)
-                } else {
-                    None
-                }
-            })
+            .flat_map(
+                |(p, mut it)| {
+                    if it.all(|pair| pair.0 == pair.1) {
+                        Some(p)
+                    } else {
+                        None
+                    }
+                },
+            )
             .next()
     }
 

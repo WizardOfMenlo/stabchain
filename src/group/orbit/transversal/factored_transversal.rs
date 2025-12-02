@@ -1,13 +1,28 @@
 //! Transversal using a Schrier Vector approach to save memory over standard
 
-use super::skeleton::TransversalSkeleton;
-use crate::group::orbit::transversal::Transversal;
-use crate::group::Group;
-use crate::perm::actions::SimpleApplication;
-use crate::perm::{Action, DefaultPermutation, Permutation};
+use {
+    super::skeleton::TransversalSkeleton,
+    crate::{
+        group::{
+            orbit::transversal::Transversal,
+            Group,
+        },
+        perm::{
+            actions::SimpleApplication,
+            Action,
+            DefaultPermutation,
+            Permutation,
+        },
+    },
+};
 
-use crate::DetHashMap;
-use std::collections::{HashMap, VecDeque};
+use {
+    crate::DetHashMap,
+    std::collections::{
+        HashMap,
+        VecDeque,
+    },
+};
 
 use crate::group::orbit::abstraction::FactoredTransversalResolver;
 
@@ -44,6 +59,18 @@ where
         debug_assert!(strat.apply(&rep.inv(), base) == point);
         Some(rep.inv())
     }
+    let mut orbit_point = point.clone();
+    let mut rep = P::id();
+    // Move along the orbit till we reach a representative that the base moves to the point.
+    while orbit_point != base {
+        let g_inv = transversal.get(&orbit_point).unwrap();
+        rep = rep.multiply(g_inv);
+        orbit_point = strat.apply(g_inv, orbit_point);
+    }
+    // Invert at the end, as the inverses are used.
+    // If we want fgh, then we can instead do (h^-1, g^-1, f^-1)^-1.
+    debug_assert!(strat.apply(&rep.inv(), base) == point);
+    Some(rep.inv())
 }
 
 #[deprecated(since = "0.1.1")]
@@ -97,7 +124,7 @@ where
     /// let fc = FactoredTransversal::from_generators(1, &[DefaultPermutation::from_images(&[1, 0])]);
     ///```
     pub fn from_generators(base: usize, gens: &[P]) -> Self {
-        FactoredTransversal::new(&Group::new(gens), base)
+        Self::new(&Group::new(gens), base)
     }
 }
 
@@ -108,7 +135,7 @@ where
 {
     /// Build a factored transversal using a predefined action
     pub fn new_with_action(g: &Group<P>, base: A::OrbitT, strat: &A) -> Self {
-        FactoredTransversal::from_raw(
+        Self::from_raw(
             base.clone(),
             factored_transversal(g, base, strat),
             FactoredTransversalResolver(strat.clone()),
@@ -122,11 +149,7 @@ where
     P: fmt::Display + Permutation,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "[FactoredTransversal: base := {}, elements := {{",
-            self.base() + 1,
-        )?;
+        write!(f, "[FactoredTransversal: base := {}, elements := {{", self.base() + 1,)?;
 
         for (orbit, repr) in self.raw_elements() {
             write!(f, "({}, {}) ", orbit + 1, repr)?
@@ -137,11 +160,7 @@ where
 }
 
 /// Computes the factored transversal for a Group
-pub fn factored_transversal<P, A>(
-    g: &Group<P>,
-    base: A::OrbitT,
-    strat: &A,
-) -> DetHashMap<A::OrbitT, P>
+pub fn factored_transversal<P, A>(g: &Group<P>, base: A::OrbitT, strat: &A) -> DetHashMap<A::OrbitT, P>
 where
     P: Permutation,
     A: Action<P>,
@@ -154,9 +173,8 @@ where
     let mut to_traverse = VecDeque::new();
     to_traverse.push_back(base);
     // While there are still elements of the orbit unused.
-    while !to_traverse.is_empty() {
-        //Take an unused element.
-        let delta = to_traverse.pop_front().unwrap();
+    //Take an unused element.
+    while let Some(delta) = to_traverse.pop_front() {
         for g in gens {
             let point = strat.apply(g, delta.clone());
 
@@ -172,11 +190,7 @@ where
 }
 
 /// Computes the factored transversal for a Group. Use optmization on complete orbits
-pub fn factored_transversal_complete_opt<P, A>(
-    g: &Group<P>,
-    base: A::OrbitT,
-    strat: &A,
-) -> DetHashMap<A::OrbitT, P>
+pub fn factored_transversal_complete_opt<P, A>(g: &Group<P>, base: A::OrbitT, strat: &A) -> DetHashMap<A::OrbitT, P>
 where
     P: Permutation,
     A: Action<P>,
@@ -190,9 +204,8 @@ where
     let mut to_traverse = VecDeque::new();
     to_traverse.push_back(base);
     // While there are still elements of the orbit unused.
-    while !to_traverse.is_empty() {
+    while let Some(delta) = to_traverse.pop_front() {
         //Take an unused element.
-        let delta = to_traverse.pop_front().unwrap();
         for g in gens {
             let point = strat.apply(g, delta.clone());
 
@@ -213,8 +226,16 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{FactoredTransversal, Transversal};
-    use crate::perm::{DefaultPermutation, Permutation};
+    use {
+        super::{
+            FactoredTransversal,
+            Transversal,
+        },
+        crate::perm::{
+            DefaultPermutation,
+            Permutation,
+        },
+    };
 
     /// Test the factored transversal calculation for a generating set with multiple generators.
     #[test]

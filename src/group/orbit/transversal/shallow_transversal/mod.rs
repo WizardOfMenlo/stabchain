@@ -1,14 +1,25 @@
 //! Collection of functions that will compute shallow(er) transversals.
 
-use crate::group::orbit::orbit_complete_opt;
-use crate::group::random_perm::RandPerm;
-use crate::group::{Action, Group};
-use crate::perm::impls::word::WordPermutation;
-use crate::perm::Permutation;
-use crate::DetHashMap;
-use rand::seq::SliceRandom;
-use rand::Rng;
-use std::collections::VecDeque;
+use {
+    crate::{
+        group::{
+            orbit::orbit_complete_opt,
+            random_perm::RandPerm,
+            Action,
+            Group,
+        },
+        perm::{
+            impls::word::WordPermutation,
+            Permutation,
+        },
+        DetHashMap,
+    },
+    rand::{
+        seq::SliceRandom,
+        Rng,
+    },
+    std::collections::VecDeque,
+};
 
 mod cube;
 
@@ -37,9 +48,8 @@ where
     let mut to_traverse = VecDeque::new();
     to_traverse.push_back(base.clone());
     // While there are still elements of the orbit unused.
-    'element_checking: while !to_traverse.is_empty() {
-        //Take an unused element.
-        let delta = to_traverse.pop_front().unwrap();
+    //Take an unused element.
+    'element_checking: while let Some(delta) = to_traverse.pop_front() {
         for g in gens {
             let point = strat.apply(g, delta.clone());
 
@@ -143,11 +153,18 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::group::orbit::transversal::factored_transversal::representative_raw;
-    use crate::perm::actions::SimpleApplication;
-    use crate::perm::export::CyclePermutation;
-    use crate::perm::{DefaultPermutation, Permutation};
+    use {
+        super::*,
+        crate::{
+            group::orbit::transversal::factored_transversal::representative_raw,
+            perm::{
+                actions::SimpleApplication,
+                export::CyclePermutation,
+                DefaultPermutation,
+                Permutation,
+            },
+        },
+    };
 
     /// Test the factored transversal calculation for a generating set with multiple generators.
     #[test]
@@ -163,17 +180,11 @@ mod tests {
         let strat = SimpleApplication::default();
         //All points should be in the orbit (according to GAP)
         for i in 0_usize..6 {
-            let (transversal, max_depth) =
-                random_transversal_naive(&mut g.clone(), i, &strat, &mut rng, set_depth);
+            let (transversal, max_depth) = random_transversal_naive(&mut g.clone(), i, &strat, &mut rng, set_depth);
             assert!(max_depth < set_depth + 1);
             for j in 0_usize..6 {
                 assert!(transversal.contains_key(&j));
-                assert_eq!(
-                    j,
-                    representative_raw(&transversal, i, j, &strat)
-                        .unwrap()
-                        .apply(i)
-                );
+                assert_eq!(j, representative_raw(&transversal, i, j, &strat).unwrap().apply(i));
             }
         }
     }
@@ -195,12 +206,7 @@ mod tests {
             dbg!(max_depth);
             for j in 0_usize..6 {
                 assert!(transversal.contains_key(&j));
-                assert_eq!(
-                    j,
-                    representative_raw(&transversal, i, j, &strat)
-                        .unwrap()
-                        .apply(i)
-                );
+                assert_eq!(j, representative_raw(&transversal, i, j, &strat).unwrap().apply(i));
             }
         }
     }
@@ -219,25 +225,19 @@ mod tests {
         let mut rng = rand::thread_rng();
         let set_depth = 2;
         let strat = SimpleApplication::default();
-        let (fc1, max_depth) =
-            random_transversal_naive(&mut g.clone(), 5, &strat, &mut rng, set_depth);
+        let (fc1, max_depth) = random_transversal_naive(&mut g.clone(), 5, &strat, &mut rng, set_depth);
         assert_eq!(3, fc1.len());
         assert!(max_depth < set_depth + 1);
-        let (fc2, max_depth) =
-            random_transversal_naive(&mut g.clone(), 4, &strat, &mut rng, set_depth);
+        let (fc2, max_depth) = random_transversal_naive(&mut g.clone(), 4, &strat, &mut rng, set_depth);
         assert_eq!(3, fc2.len());
         assert!(max_depth < set_depth + 1);
-        let (fc3, max_depth) =
-            random_transversal_naive(&mut g.clone(), 3, &strat, &mut rng, set_depth);
+        let (fc3, max_depth) = random_transversal_naive(&mut g.clone(), 3, &strat, &mut rng, set_depth);
         assert_eq!(1, fc3.len());
         assert!(max_depth < set_depth + 1);
         for i in [0, 1, 5].iter() {
             // Tests for fc1
             assert!(fc1.contains_key(i));
-            assert_eq!(
-                *i,
-                representative_raw(&fc1, 5, *i, &strat).unwrap().apply(5)
-            );
+            assert_eq!(*i, representative_raw(&fc1, 5, *i, &strat).unwrap().apply(5));
             // Tests for fc2
             assert!(!fc2.contains_key(i));
             assert_eq!(None, representative_raw(&fc2, 4, *i, &strat));
@@ -251,10 +251,7 @@ mod tests {
             assert_eq!(None, representative_raw(&fc1, 5, *i, &strat));
             // Tests for fc2
             assert!(fc2.contains_key(i));
-            assert_eq!(
-                *i,
-                representative_raw(&fc2, 4, *i, &strat).unwrap().apply(4)
-            );
+            assert_eq!(*i, representative_raw(&fc2, 4, *i, &strat).unwrap().apply(4));
             // Tests for fc3
             assert!(!fc3.contains_key(i));
             assert_eq!(None, representative_raw(&fc3, 3, *i, &strat));
@@ -293,10 +290,7 @@ mod tests {
         for i in [0, 1, 5].iter() {
             // Tests for fc1
             assert!(fc1.contains_key(i));
-            assert_eq!(
-                *i,
-                representative_raw(&fc1, 5, *i, &strat).unwrap().apply(5)
-            );
+            assert_eq!(*i, representative_raw(&fc1, 5, *i, &strat).unwrap().apply(5));
             // Tests for fc2
             assert!(!fc2.contains_key(i));
             assert_eq!(None, representative_raw(&fc2, 4, *i, &strat));
@@ -310,10 +304,7 @@ mod tests {
             assert_eq!(None, representative_raw(&fc1, 5, *i, &strat));
             // Tests for fc2
             assert!(fc2.contains_key(i));
-            assert_eq!(
-                *i,
-                representative_raw(&fc2, 4, *i, &strat).unwrap().apply(4)
-            );
+            assert_eq!(*i, representative_raw(&fc2, 4, *i, &strat).unwrap().apply(4));
             // Tests for fc3
             assert!(!fc3.contains_key(i));
             assert_eq!(None, representative_raw(&fc3, 3, *i, &strat));

@@ -1,5 +1,11 @@
-use crate::perm::{Action, Permutation};
-use crate::{DetHashMap, DetHashSet};
+use crate::{
+    perm::{
+        Action,
+        Permutation,
+    },
+    DetHashMap,
+    DetHashSet,
+};
 
 /// Struct to represent the cube like structure from the remark after Lemma 4.4.1 from Seress
 pub(super) struct Cube<P, A>
@@ -53,7 +59,7 @@ where
                 break;
             }
         }
-        Cube {
+        Self {
             orbit,
             cube: cubes.pop().unwrap(),
             depth,
@@ -63,16 +69,24 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::group::orbit::transversal::factored_transversal::representative_raw;
-    use crate::group::Group;
-    use crate::perm::actions::SimpleApplication;
-    use crate::perm::export::CyclePermutation;
-    use crate::perm::{DefaultPermutation, Permutation};
+    use {
+        super::*,
+        crate::{
+            group::{
+                orbit::transversal::factored_transversal::representative_raw,
+                Group,
+            },
+            perm::{
+                actions::SimpleApplication,
+                export::CyclePermutation,
+                DefaultPermutation,
+                Permutation,
+            },
+        },
+    };
     #[test]
     fn test_single_generator() {
-        let gens: Vec<DefaultPermutation> =
-            vec![CyclePermutation::single_cycle(&[1_usize, 2, 3]).into()];
+        let gens: Vec<DefaultPermutation> = vec![CyclePermutation::single_cycle(&[1_usize, 2, 3]).into()];
         let g = Group::from_list(gens);
         let strat = SimpleApplication::default();
         let cube = Cube::new(1, g.generators(), &strat, None);
@@ -82,12 +96,7 @@ mod tests {
         assert!(cube.orbit.contains_key(&2));
         dbg!(cube.depth);
         for &i in cube.orbit.keys() {
-            assert_eq!(
-                i,
-                representative_raw(&cube.orbit, 1, i, &strat)
-                    .unwrap()
-                    .apply(1)
-            );
+            assert_eq!(i, representative_raw(&cube.orbit, 1, i, &strat).unwrap().apply(1));
         }
     }
 }

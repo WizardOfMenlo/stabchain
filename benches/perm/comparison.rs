@@ -1,11 +1,20 @@
-use criterion::{criterion_group, BenchmarkId, Criterion};
-use stabchain::perm::utils::random_permutation;
+use {
+    criterion::{
+        criterion_group,
+        BenchmarkId,
+        Criterion,
+    },
+    stabchain::perm::utils::random_permutation,
+};
 
 use stabchain::perm::Permutation;
 
 use stabchain::perm::impls::{
-    based::BasedPermutation, map::MapPermutation, standard::StandardPermutation,
-    sync::SyncPermutation, word::WordPermutation,
+    based::BasedPermutation,
+    map::MapPermutation,
+    standard::StandardPermutation,
+    sync::SyncPermutation,
+    word::WordPermutation,
 };
 
 const RANGE_OF_VALUES: [usize; 7] = [8, 16, 32, 64, 128, 256, 512];

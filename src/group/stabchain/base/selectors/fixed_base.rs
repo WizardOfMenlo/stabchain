@@ -14,9 +14,7 @@ where
 {
     /// Create from the given base
     pub fn new(base: &[T]) -> Self {
-        FixedBaseSelector {
-            base: base.to_vec(),
-        }
+        Self { base: base.to_vec() }
     }
 }
 
@@ -25,10 +23,7 @@ where
     T: Clone + Debug,
 {
     fn moved_point(&mut self, _: &P, pos: usize) -> T {
-        self.base
-            .get(pos)
-            .cloned()
-            .expect("Base was shorter than expected")
+        self.base.get(pos).cloned().expect("Base was shorter than expected")
     }
 }
 
@@ -36,7 +31,7 @@ use std::iter::FromIterator;
 
 impl FromIterator<usize> for FixedBaseSelector {
     fn from_iter<T: IntoIterator<Item = usize>>(iter: T) -> Self {
-        FixedBaseSelector {
+        Self {
             base: iter.into_iter().collect(),
         }
     }

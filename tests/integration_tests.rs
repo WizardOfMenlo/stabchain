@@ -1,21 +1,40 @@
-use std::fs::File;
-use std::io::BufReader;
-use std::stringify;
+use std::{
+    fs::File,
+    io::BufReader,
+    stringify,
+};
 
-use lazy_static::lazy_static;
-use rand::seq::IteratorRandom;
-use rayon::prelude::*;
+use {
+    lazy_static::lazy_static,
+    rand::seq::IteratorRandom,
+    rayon::prelude::*,
+};
 
-use stabchain::group::group_library::DecoratedGroup;
-use stabchain::group::orbit::transversal::valid_transversal;
-use stabchain::group::stabchain::{correct_stabchain_order, valid_stabchain};
-use stabchain::perm::export::ExportablePermutation;
-use stabchain::perm::impls::sync::SyncPermutation;
+use stabchain::{
+    group::{
+        group_library::DecoratedGroup,
+        orbit::transversal::valid_transversal,
+        stabchain::{
+            correct_stabchain_order,
+            valid_stabchain,
+        },
+    },
+    perm::{
+        export::ExportablePermutation,
+        impls::sync::SyncPermutation,
+    },
+};
 
-use stabchain::group::stabchain::base::selectors::*;
-use stabchain::group::stabchain::builder::random::parameters::RandomAlgoParameters;
-use stabchain::group::stabchain::builder::*;
-use stabchain::perm::actions::*;
+use stabchain::{
+    group::stabchain::{
+        base::selectors::*,
+        builder::{
+            random::parameters::RandomAlgoParameters,
+            *,
+        },
+    },
+    perm::actions::*,
+};
 
 // We use this to limit the number of groups to test
 const DEFAULT_LIMIT: usize = 1000;
@@ -41,7 +60,7 @@ fn load_libraries(zip: &str) -> Vec<DecoratedGroup<SyncPermutation>> {
 
         if let Some(p) = outpath.parent() {
             if !p.exists() {
-                std::fs::create_dir_all(&p).unwrap();
+                std::fs::create_dir_all(p).unwrap();
             }
         }
 
@@ -50,17 +69,14 @@ fn load_libraries(zip: &str) -> Vec<DecoratedGroup<SyncPermutation>> {
         paths.push(outpath);
     }
 
-    paths.iter().map(|p| group_library(p)).flatten().collect()
+    paths.iter().flat_map(|p| group_library(p)).collect()
 }
 
-fn group_library(
-    path: &std::path::Path,
-) -> impl IntoIterator<Item = DecoratedGroup<SyncPermutation>> {
+fn group_library(path: &std::path::Path) -> impl IntoIterator<Item = DecoratedGroup<SyncPermutation>> {
     let input = File::open(path).unwrap();
     let input = BufReader::new(input);
 
-    let groups: Vec<DecoratedGroup<ExportablePermutation>> =
-        serde_json::from_reader(input).unwrap();
+    let groups: Vec<DecoratedGroup<ExportablePermutation>> = serde_json::from_reader(input).unwrap();
     groups.into_iter().map(|g| g.map(SyncPermutation::from))
 }
 
@@ -82,10 +98,7 @@ where
     let groups = if *NO_LIMIT {
         GROUP_LIBRARY.to_vec()
     } else {
-        GROUP_LIBRARY
-            .iter()
-            .cloned()
-            .choose_multiple(&mut rng, *LIMIT)
+        GROUP_LIBRARY.iter().cloned().choose_multiple(&mut rng, *LIMIT)
     };
 
     let errors = groups
@@ -97,12 +110,7 @@ where
         })
         .collect::<Vec<_>>();
 
-    println!(
-        "[{}] {} errors out of {}",
-        name,
-        errors.len(),
-        number_of_tests()
-    );
+    println!("[{}] {} errors out of {}", name, errors.len(), number_of_tests());
 
     for (g, err) in &errors {
         println!("[{}] Error {:?}", name, &err);
@@ -150,9 +158,7 @@ macro_rules! test_stabilizer_on_strategy_with_order {
             general_test(
                 stringify!($short),
                 |g| {
-                    let stabilizer = g
-                        .group()
-                        .stabchain_with_strategy($strategy(g.order().clone()));
+                    let stabilizer = g.group().stabchain_with_strategy($strategy(g.order().clone()));
                     correct_stabchain_order(&stabilizer, g.order().clone())?;
                     valid_stabchain(&stabilizer)
                 },
@@ -163,19 +169,19 @@ macro_rules! test_stabilizer_on_strategy_with_order {
 }
 
 test_stabilizer_on_strategy!(
-    NaiveBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default(),),
+    NaiveBuilderStrategy::new(SimpleApplication::default(), LmpSelector,),
     test_naive_stabilizer,
     0
 );
 
 test_stabilizer_on_strategy!(
-    IftBuilderStrategy::new(SimpleApplication::default(), LmpSelector::default(),),
+    IftBuilderStrategy::new(SimpleApplication::default(), LmpSelector,),
     test_ift_stabilizer,
     0
 );
 
 test_stabilizer_on_strategy!(
-    RandomBuilderStrategyShallow::new(SimpleApplication::default(), FmpSelector::default(),),
+    RandomBuilderStrategyShallow::new(SimpleApplication::default(), FmpSelector,),
     test_random_shallow_stabilizer,
     (number_of_tests() as f32 * 0.005).floor() as usize
 );
@@ -183,7 +189,7 @@ test_stabilizer_on_strategy!(
 test_stabilizer_on_strategy!(
     RandomBuilderStrategyShallow::new_with_params(
         SimpleApplication::default(),
-        FmpSelector::default(),
+        FmpSelector,
         RandomAlgoParameters::default().quick_test(true)
     ),
     test_random_shallow_stabilizer_quick_test,
@@ -193,10 +199,8 @@ test_stabilizer_on_strategy!(
 test_stabilizer_on_strategy_with_order!(
     |order| RandomBuilderStrategyShallow::new_with_params(
         SimpleApplication::default(),
-        FmpSelector::default(),
-        RandomAlgoParameters::default()
-            .quick_test(true)
-            .order(order)
+        FmpSelector,
+        RandomAlgoParameters::default().quick_test(true).order(order)
     ),
     test_random_shallow_known_order,
     0

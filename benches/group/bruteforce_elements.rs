@@ -1,4 +1,8 @@
-use criterion::{criterion_group, BenchmarkId, Criterion};
+use criterion::{
+    criterion_group,
+    BenchmarkId,
+    Criterion,
+};
 const RANGE_OF_VALUES: [usize; 4] = [8, 16, 32, 64];
 #[allow(deprecated)]
 use stabchain::group::brute_force::group_elements;
@@ -36,8 +40,4 @@ fn brute_force_vs_orbit_cyclic(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(
-    bruteforce,
-    brute_force_vs_orbit_cyclic,
-    brute_force_vs_orbit_symmetric
-);
+criterion_group!(bruteforce, brute_force_vs_orbit_cyclic, brute_force_vs_orbit_symmetric);

@@ -1,10 +1,15 @@
 mod classic;
 mod cycles;
 
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 
-pub use classic::ClassicalPermutation;
-pub use cycles::CyclePermutation;
+pub use {
+    classic::ClassicalPermutation,
+    cycles::CyclePermutation,
+};
 
 use crate::perm::Permutation;
 
@@ -23,7 +28,7 @@ where
 
 impl From<ClassicalPermutation> for ExportablePermutation {
     fn from(perm: ClassicalPermutation) -> Self {
-        ExportablePermutation(perm.images())
+        Self(perm.images())
     }
 }
 
@@ -45,8 +50,11 @@ macro_rules! impl_all {
 }
 
 use super::impls::{
-    based::BasedPermutation, map::MapPermutation, standard::StandardPermutation,
-    sync::SyncPermutation, word::WordPermutation,
+    based::BasedPermutation,
+    map::MapPermutation,
+    standard::StandardPermutation,
+    sync::SyncPermutation,
+    word::WordPermutation,
 };
 
 impl_all!(

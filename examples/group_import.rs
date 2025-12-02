@@ -1,15 +1,32 @@
-use std::fs::{metadata, File};
-use std::io::{BufReader, BufWriter};
-use std::path::PathBuf;
+use std::{
+    fs::{
+        metadata,
+        File,
+    },
+    io::{
+        BufReader,
+        BufWriter,
+    },
+    path::PathBuf,
+};
 
-use num::BigUint;
-use serde::Deserialize;
-use structopt::StructOpt;
-use walkdir::WalkDir;
+use {
+    num::BigUint,
+    serde::Deserialize,
+    structopt::StructOpt,
+    walkdir::WalkDir,
+};
 
-use stabchain::group::group_library::DecoratedGroup;
-use stabchain::group::Group;
-use stabchain::perm::export::{ClassicalPermutation, ExportablePermutation};
+use stabchain::{
+    group::{
+        group_library::DecoratedGroup,
+        Group,
+    },
+    perm::export::{
+        ClassicalPermutation,
+        ExportablePermutation,
+    },
+};
 
 #[derive(Deserialize)]
 struct GAPGroup {

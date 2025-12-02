@@ -9,8 +9,13 @@ pub mod export;
 pub mod impls;
 pub mod utils;
 
-use std::fmt::{Debug, Display};
-use std::hash::Hash;
+use std::{
+    fmt::{
+        Debug,
+        Display,
+    },
+    hash::Hash,
+};
 
 // Very much arbitrary
 const ORDER_LIMIT: usize = 12;
@@ -28,7 +33,7 @@ pub trait Permutation: Clone + Eq + Hash + Debug + Display {
     fn images(&self) -> Vec<usize> {
         self.lmp()
             .map(|n| (0..=n).map(|i| self.apply(i)).collect())
-            .unwrap_or_else(Vec::new)
+            .unwrap_or_default()
     }
 
     /// Get the identity
@@ -50,7 +55,7 @@ pub trait Permutation: Clone + Eq + Hash + Debug + Display {
     fn pow(&self, pow: isize) -> Self {
         let perm = if pow < 0 { self.inv() } else { self.clone() };
 
-        builder::pow::pow(perm, pow.abs() as usize)
+        builder::pow::pow(perm, pow.unsigned_abs())
     }
 
     /// Shift the permutation some places on the right
@@ -126,16 +131,14 @@ macro_rules! impl_all {
 }
 
 use crate::perm::impls::{
-    based::BasedPermutation, map::MapPermutation, standard::StandardPermutation,
-    sync::SyncPermutation, word::WordPermutation,
+    based::BasedPermutation,
+    map::MapPermutation,
+    standard::StandardPermutation,
+    sync::SyncPermutation,
+    word::WordPermutation,
 };
 
-impl_all!(
-    [StandardPermutation],
-    BasedPermutation,
-    MapPermutation,
-    WordPermutation,
-);
+impl_all!([StandardPermutation], BasedPermutation, MapPermutation, WordPermutation,);
 
 impl_all!(
     [BasedPermutation],
@@ -153,12 +156,7 @@ impl_all!(
     WordPermutation,
 );
 
-impl_all!(
-    [SyncPermutation],
-    MapPermutation,
-    BasedPermutation,
-    WordPermutation,
-);
+impl_all!([SyncPermutation], MapPermutation, BasedPermutation, WordPermutation,);
 
 impl_all_conversions!(
     [WordPermutation],

@@ -1,8 +1,12 @@
 //! Utility to avoid code duplication in the context of transversals
 
-use super::Transversal;
-use crate::group::orbit::abstraction::TransversalResolver;
-use crate::perm::Action;
+use {
+    super::Transversal,
+    crate::{
+        group::orbit::abstraction::TransversalResolver,
+        perm::Action,
+    },
+};
 
 use crate::DetHashMap;
 
@@ -24,12 +28,8 @@ impl<P, R, A> TransversalSkeleton<P, R, A>
 where
     A: Action<P>,
 {
-    pub(crate) fn from_raw(
-        base: A::OrbitT,
-        transversal: DetHashMap<A::OrbitT, P>,
-        resolver: R,
-    ) -> Self {
-        TransversalSkeleton {
+    pub(crate) fn from_raw(base: A::OrbitT, transversal: DetHashMap<A::OrbitT, P>, resolver: R) -> Self {
+        Self {
             base,
             transversal,
             resolver,
@@ -55,10 +55,7 @@ where
 
     /// Get the orbit from the transversal
     fn orbit(&self) -> crate::group::orbit::Orbit<A::OrbitT> {
-        crate::group::orbit::Orbit::from_raw(
-            self.base.clone(),
-            self.transversal.keys().cloned().collect(),
-        )
+        crate::group::orbit::Orbit::from_raw(self.base.clone(), self.transversal.keys().cloned().collect())
     }
 
     /// Get the computed representative

@@ -1,26 +1,53 @@
 use super::parameters::RandomAlgoParameters;
 
-use crate::group::orbit::abstraction::{FactoredTransversalResolver, TransversalResolver};
 #[allow(deprecated)]
 use crate::group::orbit::transversal::factored_transversal::{
-    factored_transversal_complete_opt, representative_raw_as_word,
+    factored_transversal_complete_opt,
+    representative_raw_as_word,
 };
-use crate::group::stabchain::{base::selectors::BaseSelector, order, Stabchain, StabchainRecord};
-use crate::group::Group;
-use crate::perm::actions::SimpleApplication;
-use crate::perm::{Action, Permutation};
-use crate::DetHashMap;
-use itertools::Itertools;
-use rand::rngs::ThreadRng;
-use rand::seq::IteratorRandom;
-use rand::seq::SliceRandom;
-use rand::Rng;
-use std::cell::RefCell;
-use std::collections::VecDeque;
-use std::fmt::Debug;
-use std::iter::repeat_with;
+use {
+    crate::{
+        group::{
+            orbit::abstraction::{
+                FactoredTransversalResolver,
+                TransversalResolver,
+            },
+            stabchain::{
+                base::selectors::BaseSelector,
+                order,
+                Stabchain,
+                StabchainRecord,
+            },
+            Group,
+        },
+        perm::{
+            actions::SimpleApplication,
+            Action,
+            Permutation,
+        },
+        DetHashMap,
+    },
+    itertools::Itertools,
+    rand::{
+        rngs::ThreadRng,
+        seq::{
+            IteratorRandom,
+            SliceRandom,
+        },
+        Rng,
+    },
+    std::{
+        cell::RefCell,
+        collections::VecDeque,
+        fmt::Debug,
+        iter::repeat_with,
+    },
+};
 
-use tracing::{debug, trace};
+use tracing::{
+    debug,
+    trace,
+};
 
 // Helper struct, used to build the stabilizer chain
 
@@ -56,7 +83,7 @@ where
     pub fn new(selector: S, action: A, params: RandomAlgoParameters<R>) -> Self {
         let (constants, random) = params.consts();
 
-        StabchainBuilderRandom {
+        Self {
             current_pos: 0,
             chain: Vec::new(),
             selector,
@@ -69,9 +96,7 @@ where
         }
     }
 
-    fn current_chain(
-        &self,
-    ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
+    fn current_chain(&self) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
         self.chain.iter().skip(self.current_pos)
     }
 
@@ -115,10 +140,7 @@ where
         coset_representatives: usize,
         gens: &[P],
     ) -> Vec<Vec<P>> {
-        debug!(
-            level = self.current_pos,
-            "Random generation of Schrier Generators"
-        );
+        debug!(level = self.current_pos, "Random generation of Schrier Generators");
         //Sum of all "depths". In reality the transversal doesn't have a depth, so we use this as a upper bound.
         let t = self
             .chain
@@ -127,8 +149,7 @@ where
             .sum::<usize>();
         let record = &self.chain[self.current_pos];
         //Create an iterator of subproducts w and w2
-        let subproduct_w1_iter =
-            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), gens));
+        let subproduct_w1_iter = repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), gens));
         let subproduct_w2_iter = repeat_with(|| {
             let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0..1 + gens.len() / 2);
             random_subproduct_word_subset(&mut *self.rng.borrow_mut(), gens, k)
@@ -146,13 +167,7 @@ where
                 .keys()
                 .choose(&mut *self.rng.borrow_mut())
                 .map(|point| {
-                    representative_raw_as_word(
-                        &record.transversal,
-                        record.base,
-                        *point,
-                        &self.action,
-                    )
-                    .unwrap()
+                    representative_raw_as_word(&record.transversal, record.base, *point, &self.action).unwrap()
                 })
                 .expect("should be present")
         })
@@ -177,14 +192,11 @@ where
         // If this element is already a generator, then we can exit
         let mut to_check: VecDeque<_> = record.transversal.keys().cloned().collect();
         let mut new_transversal = DetHashMap::default();
-        while !to_check.is_empty() {
-            let orbit_element = to_check.pop_back().unwrap();
+        while let Some(orbit_element) = to_check.pop_back() {
             let new_image = self.action.apply(&p, orbit_element);
 
             // If we haven't seen this element.
-            if !(record.transversal.contains_key(&new_image)
-                || new_transversal.contains_key(&new_image))
-            {
+            if !(record.transversal.contains_key(&new_image) || new_transversal.contains_key(&new_image)) {
                 new_transversal.insert(new_image, p.inv());
             }
         }
@@ -196,9 +208,8 @@ where
         record.transversal.extend(new_transversal);
 
         // While we have orbit elements (and representatives to check)
-        while !to_check.is_empty() {
+        while let Some(orbit_element) = to_check.pop_back() {
             // Get the pair
-            let orbit_element = to_check.pop_back().unwrap();
             // For each generator (and p)
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
                 let new_image = self.action.apply(generator, orbit_element);
@@ -213,10 +224,7 @@ where
         // Update the generators adding p if it isn't already present.
         if !record.gens.generators().contains(&p) {
             debug!("Adding perm to generating set");
-            record.gens = std::iter::once(&p)
-                .chain(record.gens.generators())
-                .cloned()
-                .collect();
+            record.gens = std::iter::once(&p).chain(record.gens.generators()).cloned().collect();
         }
         // Store the updated record in the chain
         self.chain[self.current_pos] = record;
@@ -231,25 +239,17 @@ where
     }
 
     fn sgc(&mut self) {
-        trace!(
-            level = self.current_pos,
-            "Strong Generating Set Construction"
-        );
+        trace!(level = self.current_pos, "Strong Generating Set Construction");
         let record = self.chain[self.current_pos].clone();
         //Number of base points than are in the current orbit.
-        let b_star = self
-            .base
-            .iter()
-            .filter(|&b| record.transversal.contains_key(b))
-            .count();
+        let b_star = self.base.iter().filter(|&b| record.transversal.contains_key(b)).count();
         let gens = self
             .current_chain()
             .flat_map(|record| record.gens.generators())
             .cloned()
             .collect::<Vec<P>>();
         //Random products of the form gw
-        let mut random_gens =
-            self.random_schrier_generators_as_word(self.constants.c1, self.constants.c2, &gens[..]);
+        let mut random_gens = self.random_schrier_generators_as_word(self.constants.c1, self.constants.c2, &gens[..]);
         //Convert these into random schrier generators, by concatenating the resdiue of the inverse to it.
         random_gens.iter_mut().for_each(|gw| {
             //Get the residue of this word
@@ -263,29 +263,28 @@ where
             let (drop_out_level, h_residue) = residue_as_words_from_words(self.current_chain(), &h);
             if self.sifted(drop_out_level) {
                 //Pick the points that should be evaluated. This is a heuristic to speed up run times.
-                let evaluated_points: Vec<A::OrbitT> =
-                    if record.transversal.len() <= self.constants.orbit_bound {
-                        //Evaluate on all points of the current orbit.
-                        record.transversal.keys().cloned().collect()
-                    } else if self.base.len() <= self.constants.base_bound {
-                        //Evaluate on BASE_BOUND randomly chosen points.
-                        record
-                            .transversal
-                            .keys()
-                            .choose_multiple(&mut *self.rng.borrow_mut(), self.constants.base_bound)
-                            .into_iter()
-                            .cloned()
-                            .collect()
-                    } else {
-                        //Evaluate on b_star randomly chosen points.
-                        record
-                            .transversal
-                            .keys()
-                            .choose_multiple(&mut *self.rng.borrow_mut(), b_star)
-                            .into_iter()
-                            .cloned()
-                            .collect()
-                    };
+                let evaluated_points: Vec<A::OrbitT> = if record.transversal.len() <= self.constants.orbit_bound {
+                    //Evaluate on all points of the current orbit.
+                    record.transversal.keys().cloned().collect()
+                } else if self.base.len() <= self.constants.base_bound {
+                    //Evaluate on BASE_BOUND randomly chosen points.
+                    record
+                        .transversal
+                        .keys()
+                        .choose_multiple(&mut *self.rng.borrow_mut(), self.constants.base_bound)
+                        .into_iter()
+                        .cloned()
+                        .collect()
+                } else {
+                    //Evaluate on b_star randomly chosen points.
+                    record
+                        .transversal
+                        .keys()
+                        .choose_multiple(&mut *self.rng.borrow_mut(), b_star)
+                        .into_iter()
+                        .cloned()
+                        .collect()
+                };
                 //If any point is not fixed by the residue, then we add the residue as a generator.
                 if !self.is_trivial_residue(&h_residue, evaluated_points) {
                     //Not all permutations have been discarded
@@ -299,8 +298,7 @@ where
                     self.base.push(new_base_point);
                     //Fields for the new record.
                     let gens = Group::new(&[h_star]);
-                    let transversal =
-                        factored_transversal_complete_opt(&gens, new_base_point, &self.action);
+                    let transversal = factored_transversal_complete_opt(&gens, new_base_point, &self.action);
                     let record = StabchainRecord::new(new_base_point, gens, transversal);
                     self.chain.push(record);
                     //Now up to date beneath the newly added point.
@@ -362,11 +360,7 @@ where
             .generators
             .iter()
             .map(|p| vec![p.clone()])
-            .chain(self.random_schrier_generators_as_word(
-                self.constants.c3,
-                self.constants.c4,
-                &gens[..],
-            ))
+            .chain(self.random_schrier_generators_as_word(self.constants.c3, self.constants.c4, &gens[..]))
             .collect();
         //Sift the original generators, and all products of the form g*w_{1,2}.
         for p in products {
@@ -396,13 +390,10 @@ where
             let collapsed_residue = collapse_perm_word(&residue);
             //If this point sifted through but isn't trivial, then we need a new record and base point.
             if self.sifted(drop_out_level) {
-                let moved_point = self
-                    .selector
-                    .moved_point(&collapsed_residue, self.current_pos);
+                let moved_point = self.selector.moved_point(&collapsed_residue, self.current_pos);
                 debug!(perm = %collapsed_residue, moved_point = moved_point, "Extending chain");
                 let gens = Group::new(&[collapsed_residue]);
-                let transversal =
-                    factored_transversal_complete_opt(&gens, moved_point, &self.action);
+                let transversal = factored_transversal_complete_opt(&gens, moved_point, &self.action);
                 let initial_record = StabchainRecord::new(moved_point, gens, transversal);
                 self.base.push(moved_point);
                 self.chain.push(initial_record);
@@ -425,11 +416,7 @@ where
 
     /// Check if a residue acts trivially on a set of points.
     /// This is just done by checking that the given permutation fixes all given points.
-    fn is_trivial_residue(
-        &self,
-        p_as_words: &[P],
-        points: impl IntoIterator<Item = A::OrbitT>,
-    ) -> bool {
+    fn is_trivial_residue(&self, p_as_words: &[P], points: impl IntoIterator<Item = A::OrbitT>) -> bool {
         points
             .into_iter()
             .all(|x| apply_permutation_word(p_as_words, x, &self.action) == x)
@@ -482,18 +469,12 @@ where
 }
 
 /// Apply a point to permutations stored as a word.
-fn apply_permutation_word<'a, P, A>(
-    perm_word: impl IntoIterator<Item = &'a P>,
-    x: A::OrbitT,
-    strat: &A,
-) -> A::OrbitT
+fn apply_permutation_word<'a, P, A>(perm_word: impl IntoIterator<Item = &'a P>, x: A::OrbitT, strat: &A) -> A::OrbitT
 where
     P: 'a + Permutation,
     A: Action<P>,
 {
-    perm_word
-        .into_iter()
-        .fold(x, |accum, p| strat.apply(p, accum))
+    perm_word.into_iter().fold(x, |accum, p| strat.apply(p, accum))
 }
 
 /// Convert from a permutation stored as a word, into a single permutation.
@@ -544,12 +525,18 @@ mod tests {
     ///Test that applying a permutation as a word gives the same image as collapsing that permutation.
     #[test]
     fn test_apply_permutation_word() {
-        use super::apply_permutation_word;
-        use super::collapse_perm_word;
-        use crate::perm::actions::SimpleApplication;
-        use crate::perm::export::CyclePermutation;
-        use crate::perm::impls::standard::StandardPermutation;
-        use crate::perm::Permutation;
+        use {
+            super::{
+                apply_permutation_word,
+                collapse_perm_word,
+            },
+            crate::perm::{
+                actions::SimpleApplication,
+                export::CyclePermutation,
+                impls::standard::StandardPermutation,
+                Permutation,
+            },
+        };
         //Test an empty word.
         let empty_word = vec![];
         let strat = SimpleApplication::default();
@@ -562,10 +549,7 @@ mod tests {
         ];
         let collapsed_word = collapse_perm_word(&perm_word);
         for i in 0..9 {
-            assert_eq!(
-                collapsed_word.apply(i),
-                apply_permutation_word(&perm_word, i, &strat)
-            );
+            assert_eq!(collapsed_word.apply(i), apply_permutation_word(&perm_word, i, &strat));
         }
     }
 }

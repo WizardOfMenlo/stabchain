@@ -1,10 +1,16 @@
 //! Group utilities which I was not sure where to place
 
-use super::Group;
-use crate::perm::impls::word::WordPermutation;
-use crate::perm::Permutation;
-use rand::seq::SliceRandom;
-use rand::Rng;
+use {
+    super::Group,
+    crate::perm::{
+        impls::word::WordPermutation,
+        Permutation,
+    },
+    rand::{
+        seq::SliceRandom,
+        Rng,
+    },
+};
 
 /// Creates a group generated from n copies of the cyclic group
 pub fn copies_of_cyclic(specification: &[usize]) -> Group {
@@ -31,14 +37,13 @@ where
     P: Permutation,
     R: Rng,
 {
-    gens.choose_multiple(rng, k)
-        .fold(Permutation::id(), |accum, elem| {
-            if rng.gen::<bool>() {
-                accum
-            } else {
-                accum.multiply(elem)
-            }
-        })
+    gens.choose_multiple(rng, k).fold(Permutation::id(), |accum, elem| {
+        if rng.gen::<bool>() {
+            accum
+        } else {
+            accum.multiply(elem)
+        }
+    })
 }
 
 /// Generate a word representation of a random subproduct of the given generators.
@@ -65,10 +70,14 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::perm::export::CyclePermutation;
-    use crate::perm::impls::standard::StandardPermutation;
-    use rand::thread_rng;
+    use {
+        super::*,
+        crate::perm::{
+            export::CyclePermutation,
+            impls::standard::StandardPermutation,
+        },
+        rand::thread_rng,
+    };
 
     #[test]
     fn test_generator_len() {

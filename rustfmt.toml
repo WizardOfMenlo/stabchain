@@ -1,0 +1,4 @@
+max_width = 120
+reorder_modules = true
+imports_layout = "Vertical"
+imports_granularity = "One"

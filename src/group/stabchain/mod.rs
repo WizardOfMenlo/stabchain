@@ -5,13 +5,28 @@ pub mod base_change_builder;
 pub mod builder;
 pub mod element_testing;
 
-use crate::group::Group;
-use crate::perm::actions::SimpleApplication;
-use crate::perm::*;
-use crate::{group::orbit::abstraction::TransversalResolver, perm::impls::word::WordPermutation};
-use base::Base;
-use base_change_builder::{BaseChangeBuilder, BaseChangeBuilderStrategy};
-use builder::{Builder, BuilderStrategy};
+use {
+    crate::{
+        group::{
+            orbit::abstraction::TransversalResolver,
+            Group,
+        },
+        perm::{
+            actions::SimpleApplication,
+            impls::word::WordPermutation,
+            *,
+        },
+    },
+    base::Base,
+    base_change_builder::{
+        BaseChangeBuilder,
+        BaseChangeBuilderStrategy,
+    },
+    builder::{
+        Builder,
+        BuilderStrategy,
+    },
+};
 
 use crate::DetHashMap;
 
@@ -88,10 +103,7 @@ where
 
     /// Get the base corresponding to this stabilizer chain
     pub fn base(&self) -> Base<P, A> {
-        Base::new_with_action(
-            self.chain.iter().map(|g| &g.base).cloned().collect(),
-            A::default(),
-        )
+        Base::new_with_action(self.chain.iter().map(|g| &g.base).cloned().collect(), A::default())
     }
 
     /// Get the strong generating set of this stabiliser chain.
@@ -132,12 +144,7 @@ where
     ) -> Stabchain<P, FactoredTransversalResolver<A>, A>
     where
         B: BaseChangeBuilder<P, FactoredTransversalResolver<A>, A>,
-        S: BaseChangeBuilderStrategy<
-            P,
-            Action = A,
-            Transversal = FactoredTransversalResolver<A>,
-            BuilderT = B,
-        >,
+        S: BaseChangeBuilderStrategy<P, Action = A, Transversal = FactoredTransversalResolver<A>, BuilderT = B>,
     {
         let mut builder = build_strategy.make_builder();
         builder.set_base(self, base);
@@ -170,9 +177,7 @@ where
         //Skeleton of the chain.
         let mut chain: Vec<StabchainRecord<P, FactoredTransversalResolver<A>, A>> = base
             .iter()
-            .map(|point| {
-                StabchainRecord::new(point.clone(), Group::new(&[]), DetHashMap::default())
-            })
+            .map(|point| StabchainRecord::new(point.clone(), Group::new(&[]), DetHashMap::default()))
             .collect();
         //Add the generators in the correct location, from back to front.
         for p in sgs {
@@ -191,10 +196,9 @@ where
         }
         //Now fill in the transversal
         chain.iter_mut().for_each(|record| {
-            record.transversal =
-                factored_transversal_complete_opt(record.group(), record.base.clone(), &strat)
+            record.transversal = factored_transversal_complete_opt(record.group(), record.base.clone(), &strat)
         });
-        Stabchain { chain }
+        Self { chain }
     }
 }
 
@@ -247,12 +251,8 @@ where
     A: Action<P>,
     V: TransversalResolver<P, A>,
 {
-    pub(crate) fn new(
-        base: A::OrbitT,
-        gens: Group<P>,
-        transversal: DetHashMap<A::OrbitT, P>,
-    ) -> Self {
-        StabchainRecord {
+    pub(crate) fn new(base: A::OrbitT, gens: Group<P>, transversal: DetHashMap<A::OrbitT, P>) -> Self {
+        Self {
             base,
             gens,
             transversal,
@@ -262,7 +262,7 @@ where
     }
     ///Create a trivial record that represents the trivial group.
     pub(crate) fn trivial_record(base: A::OrbitT) -> Self {
-        StabchainRecord {
+        Self {
             base: base.clone(),
             gens: Group::new(&[]),
             transversal: [(base, P::id())].iter().cloned().collect(),
@@ -283,8 +283,10 @@ where
     }
 }
 
-use std::cell::RefCell;
-use std::fmt;
+use std::{
+    cell::RefCell,
+    fmt,
+};
 
 impl<P, V, A> fmt::Display for Stabchain<P, V, A>
 where
@@ -312,11 +314,16 @@ where
     }
 }
 
-use super::orbit::{
-    abstraction::FactoredTransversalResolver,
-    transversal::factored_transversal::factored_transversal_complete_opt,
+use {
+    super::orbit::{
+        abstraction::FactoredTransversalResolver,
+        transversal::factored_transversal::factored_transversal_complete_opt,
+    },
+    crate::{
+        group::orbit::transversal::TransversalError,
+        DetHashSet,
+    },
 };
-use crate::{group::orbit::transversal::TransversalError, DetHashSet};
 
 #[derive(Debug)]
 pub enum StabchainError<P, OrbitT> {
@@ -351,7 +358,10 @@ where
     A: Action<P>,
     A::OrbitT: std::fmt::Debug,
 {
-    use crate::group::orbit::transversal::{valid_transversal, Transversal};
+    use crate::group::orbit::transversal::{
+        valid_transversal,
+        Transversal,
+    };
 
     let applicator = A::default();
 
@@ -386,13 +396,24 @@ macro_rules! stabchain_tests {
     ($strategy:expr, $short:ident) => {
         #[allow(deprecated)]
         mod $short {
-            use crate::group::stabchain::builder::*;
-            use crate::group::stabchain::{valid_stabchain, Stabchain};
-            use crate::group::Group;
-            use crate::perm::actions::*;
-            use crate::perm::export::CyclePermutation;
-            use crate::perm::DefaultPermutation;
-            use num::BigUint;
+            use {
+                crate::{
+                    group::{
+                        stabchain::{
+                            builder::*,
+                            valid_stabchain,
+                            Stabchain,
+                        },
+                        Group,
+                    },
+                    perm::{
+                        actions::*,
+                        export::CyclePermutation,
+                        DefaultPermutation,
+                    },
+                },
+                num::BigUint,
+            };
 
             #[test]
             fn trivial_chain() {
@@ -456,13 +477,12 @@ macro_rules! stabchain_tests {
 
             #[test]
             fn single_non_trivial_layer() {
-                use crate::perm::export::CyclePermutation;
-                use crate::perm::DefaultPermutation;
+                use crate::perm::{
+                    export::CyclePermutation,
+                    DefaultPermutation,
+                };
 
-                let g = Group::<DefaultPermutation>::new(&[CyclePermutation::single_cycle(&[
-                    1, 2,
-                ])
-                .into()]);
+                let g = Group::<DefaultPermutation>::new(&[CyclePermutation::single_cycle(&[1, 2]).into()]);
                 let chain = Stabchain::new_with_strategy(&g, $strategy(i(2)));
                 valid_stabchain(&chain).unwrap();
             }
@@ -487,13 +507,7 @@ macro_rules! stabchain_tests {
                         vec![8, 9, 12, 13],
                     ])
                     .into_perm(),
-                    CyclePermutation::from_vec(vec![
-                        vec![1, 5],
-                        vec![2, 6],
-                        vec![9, 13],
-                        vec![10, 14],
-                    ])
-                    .into_perm(),
+                    CyclePermutation::from_vec(vec![vec![1, 5], vec![2, 6], vec![9, 13], vec![10, 14]]).into_perm(),
                 ]);
                 let chain = Stabchain::new_with_strategy(&g, $strategy(i(128)));
                 valid_stabchain(&chain).unwrap();
@@ -535,11 +549,20 @@ macro_rules! known_base_tests {
     ($strategy:expr, $short:ident, $repeats:expr) => {
         #[allow(deprecated)]
         mod $short {
-            use crate::group::stabchain::base_change_builder::*;
-            use crate::group::stabchain::{base::Base, valid_stabchain};
-            use crate::group::Group;
-            use crate::perm::actions::*;
-            use rand::seq::SliceRandom;
+            use {
+                crate::{
+                    group::{
+                        stabchain::{
+                            base::Base,
+                            base_change_builder::*,
+                            valid_stabchain,
+                        },
+                        Group,
+                    },
+                    perm::actions::*,
+                },
+                rand::seq::SliceRandom,
+            };
 
             #[test]
             fn trivial_chain() {
@@ -550,8 +573,7 @@ macro_rules! known_base_tests {
                 for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
-                    let new_chain = original_chain
-                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    let new_chain = original_chain.from_known_base_with_strategy(Base::new(new_base), $strategy);
                     valid_stabchain(&new_chain).unwrap();
                 }
             }
@@ -565,8 +587,7 @@ macro_rules! known_base_tests {
                 for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
-                    let new_chain = original_chain
-                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    let new_chain = original_chain.from_known_base_with_strategy(Base::new(new_base), $strategy);
                     valid_stabchain(&new_chain).unwrap();
                 }
             }
@@ -580,8 +601,7 @@ macro_rules! known_base_tests {
                 for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
-                    let new_chain = original_chain
-                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    let new_chain = original_chain.from_known_base_with_strategy(Base::new(new_base), $strategy);
                     valid_stabchain(&new_chain).unwrap();
                 }
             }
@@ -595,8 +615,7 @@ macro_rules! known_base_tests {
                 for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
-                    let new_chain = original_chain
-                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    let new_chain = original_chain.from_known_base_with_strategy(Base::new(new_base), $strategy);
                     valid_stabchain(&new_chain).unwrap();
                 }
             }
@@ -610,8 +629,7 @@ macro_rules! known_base_tests {
                 for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
-                    let new_chain = original_chain
-                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    let new_chain = original_chain.from_known_base_with_strategy(Base::new(new_base), $strategy);
                     valid_stabchain(&new_chain).unwrap();
                 }
             }
@@ -625,8 +643,7 @@ macro_rules! known_base_tests {
                 for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
-                    let new_chain = original_chain
-                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    let new_chain = original_chain.from_known_base_with_strategy(Base::new(new_base), $strategy);
                     valid_stabchain(&new_chain).unwrap();
                 }
             }
@@ -640,29 +657,26 @@ macro_rules! known_base_tests {
                 for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
-                    let new_chain = original_chain
-                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    let new_chain = original_chain.from_known_base_with_strategy(Base::new(new_base), $strategy);
                     valid_stabchain(&new_chain).unwrap();
                 }
             }
 
             #[test]
             fn single_non_trivial_layer() {
-                use crate::perm::export::CyclePermutation;
-                use crate::perm::DefaultPermutation;
+                use crate::perm::{
+                    export::CyclePermutation,
+                    DefaultPermutation,
+                };
 
-                let g = Group::<DefaultPermutation>::new(&[CyclePermutation::single_cycle(&[
-                    1, 2,
-                ])
-                .into()]);
+                let g = Group::<DefaultPermutation>::new(&[CyclePermutation::single_cycle(&[1, 2]).into()]);
                 let original_chain = g.stabchain();
                 let base = original_chain.base();
                 let mut rng = rand::thread_rng();
                 for _ in 0..$repeats {
                     let mut new_base = Vec::from(base.base());
                     new_base.shuffle(&mut rng);
-                    let new_chain = original_chain
-                        .from_known_base_with_strategy(Base::new(new_base), $strategy);
+                    let new_chain = original_chain.from_known_base_with_strategy(Base::new(new_base), $strategy);
                     valid_stabchain(&new_chain).unwrap();
                 }
             }
@@ -672,11 +686,20 @@ macro_rules! known_base_tests {
 
 #[cfg(test)]
 mod tests {
-    use super::valid_stabchain;
-    use super::*;
-    use crate::group::Group;
-    use crate::perm::actions::SimpleApplication;
-    use rand::{seq::SliceRandom, thread_rng};
+    use {
+        super::{
+            valid_stabchain,
+            *,
+        },
+        crate::{
+            group::Group,
+            perm::actions::SimpleApplication,
+        },
+        rand::{
+            seq::SliceRandom,
+            thread_rng,
+        },
+    };
 
     //Macro for testing the reconstruction of a group.
     macro_rules! reconstruction_test {
@@ -690,11 +713,8 @@ mod tests {
                 let mut sgs = chain.strong_generating_set();
                 //To make sure we aren't relying on the ordering of the sgs.
                 sgs.shuffle(&mut thread_rng());
-                let reconstructed_chain = Stabchain::from_base_and_strong_gen_set(
-                    base.base(),
-                    &sgs[..],
-                    SimpleApplication::default(),
-                );
+                let reconstructed_chain =
+                    Stabchain::from_base_and_strong_gen_set(base.base(), &sgs[..], SimpleApplication::default());
                 assert_eq!(chain.len(), reconstructed_chain.len());
                 assert_eq!(base.base(), reconstructed_chain.base().base());
                 assert_eq!(chain.order(), reconstructed_chain.order());
@@ -722,37 +742,40 @@ mod tests {
     stabchain_tests!(
         |_g| NaiveBuilderStrategy::new(
             SimpleApplication::default(),
-            crate::group::stabchain::base::selectors::LmpSelector::default()
+            crate::group::stabchain::base::selectors::LmpSelector
         ),
         naive
     );
     stabchain_tests!(
         |_g| IftBuilderStrategy::new(
             SimpleApplication::default(),
-            crate::group::stabchain::base::selectors::LmpSelector::default()
+            crate::group::stabchain::base::selectors::LmpSelector
         ),
         ift
     );
     stabchain_tests!(
         |_g| {
-            use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
-            use rand::SeedableRng;
+            use {
+                crate::group::stabchain::builder::random::parameters::RandomAlgoParameters,
+                rand::SeedableRng,
+            };
             RandomBuilderStrategyNaive::new_with_params(
                 SimpleApplication::default(),
-                crate::group::stabchain::base::selectors::FmpSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([58; 16])),
+                crate::group::stabchain::base::selectors::FmpSelector,
+                RandomAlgoParameters::default().rng(rand_xorshift::XorShiftRng::from_seed([58; 16])),
             )
         },
         random
     );
     stabchain_tests!(
         |g| {
-            use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
-            use rand::SeedableRng;
+            use {
+                crate::group::stabchain::builder::random::parameters::RandomAlgoParameters,
+                rand::SeedableRng,
+            };
             RandomBuilderStrategyNaive::new_with_params(
                 SimpleApplication::default(),
-                crate::group::stabchain::base::selectors::FmpSelector::default(),
+                crate::group::stabchain::base::selectors::FmpSelector,
                 RandomAlgoParameters::default()
                     .rng(rand_xorshift::XorShiftRng::from_seed([58; 16]))
                     .order(g),
@@ -762,11 +785,13 @@ mod tests {
     );
     stabchain_tests!(
         |_g| {
-            use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
-            use rand::SeedableRng;
+            use {
+                crate::group::stabchain::builder::random::parameters::RandomAlgoParameters,
+                rand::SeedableRng,
+            };
             RandomBuilderStrategyNaive::new_with_params(
                 SimpleApplication::default(),
-                crate::group::stabchain::base::selectors::FmpSelector::default(),
+                crate::group::stabchain::base::selectors::FmpSelector,
                 RandomAlgoParameters::default()
                     .rng(rand_xorshift::XorShiftRng::from_seed([33; 16]))
                     .quick_test(true),
@@ -776,24 +801,27 @@ mod tests {
     );
     stabchain_tests!(
         |_g| {
-            use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
-            use rand::SeedableRng;
+            use {
+                crate::group::stabchain::builder::random::parameters::RandomAlgoParameters,
+                rand::SeedableRng,
+            };
             RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
-                crate::group::stabchain::base::selectors::FmpSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed([52; 16])),
+                crate::group::stabchain::base::selectors::FmpSelector,
+                RandomAlgoParameters::default().rng(rand_xorshift::XorShiftRng::from_seed([52; 16])),
             )
         },
         random_shallow
     );
     stabchain_tests!(
         |_g| {
-            use crate::group::stabchain::builder::random::parameters::RandomAlgoParameters;
-            use rand::SeedableRng;
+            use {
+                crate::group::stabchain::builder::random::parameters::RandomAlgoParameters,
+                rand::SeedableRng,
+            };
             RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
-                crate::group::stabchain::base::selectors::FmpSelector::default(),
+                crate::group::stabchain::base::selectors::FmpSelector,
                 RandomAlgoParameters::default()
                     .rng(rand_xorshift::XorShiftRng::from_seed([42; 16]))
                     .quick_test(true),

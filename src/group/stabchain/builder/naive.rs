@@ -1,13 +1,31 @@
-use super::{BaseSelector, Stabchain};
-use crate::group::orbit::abstraction::SimpleTransversalResolver;
-use crate::group::stabchain::{element_testing, StabchainRecord};
-use crate::group::Group;
-use crate::perm::actions::SimpleApplication;
-use crate::perm::{Action, Permutation};
-use crate::DetHashMap;
-use std::collections::VecDeque;
+use {
+    super::{
+        BaseSelector,
+        Stabchain,
+    },
+    crate::{
+        group::{
+            orbit::abstraction::SimpleTransversalResolver,
+            stabchain::{
+                element_testing,
+                StabchainRecord,
+            },
+            Group,
+        },
+        perm::{
+            actions::SimpleApplication,
+            Action,
+            Permutation,
+        },
+        DetHashMap,
+    },
+    std::collections::VecDeque,
+};
 
-use tracing::{debug, trace};
+use tracing::{
+    debug,
+    trace,
+};
 
 // Helper struct, used to build the stabilizer chain
 #[derive(Debug)]
@@ -28,7 +46,7 @@ where
     P: Permutation,
 {
     pub(super) fn new(selector: S, action: A) -> Self {
-        StabchainBuilderNaive {
+        Self {
             current_pos: 0,
             chain: Vec::new(),
             selector,
@@ -40,9 +58,7 @@ where
         self.current_pos == self.chain.len()
     }
 
-    fn current_chain(
-        &self,
-    ) -> impl Iterator<Item = &StabchainRecord<P, SimpleTransversalResolver, A>> {
+    fn current_chain(&self) -> impl Iterator<Item = &StabchainRecord<P, SimpleTransversalResolver, A>> {
         self.chain.iter().skip(self.current_pos)
     }
 }
@@ -102,15 +118,12 @@ where
 
         let mut to_check: VecDeque<_> = record.transversal.keys().cloned().collect();
         let mut new_transversal = DetHashMap::default();
-        while !to_check.is_empty() {
-            let orbit_element = to_check.pop_back().unwrap();
+        while let Some(orbit_element) = to_check.pop_back() {
             let orbit_element_repr = record.transversal.get(&orbit_element).unwrap();
             let new_image = self.action.apply(&p, orbit_element);
 
             // If we already saw the element
-            if record.transversal.contains_key(&new_image)
-                || new_transversal.contains_key(&new_image)
-            {
+            if record.transversal.contains_key(&new_image) || new_transversal.contains_key(&new_image) {
                 let image_repr = record
                     .transversal
                     .get(&new_image)
@@ -125,19 +138,14 @@ where
         }
 
         // We now want to check all the newly added elements
-        let mut to_check: VecDeque<_> = new_transversal
-            .iter()
-            .map(|(o, p)| (o.clone(), p.clone()))
-            .collect();
+        let mut to_check: VecDeque<_> = new_transversal.iter().map(|(o, p)| (o.clone(), p.clone())).collect();
 
         // Update the record
         record.transversal.extend(new_transversal);
 
         // While we have orbit elements (and representatives to check)
-        while !to_check.is_empty() {
+        while let Some((orbit_element, orbit_element_repr)) = to_check.pop_back() {
             // Get the pair
-            let (orbit_element, orbit_element_repr) = to_check.pop_back().unwrap();
-
             // For each generator (and p)
             for generator in std::iter::once(&p).chain(record.gens.generators()) {
                 let new_image = self.action.apply(generator, orbit_element.clone());
@@ -148,9 +156,7 @@ where
                     let image_repr = record.transversal.get(&new_image).unwrap();
 
                     // Extend lower level
-                    let new_perm = orbit_element_repr
-                        .multiply(generator)
-                        .multiply(&image_repr.inv());
+                    let new_perm = orbit_element_repr.multiply(generator).multiply(&image_repr.inv());
                     self.extend_lower_level(new_perm);
                 } else {
                     // Compute the repr s.t. repr^(orbit_element_repr * generator) = orbit_element ^ generator = new_image
@@ -166,10 +172,7 @@ where
         }
 
         // Update the generators adding p
-        record.gens = std::iter::once(&p)
-            .chain(record.gens.generators())
-            .cloned()
-            .collect();
+        record.gens = std::iter::once(&p).chain(record.gens.generators()).cloned().collect();
 
         // Store the updated record in the chain
         self.chain[self.current_pos] = record;

@@ -1,7 +1,9 @@
 use crate::perm::Permutation;
 
-use std::iter::FromIterator;
-use std::sync::Arc;
+use std::{
+    iter::FromIterator,
+    sync::Arc,
+};
 
 use super::standard::StandardPermutation;
 
@@ -19,7 +21,7 @@ impl SyncPermutation {
 
     pub fn from_vec(vals: Vec<usize>) -> Self {
         crate::perm::utils::valid_images(&vals[..]).unwrap();
-        SyncPermutation::from_vec_unchecked(vals)
+        Self::from_vec_unchecked(vals)
     }
 
     pub(crate) fn from_vec_unchecked(mut vals: Vec<usize>) -> Self {
@@ -67,7 +69,7 @@ impl Permutation for SyncPermutation {
         }
     }
 
-    fn multiply(&self, other: &SyncPermutation) -> Self {
+    fn multiply(&self, other: &Self) -> Self {
         if self.is_id() {
             other.clone()
         } else if other.is_id() {
@@ -91,11 +93,9 @@ impl Permutation for SyncPermutation {
                 result
             } else {
                 // Otherwise we can skip bounds checking for self
-                (0..self_size + 1)
-                    .map(|x| other.apply(self.vals[x]))
-                    .collect()
+                (0..self_size + 1).map(|x| other.apply(self.vals[x])).collect()
             };
-            SyncPermutation::from_vec_unchecked(v)
+            Self::from_vec_unchecked(v)
         }
     }
 
@@ -109,13 +109,13 @@ impl Permutation for SyncPermutation {
 
     fn shift(&self, k: usize) -> Self {
         if self.is_id() {
-            return SyncPermutation::id();
+            return Self::id();
         }
 
         let mut images: Vec<_> = (0..k).collect();
         let new_images = self.vals.iter().map(|i| i + k);
         images.extend(new_images);
-        SyncPermutation::from_vec_unchecked(images)
+        Self::from_vec_unchecked(images)
     }
 }
 
@@ -144,7 +144,7 @@ impl From<StandardPermutation> for SyncPermutation {
         let vals = p.images();
         let invvals = p.inv().images();
 
-        SyncPermutation {
+        Self {
             vals: vals.into(),
             invvals: invvals.into(),
         }
@@ -155,12 +155,12 @@ impl From<SyncPermutation> for StandardPermutation {
     fn from(p: SyncPermutation) -> Self {
         let vals = p.vals.to_vec().into();
         let invvals = p.invvals.to_vec().into();
-        StandardPermutation::make_inverse(vals, invvals)
+        Self::make_inverse(vals, invvals)
     }
 }
 
 impl FromIterator<usize> for SyncPermutation {
     fn from_iter<T: IntoIterator<Item = usize>>(iter: T) -> Self {
-        SyncPermutation::from_vec(iter.into_iter().collect())
+        Self::from_vec(iter.into_iter().collect())
     }
 }

@@ -1,14 +1,29 @@
-use super::super::order;
-use crate::group::orbit::transversal::shallow_transversal::shallow_transversal;
-use crate::DetHashSet;
-use crate::{
-    group::{
-        orbit::abstraction::{FactoredTransversalResolver, TransversalResolver},
-        random_perm::RandPerm,
-        stabchain::{base::Base, Stabchain, StabchainRecord},
-        Group,
+use {
+    super::super::order,
+    crate::{
+        group::{
+            orbit::{
+                abstraction::{
+                    FactoredTransversalResolver,
+                    TransversalResolver,
+                },
+                transversal::shallow_transversal::shallow_transversal,
+            },
+            random_perm::RandPerm,
+            stabchain::{
+                base::Base,
+                Stabchain,
+                StabchainRecord,
+            },
+            Group,
+        },
+        perm::{
+            actions::SimpleApplication,
+            Action,
+            Permutation,
+        },
+        DetHashSet,
     },
-    perm::{actions::SimpleApplication, Action, Permutation},
 };
 
 const MIN_SIZE: usize = 11;
@@ -30,7 +45,7 @@ where
     A: Action<P>,
 {
     pub(super) fn new(action: A) -> Self {
-        RandomBaseChangeBuilder {
+        Self {
             chain: Vec::new(),
             action,
         }
@@ -107,8 +122,7 @@ where
     }
 }
 
-impl<P, A> super::BaseChangeBuilder<P, FactoredTransversalResolver<A>, A>
-    for RandomBaseChangeBuilder<P, A>
+impl<P, A> super::BaseChangeBuilder<P, FactoredTransversalResolver<A>, A> for RandomBaseChangeBuilder<P, A>
 where
     P: Permutation,
     A: Action<P>,
@@ -119,12 +133,7 @@ where
     {
         //Bases should simply be alternative orderings (or with new without duplicates unneccessary elements added)
         debug_assert!(
-            base.base()
-                .iter()
-                .cloned()
-                .collect::<DetHashSet<A::OrbitT>>()
-                .len()
-                == base.base().len()
+            base.base().iter().cloned().collect::<DetHashSet<A::OrbitT>>().len() == base.base().len()
                 && chain.base().iter().all(|point| base.base().contains(point))
         );
         self.random_base_change(chain, base);

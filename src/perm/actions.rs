@@ -6,7 +6,7 @@ pub struct SimpleApplication<P>(std::marker::PhantomData<P>);
 
 impl<P> Default for SimpleApplication<P> {
     fn default() -> Self {
-        SimpleApplication(std::marker::PhantomData::default())
+        Self(std::marker::PhantomData)
     }
 }
 
@@ -34,7 +34,7 @@ pub struct ConjugationAction<P>(std::marker::PhantomData<P>);
 
 impl<P> Default for ConjugationAction<P> {
     fn default() -> Self {
-        Self(std::marker::PhantomData::default())
+        Self(std::marker::PhantomData)
     }
 }
 
@@ -55,7 +55,7 @@ pub struct MultiplicationAction<P>(std::marker::PhantomData<P>);
 
 impl<P> Default for MultiplicationAction<P> {
     fn default() -> Self {
-        Self(std::marker::PhantomData::default())
+        Self(std::marker::PhantomData)
     }
 }
 
@@ -77,9 +77,13 @@ mod tests {
         ($id:ty, $testing:expr, $name:ident) => {
             mod $name {
 
-                use super::super::*;
-                use crate::perm::utils::random_permutation;
-                use crate::perm::DefaultPermutation;
+                use {
+                    super::super::*,
+                    crate::perm::{
+                        utils::random_permutation,
+                        DefaultPermutation,
+                    },
+                };
 
                 #[test]
                 fn test_identity() {

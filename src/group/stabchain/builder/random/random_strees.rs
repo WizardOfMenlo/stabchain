@@ -1,28 +1,62 @@
-use super::parameters::RandomAlgoParameters;
-use crate::group::orbit::abstraction::FactoredTransversalResolver;
-use crate::group::orbit::transversal::shallow_transversal::{
-    representative_raw_as_word, shallow_transversal,
+use {
+    super::parameters::RandomAlgoParameters,
+    crate::{
+        group::{
+            orbit::{
+                abstraction::FactoredTransversalResolver,
+                transversal::shallow_transversal::{
+                    representative_raw_as_word,
+                    shallow_transversal,
+                },
+            },
+            stabchain::{
+                base::selectors::BaseSelector,
+                element_testing::residue_as_words_from_words,
+                order,
+                Stabchain,
+                StabchainRecord,
+            },
+            utils::{
+                random_subproduct_word_full,
+                random_subproduct_word_subset,
+            },
+            Group,
+        },
+        perm::{
+            actions::SimpleApplication,
+            impls::word::WordPermutation,
+            Action,
+            Permutation,
+        },
+        DetHashMap,
+    },
+    itertools::Itertools,
+    num::BigUint,
+    rand::{
+        rngs::ThreadRng,
+        seq::IteratorRandom,
+        Rng,
+    },
+    std::{
+        cell::RefCell,
+        cmp::max,
+        collections::{
+            hash_map::Entry,
+            VecDeque,
+        },
+        iter::{
+            repeat_with,
+            Iterator,
+        },
+    },
 };
-use crate::group::stabchain::element_testing::residue_as_words_from_words;
-use crate::group::stabchain::{base::selectors::BaseSelector, order, Stabchain, StabchainRecord};
-use crate::group::utils::{random_subproduct_word_full, random_subproduct_word_subset};
-use crate::group::Group;
-use crate::perm::actions::SimpleApplication;
-use crate::perm::{impls::word::WordPermutation, Action, Permutation};
-use crate::DetHashMap;
-use itertools::Itertools;
-use num::BigUint;
-use rand::rngs::ThreadRng;
-use rand::{seq::IteratorRandom, Rng};
-use std::cell::RefCell;
-use std::cmp::max;
-use std::collections::hash_map::Entry;
-use std::collections::VecDeque;
-use std::iter::{repeat_with, Iterator};
 
 use std::fmt::Debug;
 
-use tracing::{debug, trace};
+use tracing::{
+    debug,
+    trace,
+};
 
 // Helper struct, used to build the stabilizer chain
 #[derive(Debug)]
@@ -55,7 +89,7 @@ where
 {
     pub fn new(selector: S, action: A, params: RandomAlgoParameters<R>) -> Self {
         let (constants, random) = params.consts();
-        StabchainBuilderRandomSTrees {
+        Self {
             chain: Vec::new(),
             selector,
             action,
@@ -76,9 +110,7 @@ where
         self.chain.iter().skip(level)
     }
 
-    fn full_chain(
-        &self,
-    ) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
+    fn full_chain(&self) -> impl Iterator<Item = &StabchainRecord<P, FactoredTransversalResolver<A>, A>> {
         self.chain.iter()
     }
 
@@ -144,14 +176,10 @@ where
         let record = &self.chain[level];
         let k = rand::Rng::gen_range(&mut *self.rng.borrow_mut(), 0..1 + gens.len() / 2);
         //Create an iterator of subproducts w and w2
-        let subproduct_w1_iter =
-            repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), gens));
-        let subproduct_w2_iter =
-            repeat_with(|| random_subproduct_word_subset(&mut *self.rng.borrow_mut(), gens, k));
+        let subproduct_w1_iter = repeat_with(|| random_subproduct_word_full(&mut *self.rng.borrow_mut(), gens));
+        let subproduct_w2_iter = repeat_with(|| random_subproduct_word_subset(&mut *self.rng.borrow_mut(), gens, k));
         //Iterleave the two iterators.
-        let subproduct_iter = subproduct_w1_iter
-            .interleave(subproduct_w2_iter)
-            .take(2 * subproducts);
+        let subproduct_iter = subproduct_w1_iter.interleave(subproduct_w2_iter).take(2 * subproducts);
         // First create coset_representative * t random coset reprensentatives.
         //Precompute all coset representatives if we'll be selecting more than there are in the orbit
         let mut gens: Vec<WordPermutation<P>> = {
@@ -226,7 +254,7 @@ where
     /// Check if adding a new element modifies the current layer of the chain.
     fn check_transversal_augmentation(&mut self, p: &P, level: usize, check_transversal: bool) {
         debug!(level = level, perm = %p, "Checking transversal augmentation with perm");
-        let mut record = &mut self.chain[level];
+        let record = &mut self.chain[level];
         // We optionally check if this element alters the transversal
         if check_transversal
             && record
@@ -243,11 +271,8 @@ where
         let mut recompute_transversal = false;
         // First partion points at maximum depth and those not.
         let max_depth = self.max_depths[level];
-        let (max_depth_points, mut to_check): (VecDeque<usize>, VecDeque<usize>) = self.depths
-            [level]
-            .keys()
-            .cloned()
-            .partition(|&x| x == max_depth);
+        let (max_depth_points, mut to_check): (VecDeque<usize>, VecDeque<usize>) =
+            self.depths[level].keys().cloned().partition(|&x| x == max_depth);
         // If any point at maximum depth is augmented then we recompute, as this exceeds the current maximum depth.
         for x in max_depth_points {
             let application = self.action.apply(p, x);
@@ -261,13 +286,10 @@ where
         if !recompute_transversal {
             let mut new_transversal = DetHashMap::default();
             let mut new_depths = DetHashMap::default();
-            while !to_check.is_empty() {
-                let x = to_check.pop_front().unwrap();
+            while let Some(x) = to_check.pop_front() {
                 let current_depth = self.depths[level].get(&x).unwrap();
                 let new_image = self.action.apply(p, x);
-                if !(record.transversal.contains_key(&new_image)
-                    || new_transversal.contains_key(&new_image))
-                {
+                if !(record.transversal.contains_key(&new_image) || new_transversal.contains_key(&new_image)) {
                     new_transversal.insert(new_image, p.inv());
                     new_depths.insert(new_image, current_depth + 1);
                 }
@@ -277,9 +299,8 @@ where
             record.transversal.extend(new_transversal);
             self.depths[level].extend(new_depths);
             // Check the newly added points
-            'element_checking: while !to_check.is_empty() {
+            'element_checking: while let Some(orbit_element) = to_check.pop_front() {
                 // Get the pair
-                let orbit_element = to_check.pop_front().unwrap();
                 let orbit_depth = *self.depths[level].get(&orbit_element).unwrap();
                 // For each generator (and p)
                 for generator in record.gens.generators() {
@@ -301,12 +322,8 @@ where
         }
         //Calculate a new shallow transversal.
         if recompute_transversal {
-            let (transversal, new_depth) = shallow_transversal(
-                &mut record.gens,
-                record.base,
-                &self.action,
-                &mut *self.rng.borrow_mut(),
-            );
+            let (transversal, new_depth) =
+                shallow_transversal(&mut record.gens, record.base, &self.action, &mut *self.rng.borrow_mut());
             record.transversal = transversal;
             //Update the depths of the current position.
             self.max_depths.push(*new_depth.values().max().unwrap());
@@ -330,13 +347,8 @@ where
         // Take union of generating sets.
         let gens = self.union_gen_set(level);
         //Random products of the form gw
-        let random_gens = self.random_schrier_generators_as_word(
-            level,
-            self.constants.c1,
-            self.constants.c2,
-            &gens[..],
-            true,
-        );
+        let random_gens =
+            self.random_schrier_generators_as_word(level, self.constants.c1, self.constants.c2, &gens[..], true);
         //To see if all generators are discarded.
         let mut all_discarded = true;
         //If the element we are testing is the first schrier generator tested.
@@ -364,11 +376,7 @@ where
                             .collect()
                     } else {
                         //Number of base points than are in the current orbit.
-                        let b_star = self
-                            .base
-                            .iter()
-                            .filter(|&b| transversal.contains_key(b))
-                            .count();
+                        let b_star = self.base.iter().filter(|&b| transversal.contains_key(b)).count();
                         //Evaluate on b_star randomly chosen points.
 
                         transversal
@@ -416,9 +424,7 @@ where
                 Some(level - 1)
             }
         // Check the order for an early exit, as we know that something new has been added.
-        } else if self.constants.order.is_some()
-            && self.constants.order == Some(order(self.full_chain()))
-        {
+        } else if self.constants.order.is_some() && self.constants.order == Some(order(self.full_chain())) {
             None
         } else {
             // Continue with SGC.
@@ -445,13 +451,7 @@ where
             .generators()
             .iter()
             .map(|p| WordPermutation::from_perm(p))
-            .chain(self.random_schrier_generators_as_word(
-                0,
-                self.constants.c3,
-                self.constants.c4,
-                &gens[..],
-                false,
-            ))
+            .chain(self.random_schrier_generators_as_word(0, self.constants.c3, self.constants.c4, &gens[..], false))
             .collect();
         //Sift the original generators, and all products of the form g*w_{1,2}.
         for p in products {
@@ -531,12 +531,8 @@ where
         let moved_point = self.selector.moved_point(&gen, self.base.len());
         debug!(perm = %gen, moved_point = moved_point, "Extending chain");
         let mut gens = Group::new(&[gen]);
-        let (transversal, depth) = shallow_transversal(
-            &mut gens,
-            moved_point,
-            &self.action,
-            &mut *self.rng.borrow_mut(),
-        );
+        let (transversal, depth) =
+            shallow_transversal(&mut gens, moved_point, &self.action, &mut *self.rng.borrow_mut());
         let initial_record = StabchainRecord::new(moved_point, gens, transversal);
         self.base.push(moved_point);
         self.max_depths.push(*depth.values().max().unwrap());
@@ -552,10 +548,7 @@ where
     // Take the union of the generating sets from current position onwards.
     fn union_gen_set(&self, level: usize) -> Vec<P> {
         let mut gen_set = Vec::new();
-        for p in self
-            .current_chain(level)
-            .flat_map(|record| record.gens.generators())
-        {
+        for p in self.current_chain(level).flat_map(|record| record.gens.generators()) {
             if !gen_set.contains(p) {
                 gen_set.push(p.clone())
             }

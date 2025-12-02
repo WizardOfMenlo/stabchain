@@ -5,11 +5,15 @@ pub mod shallow_transversal;
 pub mod simple_transversal;
 pub mod skeleton;
 
-pub use factored_transversal::FactoredTransversal;
-pub use simple_transversal::SimpleTransversal;
+pub use {
+    factored_transversal::FactoredTransversal,
+    simple_transversal::SimpleTransversal,
+};
 
-use crate::perm::actions::SimpleApplication;
-use crate::perm::Action;
+use crate::perm::{
+    actions::SimpleApplication,
+    Action,
+};
 
 use std::fmt::Debug;
 
@@ -61,9 +65,7 @@ pub enum TransversalError<P, OrbitT> {
 }
 
 /// Validate a transversal
-pub fn valid_transversal<P, A>(
-    transv: &impl Transversal<P, A>,
-) -> Result<(), TransversalError<P, A::OrbitT>>
+pub fn valid_transversal<P, A>(transv: &impl Transversal<P, A>) -> Result<(), TransversalError<P, A::OrbitT>>
 where
     A: Action<P>,
 {
@@ -100,10 +102,16 @@ where
 macro_rules! transversal_tests {
     ($name:ty, $short:ident) => {
         mod $short {
-            use crate::group::orbit::transversal::valid_transversal;
-            use crate::group::orbit::transversal::Transversal;
-            use crate::group::Group;
-            use crate::perm::*;
+            use crate::{
+                group::{
+                    orbit::transversal::{
+                        valid_transversal,
+                        Transversal,
+                    },
+                    Group,
+                },
+                perm::*,
+            };
 
             #[test]
             fn id_transveral() {
@@ -163,8 +171,5 @@ macro_rules! transversal_tests {
 #[cfg(test)]
 mod tests {
     transversal_tests!(crate::group::orbit::transversal::SimpleTransversal, simple);
-    transversal_tests!(
-        crate::group::orbit::transversal::FactoredTransversal,
-        factored
-    );
+    transversal_tests!(crate::group::orbit::transversal::FactoredTransversal, factored);
 }

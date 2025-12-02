@@ -1,15 +1,19 @@
 //! Utilities for testing element membership and coset representatives
 
-use super::StabchainRecord;
-use crate::group::orbit::abstraction::TransversalResolver;
-use crate::perm::impls::word::WordPermutation;
-use crate::perm::{Action, Permutation};
+use {
+    super::StabchainRecord,
+    crate::{
+        group::orbit::abstraction::TransversalResolver,
+        perm::{
+            impls::word::WordPermutation,
+            Action,
+            Permutation,
+        },
+    },
+};
 
 /// Given a stabilizer chain, computes whether the given element is in the group
-pub fn is_in_group<'a, P, A, V>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
-    p: &P,
-) -> bool
+pub fn is_in_group<'a, P, A, V>(it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>, p: &P) -> bool
 where
     P: 'a + Permutation,
     A: 'a + Action<P>,
@@ -88,10 +92,7 @@ where
 }
 
 /// Sift the permutation through the chain, returning the residue it generates.
-pub fn residue_as_words<'a, P, A, V>(
-    it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>,
-    p: &P,
-) -> Vec<P>
+pub fn residue_as_words<'a, P, A, V>(it: impl IntoIterator<Item = &'a StabchainRecord<P, V, A>>, p: &P) -> Vec<P>
 where
     V: 'a + TransversalResolver<P, A>,
     P: 'a + Permutation,
@@ -161,9 +162,13 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::group::Group;
-    use crate::perm::DefaultPermutation;
+    use {
+        super::*,
+        crate::{
+            group::Group,
+            perm::DefaultPermutation,
+        },
+    };
 
     #[test]
     fn id_test() {
@@ -177,7 +182,7 @@ mod tests {
         let g = Group::cyclic(10);
         let stab = g.stabchain();
 
-        let base = g.generators().get(0).cloned().unwrap();
+        let base = g.generators().first().cloned().unwrap();
         for i in 0..10 {
             assert!(is_in_group(stab.iter(), &base.pow(i)))
         }
@@ -185,8 +190,10 @@ mod tests {
 
     #[test]
     fn book_example() {
-        use super::super::base::selectors::FixedBaseSelector;
-        use crate::perm::export::CyclePermutation;
+        use {
+            super::super::base::selectors::FixedBaseSelector,
+            crate::perm::export::CyclePermutation,
+        };
 
         let g = Group::new(&[
             CyclePermutation::single_cycle(&[1, 2, 3]).into(),
@@ -195,8 +202,7 @@ mod tests {
 
         let chain = g.stabchain_with_selector(FixedBaseSelector::new(&[0, 1]));
 
-        let perm: DefaultPermutation =
-            CyclePermutation::from_vec(vec![vec![1, 2], vec![3, 4]]).into();
+        let perm: DefaultPermutation = CyclePermutation::from_vec(vec![vec![1, 2], vec![3, 4]]).into();
 
         assert!(is_in_group(chain.iter(), &perm));
     }
@@ -218,8 +224,10 @@ mod tests {
 
     #[test]
     fn book_example_complete_test() {
-        use super::super::base::selectors::FixedBaseSelector;
-        use crate::perm::export::CyclePermutation;
+        use {
+            super::super::base::selectors::FixedBaseSelector,
+            crate::perm::export::CyclePermutation,
+        };
 
         let g = Group::<DefaultPermutation>::new(&[
             CyclePermutation::single_cycle(&[1, 2, 3]).into(),
@@ -299,10 +307,7 @@ mod tests {
         let repr = coset_representative(stab.iter(), &DefaultPermutation::id());
         assert!(repr.is_some());
         assert_eq!(repr.unwrap().len(), 0);
-        assert!(
-            coset_representative(stab.iter(), &DefaultPermutation::from_images(&[1, 2, 0]))
-                .is_none()
-        );
+        assert!(coset_representative(stab.iter(), &DefaultPermutation::from_images(&[1, 2, 0])).is_none());
     }
 
     #[test]
@@ -317,8 +322,7 @@ mod tests {
         let mut repr = repr.unwrap();
         assert_eq!(repr.len(), stab.len());
         let mut acc = DefaultPermutation::id();
-        while !repr.is_empty() {
-            let elem = repr.pop().unwrap();
+        while let Some(elem) = repr.pop() {
             acc = acc.multiply(&elem);
         }
         assert_eq!(acc, perm);

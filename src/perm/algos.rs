@@ -1,5 +1,7 @@
-use super::impls::standard::StandardPermutation;
-use crate::perm::Permutation;
+use {
+    super::impls::standard::StandardPermutation,
+    crate::perm::Permutation,
+};
 
 /// The implementation of inverse, to be used mostly for benchmarking
 pub fn inv(p: &StandardPermutation) -> StandardPermutation {

@@ -1,15 +1,25 @@
 //! A transversal which naively stores the first representative it finds
 
-use crate::group::Group;
-use crate::perm::actions::SimpleApplication;
-use crate::perm::*;
+use crate::{
+    group::Group,
+    perm::{
+        actions::SimpleApplication,
+        *,
+    },
+};
 
-use super::skeleton::TransversalSkeleton;
-use super::Transversal;
-use crate::group::orbit::abstraction::SimpleTransversalResolver;
+use {
+    super::{
+        skeleton::TransversalSkeleton,
+        Transversal,
+    },
+    crate::group::orbit::abstraction::SimpleTransversalResolver,
+};
 
-use crate::DetHashMap;
-use std::collections::VecDeque;
+use {
+    crate::DetHashMap,
+    std::collections::VecDeque,
+};
 
 /// Transversal using the naive algorithm
 /// Should be quicker computation wise but possibly much more
@@ -40,11 +50,7 @@ where
 {
     /// Create from the group
     pub fn new_with_action(g: &Group<P>, base: A::OrbitT, strategy: &A) -> Self {
-        Self::from_raw(
-            base.clone(),
-            transversal(g, base, strategy),
-            SimpleTransversalResolver,
-        )
+        Self::from_raw(base.clone(), transversal(g, base, strategy), SimpleTransversalResolver)
     }
 }
 
@@ -56,11 +62,7 @@ where
     P: fmt::Display + Permutation,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "[Transversal: base := {}, elements := {{",
-            self.base() + 1,
-        )?;
+        write!(f, "[Transversal: base := {}, elements := {{", self.base() + 1,)?;
 
         for (orbit, repr) in self.raw_elements() {
             write!(f, "({}, {}) ", orbit + 1, repr)?
@@ -92,8 +94,7 @@ where
     to_traverse.push_back(base);
 
     // While we have stuff to do
-    while !to_traverse.is_empty() {
-        let delta = to_traverse.pop_front().unwrap();
+    while let Some(delta) = to_traverse.pop_front() {
         for g in gens {
             let gamma = strat.apply(g, delta.clone());
 
@@ -111,11 +112,7 @@ where
 /// Optimized version of transversal which does less work on complete groups
 // Needed since entry requires &mut
 #[allow(clippy::map_entry)]
-pub fn transversal_complete_opt<P, A>(
-    g: &Group<P>,
-    base: A::OrbitT,
-    strat: &A,
-) -> DetHashMap<A::OrbitT, P>
+pub fn transversal_complete_opt<P, A>(g: &Group<P>, base: A::OrbitT, strat: &A) -> DetHashMap<A::OrbitT, P>
 where
     P: Permutation,
     A: Action<P>,
@@ -133,8 +130,7 @@ where
     to_traverse.push_back(base);
 
     // While we have stuff to do
-    while !to_traverse.is_empty() {
-        let delta = to_traverse.pop_front().unwrap();
+    while let Some(delta) = to_traverse.pop_front() {
         for g in gens {
             let gamma = strat.apply(g, delta.clone());
 

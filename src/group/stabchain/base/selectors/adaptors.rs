@@ -14,11 +14,7 @@ impl<F, S> PartialSelector<F, S> {
     /// Create a new selector, that uses the first selector for limit number of points, and
     /// the second from there on
     pub fn new(first: F, limit: usize, second: S) -> Self {
-        PartialSelector {
-            limit,
-            first,
-            second,
-        }
+        Self { limit, first, second }
     }
 }
 
@@ -47,12 +43,8 @@ where
 {
     pub fn new(base: &[T], after_partial: S) -> Self {
         // Create a partial selector that uses the fixed base first and then the second selector.
-        PartialFixedBaseSelector {
-            selector: PartialSelector::new(
-                super::FixedBaseSelector::new(base),
-                base.len(),
-                after_partial,
-            ),
+        Self {
+            selector: PartialSelector::new(super::FixedBaseSelector::new(base), base.len(), after_partial),
         }
     }
 }
@@ -98,15 +90,19 @@ mod tests {
 
     #[test]
     fn partial_lmp() {
-        use super::super::{FixedBaseSelector, LmpSelector};
-        use crate::group::Group;
+        use {
+            super::super::{
+                FixedBaseSelector,
+                LmpSelector,
+            },
+            crate::group::Group,
+        };
 
         use crate::perm::*;
 
         let base = [0, 1, 2, 3, 4, 5];
 
-        let mut selector =
-            PartialSelector::new(FixedBaseSelector::new(&base), 6, LmpSelector::default());
+        let mut selector = PartialSelector::new(FixedBaseSelector::new(&base), 6, LmpSelector);
 
         let g = Group::symmetric(10);
         let mut rand = g.rng();
@@ -114,23 +110,23 @@ mod tests {
             assert_eq!(selector.moved_point(&perm, i), i);
         }
 
-        for (i, perm) in
-            (6..20).zip(std::iter::repeat_with(|| rand.random_permutation()).filter(|p| !p.is_id()))
-        {
+        for (i, perm) in (6..20).zip(std::iter::repeat_with(|| rand.random_permutation()).filter(|p| !p.is_id())) {
             assert_eq!(selector.moved_point(&perm, i), perm.lmp().unwrap());
         }
     }
 
     #[test]
     fn partial_fixed_base_lmp() {
-        use super::super::LmpSelector;
-        use crate::group::Group;
+        use {
+            super::super::LmpSelector,
+            crate::group::Group,
+        };
 
         use crate::perm::*;
 
         let base = [0, 1, 2, 3, 4, 5];
 
-        let mut selector = PartialFixedBaseSelector::new(&base, LmpSelector::default());
+        let mut selector = PartialFixedBaseSelector::new(&base, LmpSelector);
 
         let g = Group::symmetric(10);
         let mut rand = g.rng();
@@ -138,9 +134,7 @@ mod tests {
             assert_eq!(selector.moved_point(&perm, i), i);
         }
 
-        for (i, perm) in
-            (6..20).zip(std::iter::repeat_with(|| rand.random_permutation()).filter(|p| !p.is_id()))
-        {
+        for (i, perm) in (6..20).zip(std::iter::repeat_with(|| rand.random_permutation()).filter(|p| !p.is_id())) {
             assert_eq!(selector.moved_point(&perm, i), perm.lmp().unwrap());
         }
     }

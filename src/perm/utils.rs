@@ -1,6 +1,10 @@
-use super::export::CyclePermutation;
-use super::Permutation;
-use rand::seq::SliceRandom;
+use {
+    super::{
+        export::CyclePermutation,
+        Permutation,
+    },
+    rand::seq::SliceRandom,
+};
 
 use crate::perm::impls::standard::StandardPermutation;
 
@@ -52,8 +56,10 @@ pub fn valid_images(images: &[usize]) -> Result<(), ImageError> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::perm::DefaultPermutation;
+    use {
+        super::*,
+        crate::perm::DefaultPermutation,
+    };
 
     #[test]
     fn create_random() {

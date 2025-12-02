@@ -1,13 +1,20 @@
 pub mod comparison;
 
-use criterion::{black_box, criterion_group, BenchmarkId, Criterion};
+use criterion::{
+    black_box,
+    criterion_group,
+    BenchmarkId,
+    Criterion,
+};
 
 use std::iter::FromIterator;
 
-use stabchain::perm::builder::PermBuilder;
-use stabchain::perm::impls::standard::StandardPermutation;
-use stabchain::perm::utils::random_permutation;
-use stabchain::perm::*;
+use stabchain::perm::{
+    builder::PermBuilder,
+    impls::standard::StandardPermutation,
+    utils::random_permutation,
+    *,
+};
 
 const RANGE_OF_VALUES: [usize; 7] = [8, 16, 32, 64, 128, 256, 512];
 
@@ -59,7 +66,7 @@ fn exponentiation(c: &mut Criterion) {
         group.bench_with_input(BenchmarkId::new("multijoin", i), &i, |b, i| {
             use stabchain::perm::builder::join::MultiJoin;
             let perm = random_permutation::<DefaultPermutation>(*i);
-            let join = MultiJoin::from_iter(std::iter::repeat(perm).take(i / 2));
+            let join = MultiJoin::from_iter(std::iter::repeat_n(perm, i / 2));
             b.iter(|| join.collapse())
         });
     }
@@ -76,7 +83,7 @@ fn exponentiation_small_exponent(c: &mut Criterion) {
         group.bench_with_input(BenchmarkId::new("multijoin", i), &i, |b, i| {
             use stabchain::perm::builder::join::MultiJoin;
             let perm = random_permutation::<DefaultPermutation>(1024);
-            let join = MultiJoin::from_iter(std::iter::repeat(perm).take(*i));
+            let join = MultiJoin::from_iter(std::iter::repeat_n(perm, *i));
             b.iter(|| join.collapse())
         });
     }
@@ -101,11 +108,13 @@ fn order_efficiency(c: &mut Criterion) {
             b.iter(|| order_cycle(&perm))
         });
         group.bench_with_input(BenchmarkId::new("parallel", i), i, |b, i| {
-            use rayon::prelude::*;
-            use stabchain::perm::impls::sync::SyncPermutation;
+            use {
+                rayon::prelude::*,
+                stabchain::perm::impls::sync::SyncPermutation,
+            };
             let perm = random_permutation::<SyncPermutation>(*i);
             b.iter(|| match perm.lmp() {
-                Some(n) => (0..n as usize)
+                Some(n) => (0..n)
                     .into_par_iter()
                     .map(|i| (i, perm.pow(i as isize)))
                     .filter(|t| t.1.is_id())

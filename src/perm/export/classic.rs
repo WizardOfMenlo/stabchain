@@ -1,5 +1,10 @@
-use super::cycles::CyclePermutation;
-use crate::perm::{impls::standard::StandardPermutation, Permutation};
+use {
+    super::cycles::CyclePermutation,
+    crate::perm::{
+        impls::standard::StandardPermutation,
+        Permutation,
+    },
+};
 
 /// A permutation, that is on the integral set [1, n].
 /// It is called classical as classically this is how permutations are stored
@@ -9,7 +14,7 @@ pub struct ClassicalPermutation(StandardPermutation);
 impl ClassicalPermutation {
     /// Get a identity permutation
     pub fn id() -> Self {
-        ClassicalPermutation(StandardPermutation::id())
+        Self(StandardPermutation::id())
     }
 
     /// Is this permutation the identity?
@@ -28,7 +33,7 @@ impl ClassicalPermutation {
     /// range [1, n]. Panics otherwise
     pub fn from_slice(images: &[usize]) -> Self {
         assert!(images.iter().all(|&x| x != 0));
-        ClassicalPermutation(StandardPermutation::from_images(
+        Self(StandardPermutation::from_images(
             &images.iter().map(|i| i - 1).collect::<Vec<_>>()[..],
         ))
     }
@@ -49,7 +54,7 @@ impl From<CyclePermutation> for ClassicalPermutation {
         let n = cycles.iter().flatten().max().cloned().unwrap_or(0);
 
         if n == 0 {
-            return ClassicalPermutation::id();
+            return Self::id();
         }
 
         let mut images = Vec::with_capacity(n);
@@ -68,7 +73,7 @@ impl From<CyclePermutation> for ClassicalPermutation {
             images.push(cycle[(i_index + 1) % cycle.len()]);
         }
 
-        ClassicalPermutation::from_slice(&images[..])
+        Self::from_slice(&images[..])
     }
 }
 
@@ -77,7 +82,7 @@ where
     P: Permutation,
 {
     fn from(p: P) -> Self {
-        ClassicalPermutation(StandardPermutation::from_images(&p.images()[..]))
+        Self(StandardPermutation::from_images(&p.images()[..]))
     }
 }
 
@@ -104,15 +109,13 @@ macro_rules! impl_all {
 }
 
 use crate::perm::impls::{
-    based::BasedPermutation, map::MapPermutation, sync::SyncPermutation, word::WordPermutation,
+    based::BasedPermutation,
+    map::MapPermutation,
+    sync::SyncPermutation,
+    word::WordPermutation,
 };
 
-impl_all!(
-    BasedPermutation,
-    MapPermutation,
-    SyncPermutation,
-    WordPermutation
-);
+impl_all!(BasedPermutation, MapPermutation, SyncPermutation, WordPermutation);
 
 #[cfg(test)]
 mod tests {
@@ -127,14 +130,14 @@ mod tests {
 
     #[test]
     fn non_conventional_id() {
-        let id = ClassicalPermutation::from_slice(&vec![1, 2, 3, 4, 5, 6]);
+        let id = ClassicalPermutation::from_slice(&[1, 2, 3, 4, 5, 6]);
         assert!(id.is_id());
         assert!(id.images().is_empty());
     }
 
     #[test]
     fn from_vector() {
-        let perm = ClassicalPermutation::from_slice(&vec![1, 3, 4, 2, 5, 6]);
+        let perm = ClassicalPermutation::from_slice(&[1, 3, 4, 2, 5, 6]);
         assert!(!perm.is_id());
         assert_eq!(perm.images(), vec![1, 3, 4, 2]);
     }
@@ -142,12 +145,12 @@ mod tests {
     #[test]
     #[should_panic]
     fn from_invalid_vector() {
-        let _perm = ClassicalPermutation::from_slice(&vec![1, 3, 4, 2, 0]);
+        let _perm = ClassicalPermutation::from_slice(&[1, 3, 4, 2, 0]);
     }
 
     #[test]
     fn application() {
-        let perm = ClassicalPermutation::from_slice(&vec![1, 3, 4, 2]);
+        let perm = ClassicalPermutation::from_slice(&[1, 3, 4, 2]);
         assert_eq!(perm.apply(1), 1);
         assert_eq!(perm.apply(2), 3);
         assert_eq!(perm.apply(3), 4);
@@ -158,7 +161,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn invalid_application() {
-        let perm = ClassicalPermutation::from_slice(&vec![1, 3, 4, 2]);
+        let perm = ClassicalPermutation::from_slice(&[1, 3, 4, 2]);
         perm.apply(0);
     }
 
@@ -171,7 +174,7 @@ mod tests {
 
     #[test]
     fn to_permutation() {
-        let classic = ClassicalPermutation::from_slice(&vec![1, 3, 2]);
+        let classic = ClassicalPermutation::from_slice(&[1, 3, 2]);
         let basic: StandardPermutation = classic.into();
         assert_eq!(basic.as_vec(), &vec![0, 2, 1][..]);
     }

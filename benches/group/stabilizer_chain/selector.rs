@@ -1,8 +1,19 @@
-use criterion::{criterion_group, BenchmarkId, Criterion};
+use criterion::{
+    criterion_group,
+    BenchmarkId,
+    Criterion,
+};
 const RANGE_OF_VALUES: [usize; 5] = [8, 10, 16, 20, 32];
-use stabchain::group::stabchain::base::selectors::{FixedBaseSelector, LmpSelector};
-use stabchain::group::Group;
-use std::iter::FromIterator;
+use {
+    stabchain::group::{
+        stabchain::base::selectors::{
+            FixedBaseSelector,
+            LmpSelector,
+        },
+        Group,
+    },
+    std::iter::FromIterator,
+};
 
 fn selector_comparison_cyclic(c: &mut Criterion) {
     let mut group = c.benchmark_group("group__stabchain__ss__selector_comparison__cyclic");
@@ -45,8 +56,7 @@ fn selector_comparison_symmetric(c: &mut Criterion) {
 }
 
 fn selector_comparison_direct_product(c: &mut Criterion) {
-    let mut group =
-        c.benchmark_group("group__stabchain__ss__selector_comparison__product_symmetric");
+    let mut group = c.benchmark_group("group__stabchain__ss__selector_comparison__product_symmetric");
     for i in RANGE_OF_VALUES.iter() {
         group.bench_with_input(BenchmarkId::new("default", i), i, |b, i| {
             let g = Group::product(&Group::symmetric(*i), &Group::symmetric(*i));

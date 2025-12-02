@@ -7,19 +7,37 @@ pub mod random_perm;
 pub mod stabchain;
 pub mod utils;
 
-use self::stabchain::base::selectors::adaptors::PartialFixedBaseSelector;
-use self::stabchain::base::selectors::DefaultSelector;
-use self::stabchain::base::selectors::FixedBaseSelector;
-use self::stabchain::builder::DefaultStrategy;
-use crate::group::orbit::abstraction::TransversalResolver;
-use crate::group::stabchain::base::selectors::BaseSelector;
-use crate::group::stabchain::builder::BuilderStrategy;
-use crate::perm::actions::SimpleApplication;
-use crate::perm::export::CyclePermutation;
-use crate::perm::utils::order_n_permutation;
-use crate::perm::*;
+use {
+    self::stabchain::{
+        base::selectors::{
+            adaptors::PartialFixedBaseSelector,
+            DefaultSelector,
+            FixedBaseSelector,
+        },
+        builder::DefaultStrategy,
+        Stabchain,
+    },
+    crate::{
+        group::{
+            orbit::abstraction::TransversalResolver,
+            stabchain::{
+                base::selectors::BaseSelector,
+                builder::BuilderStrategy,
+            },
+        },
+        perm::{
+            actions::SimpleApplication,
+            export::CyclePermutation,
+            utils::order_n_permutation,
+            *,
+        },
+    },
+};
 
-use serde::{Deserialize, Serialize};
+use serde::{
+    Deserialize,
+    Serialize,
+};
 
 use std::iter::FromIterator;
 
@@ -32,12 +50,12 @@ pub struct Group<P = DefaultPermutation> {
 impl Group {
     /// Generates the trivial group, which only contains the identity
     pub fn trivial() -> Self {
-        Group::new(&[])
+        Self::new(&[])
     }
 
     /// Creates the Klein 4 group
     pub fn klein_4() -> Self {
-        Group::new(&[
+        Self::new(&[
             CyclePermutation::single_cycle(&[1, 2]).into_perm(),
             CyclePermutation::single_cycle(&[3, 4]).into_perm(),
         ])
@@ -48,10 +66,10 @@ impl Group {
         //https://math.stackexchange.com/questions/3614294/choice-of-generator-in-dihedral-group
         assert!(n > 0);
         if n == 1 {
-            return Group::cyclic(2);
+            return Self::cyclic(2);
         }
         if n == 2 {
-            return Group::klein_4();
+            return Self::klein_4();
         }
 
         let reflection_perm = if n % 2 == 0 {
@@ -65,14 +83,14 @@ impl Group {
         }
         .into_perm();
 
-        Group::new(&[reflection_perm, order_n_permutation(1, n)])
+        Self::new(&[reflection_perm, order_n_permutation(1, n)])
     }
 
     /// Generate the cyclical group on n elements (more accurately, generates the cyclical group from a cycle on 1..=n)
     pub fn cyclic(n: usize) -> Self {
         assert!(n > 0);
 
-        Group::new(&[order_n_permutation(1, n)])
+        Self::new(&[order_n_permutation(1, n)])
     }
 
     /// Generate the alternating group on n points
@@ -96,7 +114,7 @@ impl Group {
             return Self::trivial();
         }
 
-        Group::new(&[
+        Self::new(&[
             CyclePermutation::single_cycle(&[1, 2]).into_perm(),
             order_n_permutation(1, n),
         ])
@@ -105,8 +123,8 @@ impl Group {
 
 impl<P> Group<P> {
     /// To be used when the element is not a permutation. Note this does not check id
-    pub fn from_list<T: IntoIterator<Item = P>>(iter: T) -> Group<P> {
-        Group {
+    pub fn from_list<T: IntoIterator<Item = P>>(iter: T) -> Self {
+        Self {
             generators: iter.into_iter().collect(),
         }
     }
@@ -140,7 +158,7 @@ where
     pub fn deduplicate(&self) -> Self {
         use crate::DetHashSet;
         let set: DetHashSet<_> = self.generators.iter().cloned().collect();
-        Group::from_list(set.into_iter())
+        Self::from_list(set)
     }
 
     /// Create a random generator for elements of the group
@@ -172,19 +190,12 @@ where
 
     /// Computes the transversal from the group generators (use factored transversal instead for memory efficience)
     #[tracing::instrument]
-    pub fn transversal(
-        &self,
-        base: usize,
-    ) -> impl orbit::transversal::Transversal<P, SimpleApplication<P>> {
+    pub fn transversal(&self, base: usize) -> impl orbit::transversal::Transversal<P, SimpleApplication<P>> {
         orbit::transversal::SimpleTransversal::new(self, base)
     }
 
     /// Compute the transversal w.r.t. to a given action
-    pub fn transversal_of_action<A>(
-        &self,
-        base: A::OrbitT,
-        strat: A,
-    ) -> impl orbit::transversal::Transversal<P, A>
+    pub fn transversal_of_action<A>(&self, base: A::OrbitT, strat: A) -> impl orbit::transversal::Transversal<P, A>
     where
         A: Action<P>,
     {
@@ -193,10 +204,7 @@ where
 
     /// Computes the factored transversal from the group generators
     #[tracing::instrument]
-    pub fn factored_transversal(
-        &self,
-        base: usize,
-    ) -> impl orbit::transversal::Transversal<P, SimpleApplication<P>> {
+    pub fn factored_transversal(&self, base: usize) -> impl orbit::transversal::Transversal<P, SimpleApplication<P>> {
         orbit::transversal::FactoredTransversal::new(self, base)
     }
 
@@ -214,8 +222,8 @@ where
 
     /// Computes a stabilizer chain for this group
     #[tracing::instrument]
-    pub fn stabchain(&self) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
-        stabchain::Stabchain::new_with_strategy(
+    pub fn stabchain(&self) -> Stabchain<P, impl TransversalResolver<P>> {
+        Stabchain::new_with_strategy(
             self,
             DefaultStrategy::new(SimpleApplication::default(), DefaultSelector::default()),
         )
@@ -223,21 +231,15 @@ where
 
     /// Computes a stabilizer chain for this group with a base
     #[tracing::instrument]
-    pub fn stabchain_base(
-        &self,
-        base: &[usize],
-    ) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
-        stabchain::Stabchain::new_with_strategy(
+    pub fn stabchain_base(&self, base: &[usize]) -> Stabchain<P, impl TransversalResolver<P>> {
+        Stabchain::new_with_strategy(
             self,
             DefaultStrategy::new(SimpleApplication::default(), FixedBaseSelector::new(base)),
         )
     }
     /// Computes a stabilizer chain for this group with a partial base, using the default strategy for further points.
-    pub fn stabchain_partial_base(
-        &self,
-        partial_base: &[usize],
-    ) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
-        stabchain::Stabchain::new_with_strategy(
+    pub fn stabchain_partial_base(&self, partial_base: &[usize]) -> Stabchain<P, impl TransversalResolver<P>> {
+        Stabchain::new_with_strategy(
             self,
             DefaultStrategy::new(
                 SimpleApplication::default(),
@@ -247,22 +249,13 @@ where
     }
 
     /// Computes a stabilizer chain for this group with a strategy
-    pub fn stabchain_with_strategy<S: BuilderStrategy<P>>(
-        &self,
-        strat: S,
-    ) -> stabchain::Stabchain<P, S::Transversal, S::Action> {
-        stabchain::Stabchain::new_with_strategy(self, strat)
+    pub fn stabchain_with_strategy<S: BuilderStrategy<P>>(&self, strat: S) -> Stabchain<P, S::Transversal, S::Action> {
+        Stabchain::new_with_strategy(self, strat)
     }
 
     /// Computes a stabilizer chain for this group with a chosen selector
-    pub fn stabchain_with_selector(
-        &self,
-        selector: impl BaseSelector<P>,
-    ) -> stabchain::Stabchain<P, impl TransversalResolver<P>> {
-        stabchain::Stabchain::new_with_strategy(
-            self,
-            DefaultStrategy::new(SimpleApplication::default(), selector),
-        )
+    pub fn stabchain_with_selector(&self, selector: impl BaseSelector<P>) -> Stabchain<P, impl TransversalResolver<P>> {
+        Stabchain::new_with_strategy(self, DefaultStrategy::new(SimpleApplication::default(), selector))
     }
 
     /// Check G.subgroup_of(H) <=> G <= H
@@ -276,13 +269,10 @@ where
     /// Unless time is a very cheap commodity, do not do on large groups
     #[tracing::instrument]
     pub fn bruteforce_elements(&self) -> Vec<P> {
-        self.orbit_of_action(
-            P::id(),
-            &crate::perm::actions::MultiplicationAction::default(),
-        )
-        .iter()
-        .cloned()
-        .collect()
+        self.orbit_of_action(P::id(), &crate::perm::actions::MultiplicationAction::default())
+            .iter()
+            .cloned()
+            .collect()
     }
 
     /// Regenerate the groups using a new set of generators
@@ -320,12 +310,7 @@ where
 
     /// Computes the smallest n s.t. G <= S_n
     pub fn symmetric_super_order(&self) -> usize {
-        self.generators
-            .iter()
-            .flat_map(|g| g.lmp())
-            .max()
-            .unwrap_or(0)
-            + 1
+        self.generators.iter().flat_map(|g| g.lmp()).max().unwrap_or(0) + 1
     }
 
     /// Conjugate the generators by this permutation
@@ -362,9 +347,9 @@ impl<P> FromIterator<P> for Group<P>
 where
     P: Permutation,
 {
-    fn from_iter<T: IntoIterator<Item = P>>(iter: T) -> Group<P> {
+    fn from_iter<T: IntoIterator<Item = P>>(iter: T) -> Self {
         let v = iter.into_iter().filter(|p| !p.is_id()).collect();
-        Group { generators: v }
+        Self { generators: v }
     }
 }
 
@@ -442,9 +427,13 @@ mod tests {
 
     #[test]
     fn test_product() {
-        use crate::perm::export::CyclePermutation;
-        use crate::perm::DefaultPermutation;
-        use crate::DetHashSet;
+        use crate::{
+            perm::{
+                export::CyclePermutation,
+                DefaultPermutation,
+            },
+            DetHashSet,
+        };
 
         let perm: DefaultPermutation = CyclePermutation::single_cycle(&[1, 2, 3]).into();
 
@@ -483,7 +472,7 @@ mod tests {
         let reg = g.random_n_generators(30);
 
         // We subtract the identity
-        assert!(reg.generators().len() <= 24 - 1);
+        assert!(reg.generators().len() < 24);
     }
 
     #[test]

@@ -1,9 +1,11 @@
 pub mod join;
 pub mod pow;
 
-use crate::perm::Permutation;
-use join::Join;
-use pow::Pow;
+use {
+    crate::perm::Permutation,
+    join::Join,
+    pow::Pow,
+};
 
 pub trait PermBuilder<P: Permutation>: Clone {
     /// Computes f(x)

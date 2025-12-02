@@ -1,8 +1,12 @@
 //! Mod which contains a deprecated utility for bruteforcing group elements
 
-use super::Group;
-use crate::perm::Permutation;
-use crate::DetHashSet;
+use {
+    super::Group,
+    crate::{
+        perm::Permutation,
+        DetHashSet,
+    },
+};
 
 use std::collections::VecDeque;
 
@@ -16,10 +20,9 @@ pub fn group_elements<P: Permutation>(g: &Group<P>) -> Vec<P> {
     let gens = g.generators();
     let mut res = DetHashSet::with_capacity_and_hasher(gens.len(), Default::default());
     // Get everything that is not the identity
-    let mut to_check: VecDeque<_> = gens.iter().cloned().filter(|p| !p.is_id()).collect();
-    while !to_check.is_empty() {
+    let mut to_check: VecDeque<_> = gens.iter().filter(|&p| !p.is_id()).cloned().collect();
+    while let Some(element) = to_check.pop_back() {
         // Add it to the group (as well as its inverse)
-        let element = to_check.pop_back().unwrap();
         res.insert(element.inv());
         res.insert(element.clone());
         let element = element.clone();

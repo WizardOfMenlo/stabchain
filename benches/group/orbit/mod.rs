@@ -1,13 +1,24 @@
 pub mod factored_transversal;
 pub mod transversal;
 
-use criterion::{criterion_group, BenchmarkId, Criterion};
+use criterion::{
+    criterion_group,
+    BenchmarkId,
+    Criterion,
+};
 
 const RANGE_OF_VALUES: [usize; 4] = [8, 16, 32, 64];
 
-use stabchain::group::orbit::{orbit, orbit_complete_opt};
-use stabchain::group::Group;
-use stabchain::perm::actions::SimpleApplication;
+use stabchain::{
+    group::{
+        orbit::{
+            orbit,
+            orbit_complete_opt,
+        },
+        Group,
+    },
+    perm::actions::SimpleApplication,
+};
 
 // Comparing orbit optimizations
 

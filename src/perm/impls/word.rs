@@ -1,5 +1,10 @@
-use crate::perm::*;
-use std::iter::{self, FromIterator};
+use {
+    crate::perm::*,
+    std::iter::{
+        self,
+        FromIterator,
+    },
+};
 
 #[derive(Debug, Clone, Eq)]
 pub struct WordPermutation<P = DefaultPermutation>
@@ -15,7 +20,7 @@ where
 {
     /// Custom initialiser that can take a vector capacity.
     pub(crate) fn id_with_capacity(capacity: usize) -> Self {
-        WordPermutation {
+        Self {
             word: Vec::with_capacity(capacity),
         }
     }
@@ -61,7 +66,7 @@ where
     /// Lazily evaluate the inverse of the permutation, using the identify (ab)^-1 = b^-1a^-1
     pub fn inv_lazy(&self) -> Self {
         // We know each word is not the identity, so it's inverse isn't either.
-        WordPermutation {
+        Self {
             word: self.word.iter().map(|p| p.inv()).rev().collect(),
         }
     }
@@ -75,8 +80,7 @@ where
 
     /// Multiply in place by another word.
     pub fn multiply_mut_word(&mut self, other: &Self) {
-        self.word
-            .extend(other.word.iter().filter(|p| !p.is_id()).cloned());
+        self.word.extend(other.word.iter().filter(|p| !p.is_id()).cloned());
     }
 
     // Invert word permutation lazily in place.
@@ -95,7 +99,7 @@ where
     P: Permutation,
 {
     fn from_iter<T: IntoIterator<Item = P>>(iter: T) -> Self {
-        WordPermutation {
+        Self {
             word: iter.into_iter().filter(|p| !p.is_id()).collect(),
         }
     }
@@ -221,19 +225,18 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::perm::{DefaultPermutation, Permutation};
+    use {
+        super::*,
+        crate::perm::{
+            DefaultPermutation,
+            Permutation,
+        },
+    };
 
     #[test]
     fn inv_lazy() {
-        let images = vec![
-            vec![0, 2, 1],
-            vec![0, 1, 2, 4, 3],
-            vec![0, 1, 2, 3, 4, 5, 7, 6],
-        ];
-        let perms = images
-            .iter()
-            .map(|arr| DefaultPermutation::from_images(arr));
+        let images = [vec![0, 2, 1], vec![0, 1, 2, 4, 3], vec![0, 1, 2, 3, 4, 5, 7, 6]];
+        let perms = images.iter().map(|arr| DefaultPermutation::from_images(arr));
         let perm = WordPermutation::from_iter(perms);
         assert_eq!(perm.inv_lazy().evaluate(), perm.inv().evaluate());
         let id = WordPermutation::<DefaultPermutation>::id();
@@ -249,14 +252,8 @@ mod tests {
 
     #[test]
     fn lmp_upper_bound() {
-        let images = vec![
-            vec![0, 2, 1],
-            vec![0, 1, 2, 4, 3],
-            vec![0, 1, 2, 3, 4, 5, 7, 6],
-        ];
-        let perms = images
-            .iter()
-            .map(|arr| DefaultPermutation::from_images(arr));
+        let images = [vec![0, 2, 1], vec![0, 1, 2, 4, 3], vec![0, 1, 2, 3, 4, 5, 7, 6]];
+        let perms = images.iter().map(|arr| DefaultPermutation::from_images(arr));
         let perm = WordPermutation::from_iter(perms);
         assert!(perm.lmp_upper().unwrap() >= perm.lmp().unwrap());
         assert!(perm.lmp_upper().unwrap() >= 7);
@@ -265,10 +262,8 @@ mod tests {
 
     #[test]
     fn lmp_not_eq_ub() {
-        let images = vec![vec![0, 1, 2, 4, 3], vec![0, 1, 2, 4, 3]];
-        let perms = images
-            .iter()
-            .map(|arr| DefaultPermutation::from_images(arr));
+        let images = [vec![0, 1, 2, 4, 3], vec![0, 1, 2, 4, 3]];
+        let perms = images.iter().map(|arr| DefaultPermutation::from_images(arr));
         let perm = WordPermutation::from_iter(perms);
         assert!(perm.lmp_upper().unwrap() >= perm.lmp().unwrap_or(0));
         assert!(perm.lmp_upper().unwrap() >= 4);

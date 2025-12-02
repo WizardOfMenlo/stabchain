@@ -3,12 +3,21 @@
 pub mod abstraction;
 pub mod transversal;
 
-use crate::group::Group;
-use crate::perm::actions::SimpleApplication;
-use crate::perm::{Action, Permutation};
-use crate::DetHashSet;
-use std::collections::VecDeque;
-use std::fmt::Debug;
+use {
+    crate::{
+        group::Group,
+        perm::{
+            actions::SimpleApplication,
+            Action,
+            Permutation,
+        },
+        DetHashSet,
+    },
+    std::{
+        collections::VecDeque,
+        fmt::Debug,
+    },
+};
 
 /// w^G = { w^g | g \in G }
 #[derive(Debug)]
@@ -53,7 +62,7 @@ where
     OrbitT: std::hash::Hash + Eq,
 {
     pub(crate) fn from_raw(base: OrbitT, orbit: DetHashSet<OrbitT>) -> Self {
-        Orbit { base, orbit }
+        Self { base, orbit }
     }
 
     /// Is this a complete orbit?
@@ -113,8 +122,7 @@ where
     to_traverse.push_back(w);
 
     // Get unused
-    while !to_traverse.is_empty() {
-        let delta = to_traverse.pop_front().unwrap();
+    while let Some(delta) = to_traverse.pop_front() {
         for g in gens {
             // Apply generator and insert
             let gamma = strat.apply(g, delta.clone());
@@ -148,8 +156,7 @@ where
     to_traverse.push_back(w);
 
     // Get unused
-    while !to_traverse.is_empty() {
-        let delta = to_traverse.pop_front().unwrap();
+    while let Some(delta) = to_traverse.pop_front() {
         for g in gens {
             // Apply generator and insert
             let gamma = strat.apply(g, delta.clone());

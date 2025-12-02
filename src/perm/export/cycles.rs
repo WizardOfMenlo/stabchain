@@ -1,6 +1,11 @@
-use super::ClassicalPermutation;
-use crate::perm::Permutation;
-use serde::{Deserialize, Serialize};
+use {
+    super::ClassicalPermutation,
+    crate::perm::Permutation,
+    serde::{
+        Deserialize,
+        Serialize,
+    },
+};
 
 use std::fmt;
 
@@ -14,7 +19,7 @@ pub struct CyclePermutation {
 
 impl CyclePermutation {
     pub fn id() -> Self {
-        CyclePermutation::from_vec(Vec::new())
+        Self::from_vec(Vec::new())
     }
 
     /// Take some images in the 1..=n range and output a cycled repr
@@ -34,7 +39,7 @@ impl CyclePermutation {
         let n = cycles.iter().flatten().max().cloned().unwrap_or(0);
 
         if n == 0 {
-            return CyclePermutation::from_vec_unchecked(cycles);
+            return Self::from_vec_unchecked(cycles);
         }
 
         let mut counts = DetHashMap::default();
@@ -46,7 +51,7 @@ impl CyclePermutation {
         // Check every element occurs at most once
         assert!(counts.values().all(|&i| i <= 1));
 
-        CyclePermutation::from_vec_unchecked(cycles)
+        Self::from_vec_unchecked(cycles)
     }
 
     /// Get the order of the permutations
@@ -56,11 +61,11 @@ impl CyclePermutation {
 
     /// Been needing this for a while. (1 2 3)
     pub fn single_cycle(cycle: &[usize]) -> Self {
-        Self::from_vec(vec![cycle.iter().copied().collect()])
+        Self::from_vec(vec![cycle.to_vec()])
     }
 
     fn from_vec_unchecked(v: Vec<Vec<usize>>) -> Self {
-        CyclePermutation { cycles: v }
+        Self { cycles: v }
     }
 
     pub fn cycles(&self) -> &[Vec<usize>] {
@@ -78,7 +83,7 @@ where
     P: Permutation,
 {
     fn from(perm: P) -> Self {
-        CyclePermutation::from(ClassicalPermutation::from(perm))
+        Self::from(ClassicalPermutation::from(perm))
     }
 }
 
@@ -108,7 +113,7 @@ impl From<ClassicalPermutation> for CyclePermutation {
         let n = perm.lmp();
         // This path means that the permutation is the identity
         if n.is_none() {
-            return CyclePermutation::from_vec_unchecked(Vec::new());
+            return Self::from_vec_unchecked(Vec::new());
         }
 
         let n = n.unwrap();
@@ -140,7 +145,7 @@ impl From<ClassicalPermutation> for CyclePermutation {
             }
         }
 
-        CyclePermutation::from_vec_unchecked(cycles)
+        Self::from_vec_unchecked(cycles)
     }
 }
 
@@ -162,8 +167,11 @@ macro_rules! impl_all {
 }
 
 use crate::perm::impls::{
-    based::BasedPermutation, map::MapPermutation, standard::StandardPermutation,
-    sync::SyncPermutation, word::WordPermutation,
+    based::BasedPermutation,
+    map::MapPermutation,
+    standard::StandardPermutation,
+    sync::SyncPermutation,
+    word::WordPermutation,
 };
 
 impl_all!(
@@ -193,8 +201,7 @@ mod tests {
 
     #[test]
     fn cyclic_perm() {
-        let perm: CyclePermutation =
-            ClassicalPermutation::from_slice(&[4, 5, 7, 6, 8, 2, 1, 3]).into();
+        let perm: CyclePermutation = ClassicalPermutation::from_slice(&[4, 5, 7, 6, 8, 2, 1, 3]).into();
         assert_eq!(perm.cycles().len(), 1);
         assert_eq!(perm.cycles, vec![vec![1, 4, 6, 2, 5, 8, 3, 7]])
     }
@@ -238,8 +245,7 @@ mod tests {
 
     #[test]
     fn cyclical_to_classical_multiple_cycles() {
-        let cyclic: ClassicalPermutation =
-            CyclePermutation::from_vec(vec![vec![1, 3], vec![2, 4]]).into();
+        let cyclic: ClassicalPermutation = CyclePermutation::from_vec(vec![vec![1, 3], vec![2, 4]]).into();
         let classic = ClassicalPermutation::from_slice(&[3, 4, 1, 2]);
         assert_eq!(cyclic, classic);
     }

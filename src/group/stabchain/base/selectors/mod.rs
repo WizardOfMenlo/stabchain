@@ -4,8 +4,13 @@ pub mod adaptors;
 pub mod fixed_base;
 pub mod moved_point;
 
-pub use fixed_base::FixedBaseSelector;
-pub use moved_point::{FmpSelector, LmpSelector};
+pub use {
+    fixed_base::FixedBaseSelector,
+    moved_point::{
+        FmpSelector,
+        LmpSelector,
+    },
+};
 
 use std::fmt::Debug;
 
@@ -22,8 +27,10 @@ pub type DefaultSelector = LmpSelector;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::perm::*;
+    use {
+        super::*,
+        crate::perm::*,
+    };
 
     #[test]
     fn lmp_test() {

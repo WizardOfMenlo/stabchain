@@ -1,13 +1,30 @@
 pub mod selector;
 
-use criterion::{criterion_group, BenchmarkId, Criterion};
+use criterion::{
+    criterion_group,
+    BenchmarkId,
+    Criterion,
+};
 const RANGE_OF_VALUES: [usize; 5] = [8, 10, 16, 20, 32];
-use rand::{Rng, SeedableRng};
-use stabchain::group::stabchain::base::selectors::DefaultSelector;
-use stabchain::group::stabchain::builder::random::parameters::RandomAlgoParameters;
-use stabchain::group::stabchain::builder::*;
-use stabchain::group::Group;
-use stabchain::perm::actions::SimpleApplication;
+use {
+    rand::{
+        Rng,
+        SeedableRng,
+    },
+    stabchain::{
+        group::{
+            stabchain::{
+                base::selectors::DefaultSelector,
+                builder::{
+                    random::parameters::RandomAlgoParameters,
+                    *,
+                },
+            },
+            Group,
+        },
+        perm::actions::SimpleApplication,
+    },
+};
 
 use num::BigUint;
 
@@ -47,18 +64,13 @@ fn stabchain_cyclic(c: &mut Criterion) {
         bench_stabchain_impl!(group, "ift", i, (|i: &usize| Group::cyclic(*i)), || {
             IftBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
         });
-        bench_stabchain_impl!(
-            group,
-            "random_shallow",
-            i,
-            (|i: &usize| Group::cyclic(*i)),
-            || RandomBuilderStrategyShallow::new_with_params(
+        bench_stabchain_impl!(group, "random_shallow", i, (|i: &usize| Group::cyclic(*i)), || {
+            RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
                 DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed(rng.gen()))
+                RandomAlgoParameters::default().rng(rand_xorshift::XorShiftRng::from_seed(rng.gen())),
             )
-        );
+        });
         bench_stabchain_impl_with_order!(
             group,
             "random_shallow_known_order",
@@ -112,28 +124,19 @@ fn stabchain_symmetric(c: &mut Criterion) {
             let g = Group::symmetric(*i);
             b.iter(|| g.stabchain())
         });
-        bench_stabchain_impl!(
-            group,
-            "naive",
-            i,
-            (|i: &usize| Group::symmetric(*i)),
-            || NaiveBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
-        );
+        bench_stabchain_impl!(group, "naive", i, (|i: &usize| Group::symmetric(*i)), || {
+            NaiveBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
+        });
         bench_stabchain_impl!(group, "ift", i, (|i: &usize| Group::symmetric(*i)), || {
             IftBuilderStrategy::new(SimpleApplication::default(), DefaultSelector::default())
         });
-        bench_stabchain_impl!(
-            group,
-            "random_shallow",
-            i,
-            (|i: &usize| Group::symmetric(*i)),
-            || RandomBuilderStrategyShallow::new_with_params(
+        bench_stabchain_impl!(group, "random_shallow", i, (|i: &usize| Group::symmetric(*i)), || {
+            RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
                 DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed(rng.gen())),
+                RandomAlgoParameters::default().rng(rand_xorshift::XorShiftRng::from_seed(rng.gen())),
             )
-        );
+        });
         bench_stabchain_impl!(
             group,
             "random_shallow_quick_test",
@@ -210,8 +213,7 @@ fn stabchain_direct_product_symm(c: &mut Criterion) {
             || RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
                 DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed(rng.gen())),
+                RandomAlgoParameters::default().rng(rand_xorshift::XorShiftRng::from_seed(rng.gen())),
             )
         );
         bench_stabchain_impl!(
@@ -291,8 +293,7 @@ fn stabchain_copies_of_cyclic(c: &mut Criterion) {
             || RandomBuilderStrategyShallow::new_with_params(
                 SimpleApplication::default(),
                 DefaultSelector::default(),
-                RandomAlgoParameters::default()
-                    .rng(rand_xorshift::XorShiftRng::from_seed(rng.gen())),
+                RandomAlgoParameters::default().rng(rand_xorshift::XorShiftRng::from_seed(rng.gen())),
             )
         );
         bench_stabchain_impl!(
